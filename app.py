@@ -1,3 +1,4 @@
+import os
 from telegram import (
     KeyboardButton,
     InlineKeyboardButton,
@@ -93,11 +94,25 @@ class Telegram:
         )
 
     def setup_bot(self) -> None:
+        # Basic Commands
         self.application.add_handler(CommandHandler("start", self.start))
-        self.application.add_handler(CallbackQueryHandler(self.button))
         self.application.add_handler(CommandHandler("help", self.help_command))
         self.application.add_handler(CommandHandler("menu", self.menu_command))
         self.application.add_handler(CommandHandler("clear", self.clear_command))
+
+        # Handlers set for buttons workarounds.
+        self.application.add_handler(
+            CallbackQueryHandler(
+                self.button_menu, lambda x: (eval(x))["Mode"] == "menu"
+            )
+        )
+        self.application.add_handler(
+            CallbackQueryHandler(
+                self.fiat_method, lambda x: (eval(x))["Mode"] == "fiat"
+            )
+        )
+
+        # Handler for unknown commands
         self.application.add_handler(MessageHandler(filters.COMMAND, self.unknown))
 
         self.application.run_polling()
@@ -122,7 +137,12 @@ class Telegram:
         )
         self.uniq_msg_id.append(msg.message_id)
 
-    async def fiat_method(self, callback, query):
+    async def fiat_method(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """If received CheckBalance Mode do this"""
+        query = update.callback_query
+
+        await query.answer()
+        callback = eval(query.data)
         await account_balance.update_balance()
         await binance_i.disconnect()
         fiat_balance = account_balance.fiat_balance
@@ -157,7 +177,9 @@ class Telegram:
         )
         self.uniq_msg_id.append(msgs.message_id)
 
-    async def button(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    async def button_menu(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
         """Parses the CallbackQuery and updates the message text."""
         query = update.callback_query
 
@@ -183,9 +205,9 @@ class Telegram:
                 pass
 
         ## after that each method call different functions
-        elif callback["Mode"] == "fiat":
-            await self.fiat_method(callback, query)
-        ## else select again
+        # elif callback["Mode"] == "fiat":
+        #     await self.fiat_method(callback, query)
+        # else select again
         else:
             msgs = await query.edit_message_text(
                 text="Selected again!", reply_markup=self.menu_reply_markup
@@ -240,12 +262,12 @@ class Telegram:
 def main():
     while True:
         try:
-            app = Telegram("6132978100:AAGedyupW6gxNlNfRec81HXlE9goM_oPObA")
+            app = Telegram(f"{os.environ['TelegramToken']}")
             app.setup_bot()
         except KeyboardInterrupt:
             return
         else:
-            pass
+            continue
 
 
 if __name__ == "__main__":
