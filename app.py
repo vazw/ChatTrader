@@ -262,6 +262,9 @@ class Telegram:
 def main():
     while True:
         try:
+            from dotenv import load_dotenv
+
+            load_dotenv()
             app = Telegram(f"{os.environ['TelegramToken']}")
             app.setup_bot()
         except KeyboardInterrupt:
