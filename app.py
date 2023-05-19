@@ -27,6 +27,7 @@ class Telegram:
         self.msg_id = []
         self.chat_id = 0
         self.uniq_msg_id = []
+        self.status_bot = False
 
         self.reply_markup = {
             "menu": InlineKeyboardMarkup(
@@ -145,7 +146,7 @@ class Telegram:
                 [
                     [
                         InlineKeyboardButton(
-                            "BOT STATUS : {status_bot}",
+                            f"BOT STATUS : {'on' if self.status_bot else 'off'}",
                             callback_data='{"Mode": "setting", "Method": "BOT"}',
                         ),
                     ],
@@ -260,6 +261,11 @@ class Telegram:
                 self.fiat_handler, lambda x: (eval(x))["Mode"] == "fiat"
             )
         )
+        self.application.add_handler(
+            CallbackQueryHandler(
+                self.setting_handler, lambda x: (eval(x))["Mode"] == "setting"
+            )
+        )
 
         # Handler for unknown commands
         self.application.add_handler(MessageHandler(filters.COMMAND, self.unknown))
@@ -342,6 +348,19 @@ class Telegram:
             msg = "Please choose:"
             msgs = await query.edit_message_text(
                 text=msg, reply_markup=self.reply_markup["menu"]
+            )
+        self.uniq_msg_id.append(msgs.message_id)
+
+    async def setting_handler(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        query = update.callback_query
+        await query.answer()
+        callback = eval(query.data)
+        if callback["Method"] == "BOT":
+            msg = "เหรียญที่ดูอยู่ : {watchlist}\n\nโปรดเลือกการตั้งค่า"
+            msgs = await query.edit_message_text(
+                text=msg, reply_markup=self.reply_markup["setting"]
             )
         self.uniq_msg_id.append(msgs.message_id)
 
