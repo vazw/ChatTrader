@@ -551,12 +551,12 @@ class Telegram:
         # Save message_id to delete at the end.
         self.uniq_msg_id.append(msgs.message_id)
 
-    async def clear_task(self):
+    async def clear_task(self, context: ContextTypes.DEFAULT_TYPE):
         while True:
             if len(self.msg_id) > 0:
                 for id in self.msg_id:
                     try:
-                        await self.application.bot.delete_message(
+                        await context.bot.delete_message(
                             chat_id=self.chat_id, message_id=id
                         )
                         self.msg_id.remove(id)
