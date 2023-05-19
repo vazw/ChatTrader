@@ -28,7 +28,21 @@ class Telegram:
         self.chat_id = 0
         self.uniq_msg_id = []
         self.status_bot = False
+        self.reply_markup = {}
 
+        # Buttons at the bottom
+        self.reply_key = ReplyKeyboardMarkup(
+            [
+                [
+                    KeyboardButton("/menu"),
+                    KeyboardButton("/clear"),
+                    KeyboardButton("/help"),
+                ]
+            ],
+            resize_keyboard=True,
+        )
+
+    def make_inline_keyboard(self):
         self.reply_markup = {
             "menu": InlineKeyboardMarkup(
                 [
@@ -221,20 +235,9 @@ class Telegram:
             ),
         }
 
-        # Buttons at the bottom
-        self.reply_key = ReplyKeyboardMarkup(
-            [
-                [
-                    KeyboardButton("/menu"),
-                    KeyboardButton("/clear"),
-                    KeyboardButton("/help"),
-                ]
-            ],
-            resize_keyboard=True,
-        )
-
     def setup_bot(self) -> None:
         # Basic Commands
+        self.make_inline_keyboard()
         self.application.add_handler(CommandHandler("start", self.start))
         self.application.add_handler(CommandHandler("help", self.help_command))
         self.application.add_handler(CommandHandler("menu", self.menu_command))
@@ -359,6 +362,7 @@ class Telegram:
         callback = eval(query.data)
         if callback["Method"] == "BOT":
             self.status_bot = False if self.status_bot else True
+            self.make_inline_keyboard()
             msg = "เหรียญที่ดูอยู่ : {watchlist}\n\nโปรดเลือกการตั้งค่า"
             msgs = await query.edit_message_text(
                 text=msg, reply_markup=self.reply_markup["setting"]
