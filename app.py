@@ -12,12 +12,16 @@ from telegram.ext import (
     CallbackQueryHandler,
     CommandHandler,
     ContextTypes,
+    ConversationHandler,
     MessageHandler,
     filters,
 )
 
 from src.AppData import HELP_MESSAGE, WELCOME_MESSAGE
 from src.CCXT_Binance import account_balance, binance_i
+
+## Constanc represent ConversationHandler step
+STEP1, STEP2 = range(2)
 
 
 class Telegram:
@@ -28,21 +32,17 @@ class Telegram:
         self.chat_id = 0
         self.uniq_msg_id = []
         self.status_bot = False
-        self.reply_markup = {}
-
-        # Buttons at the bottom
-        self.reply_key = ReplyKeyboardMarkup(
-            [
-                [
-                    KeyboardButton("/menu"),
-                    KeyboardButton("/clear"),
-                    KeyboardButton("/help"),
-                ]
-            ],
-            resize_keyboard=True,
-        )
-
-    def make_inline_keyboard(self):
+        self.status_scan = False
+        self.risk = {"max_risk": 50.0, "min_balance": 10.0}
+        self.trade_order = {
+            "symbol": "",
+            "type": "MARKET",
+            "price": 0.0,
+            "amt": 0.0,
+            "tp_price": 0.0,
+            "sl_price": 0.0,
+        }
+        self.dynamic_reply_markup = {}
         self.reply_markup = {
             "menu": InlineKeyboardMarkup(
                 [
@@ -98,23 +98,23 @@ class Telegram:
                     ],
                 ]
             ),
-            "trade": InlineKeyboardMarkup(
+            "secure": InlineKeyboardMarkup(
                 [
                     [
                         InlineKeyboardButton(
-                            "USDT", callback_data='{"Mode": "trade", "Method": "USDT"}'
-                        ),
-                        InlineKeyboardButton(
-                            "BUSD", callback_data='{"Mode": "trade", "Method": "BUSD"}'
+                            "ตั้งค่า API",
+                            callback_data='{"Mode": "secure", "Method": "API"}',
                         ),
                     ],
                     [
                         InlineKeyboardButton(
-                            "ทั้งหมด",
-                            callback_data='{"Mode": "trade", "Method": "ALL"}',
+                            "ตั้งค่ารหัสผ่าน",
+                            callback_data='{"Mode": "secure", "Method": "PASS"}',
                         ),
+                    ],
+                    [
                         InlineKeyboardButton(
-                            "กลับ", callback_data='{"Mode": "trade", "Method": "BACK"}'
+                            "กลับ", callback_data='{"Mode": "secure", "Method": "BACK"}'
                         ),
                     ],
                 ]
@@ -131,6 +131,22 @@ class Telegram:
                         InlineKeyboardButton(
                             "กลับ",
                             callback_data='{"Mode": "analyse", "Method": "BACK"}',
+                        )
+                    ],
+                ]
+            ),
+            "order_type": InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            "MARKET",
+                            callback_data='{"Mode": "order_type", "Method": "MARKET"}',
+                        ),
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            "กลับ",
+                            callback_data='{"Mode": "order_type", "Method": "BACK"}',
                         )
                     ],
                 ]
@@ -156,11 +172,79 @@ class Telegram:
                     ],
                 ]
             ),
+        }
+
+        # Buttons at the bottom
+        self.reply_key = ReplyKeyboardMarkup(
+            [
+                [
+                    KeyboardButton("/menu"),
+                    KeyboardButton("/clear"),
+                    KeyboardButton("/help"),
+                ]
+            ],
+            resize_keyboard=True,
+        )
+
+    def update_inline_keyboard(self):
+        self.dynamic_reply_markup = {
+            "trade": InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            f"Order Type: {self.trade_order['type']}",
+                            callback_data='{"Mode": "trade", "Method": "Type"}',
+                        ),
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            f"ราคา : {self.trade_order['price']}",
+                            callback_data='{"Mode": "trade", "Method": "Price"}',
+                        ),
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            f"จำนวน : {self.trade_order['amt']}",
+                            callback_data='{"Mode": "trade", "Method": "Amt"}',
+                        ),
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            f"TP : {self.trade_order['tp_price']}",
+                            callback_data='{"Mode": "trade", "Method": "TP"}',
+                        ),
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            f"SL : {self.trade_order['sl_price']}",
+                            callback_data='{"Mode": "trade", "Method": "SL"}',
+                        ),
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            "LONG", callback_data='{"Mode": "trade", "Method": "LONG"}'
+                        ),
+                        InlineKeyboardButton(
+                            "SHORT",
+                            callback_data='{"Mode": "trade", "Method": "SHORT"}',
+                        ),
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            "เปลี่ยนเหรียญ",
+                            callback_data='{"Mode": "trade", "Method": "Change"}',
+                        ),
+                        InlineKeyboardButton(
+                            "กลับ", callback_data='{"Mode": "trade", "Method": "BACK"}'
+                        ),
+                    ],
+                ]
+            ),
             "setting": InlineKeyboardMarkup(
                 [
                     [
                         InlineKeyboardButton(
-                            f"BOT STATUS : {'on' if self.status_bot else 'off'}",
+                            f"BOT STATUS : {'ON' if self.status_bot else 'OFF'}",
                             callback_data='{"Mode": "setting", "Method": "BOT"}',
                         ),
                     ],
@@ -176,7 +260,7 @@ class Telegram:
                     ],
                     [
                         InlineKeyboardButton(
-                            "SCAN : {status_scan}",
+                            f"SCAN : {'ON' if self.status_scan else 'OFF'}",
                             callback_data='{"Mode": "setting", "Method": "SCAN"}',
                         ),
                         InlineKeyboardButton(
@@ -190,13 +274,13 @@ class Telegram:
                 [
                     [
                         InlineKeyboardButton(
-                            "ความเสี่ยงที่รับได้ : {status_risk}",
+                            f"ความเสี่ยงที่รับได้ : {self.risk['max_risk']}",
                             callback_data='{"Mode": "risk", "Method": "MAX_RISK"}',
                         ),
                     ],
                     [
                         InlineKeyboardButton(
-                            "จะหยุดบอทเมื่อเงินเหลือ : {min_balance}",
+                            f"จะหยุดบอทเมื่อเงินเหลือ : {self.risk['min_balance']}",
                             callback_data='{"Mode": "risk", "Method": "MIN_BALANCE"}',
                         ),
                     ],
@@ -212,32 +296,11 @@ class Telegram:
                     ],
                 ]
             ),
-            "secure": InlineKeyboardMarkup(
-                [
-                    [
-                        InlineKeyboardButton(
-                            "ตั้งค่า API",
-                            callback_data='{"Mode": "secure", "Method": "API"}',
-                        ),
-                    ],
-                    [
-                        InlineKeyboardButton(
-                            "ตั้งค่ารหัสผ่าน",
-                            callback_data='{"Mode": "secure", "Method": "PASS"}',
-                        ),
-                    ],
-                    [
-                        InlineKeyboardButton(
-                            "กลับ", callback_data='{"Mode": "secure", "Method": "BACK"}'
-                        ),
-                    ],
-                ]
-            ),
         }
 
     def setup_bot(self) -> None:
         # Basic Commands
-        self.make_inline_keyboard()
+        self.update_inline_keyboard()
         self.application.add_handler(CommandHandler("start", self.start))
         self.application.add_handler(CommandHandler("help", self.help_command))
         self.application.add_handler(CommandHandler("menu", self.menu_command))
@@ -267,6 +330,26 @@ class Telegram:
         self.application.add_handler(
             CallbackQueryHandler(
                 self.setting_handler, lambda x: (eval(x))["Mode"] == "setting"
+            )
+        )
+
+        self.application.add_handler(
+            ConversationHandler(
+                entry_points=[
+                    CallbackQueryHandler(
+                        self.trade_handler,
+                        lambda x: (eval(x))["Mode"] == "menuex"
+                        and (eval(x))["Method"] == "Trade",
+                    )
+                ],
+                states={
+                    STEP1: [
+                        MessageHandler(
+                            filters.TEXT & ~filters.COMMAND, self.update_trade_symbol
+                        )
+                    ],
+                },
+                fallbacks=[CommandHandler("cancel", self.back_to_menu)],
             )
         )
 
@@ -339,7 +422,21 @@ class Telegram:
 
     async def trade_handler(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """If received CheckBalance Mode do this"""
-        pass
+        query = update.callback_query
+        await query.answer()
+        await query.edit_message_text(text="โปรดใส่ชื่อเหรียญ ")
+        return STEP1
+
+    async def update_trade_symbol(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ):
+        respon = update.message.text
+        self.trade_order["symbol"] = respon
+        update.callback_query.edit_message_text(
+            f"คู่เหรียญ  {self.trade_order['symbol']}\nราคาปัจจุบัน : 26,880",
+            reply_markup=self.dynamic_reply_markup["trade"],
+        )
+        return ConversationHandler.END
 
     async def analyse_handler(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
@@ -362,10 +459,10 @@ class Telegram:
         callback = eval(query.data)
         if callback["Method"] == "BOT":
             self.status_bot = False if self.status_bot else True
-            self.make_inline_keyboard()
+            self.update_inline_keyboard()
             msg = "เหรียญที่ดูอยู่ : {watchlist}\n\nโปรดเลือกการตั้งค่า"
             msgs = await query.edit_message_text(
-                text=msg, reply_markup=self.reply_markup["setting"]
+                text=msg, reply_markup=self.dynamic_reply_markup["setting"]
             )
         self.uniq_msg_id.append(msgs.message_id)
 
@@ -374,12 +471,10 @@ class Telegram:
     ) -> None:
         query = update.callback_query
         await query.answer()
-        callback = eval(query.data)
-        if callback["Method"] == "BACK":
-            msg = "Please choose:"
-            msgs = await query.edit_message_text(
-                text=msg, reply_markup=self.reply_markup["menu"]
-            )
+        msg = "Please choose:"
+        msgs = await query.edit_message_text(
+            text=msg, reply_markup=self.reply_markup["menu"]
+        )
         self.uniq_msg_id.append(msgs.message_id)
 
     async def button_menu(
@@ -396,6 +491,7 @@ class Telegram:
                 text="โปรดเลือกกระเป๋าเงินเฟียต",
                 reply_markup=self.reply_markup["fiat"],
             )
+            # Trade use different callback
         # elif callback["Method"] == "Trade":
         #     msgs = await query.edit_message_text(
         #         text="Please Select Fiat Balance",
@@ -414,7 +510,7 @@ class Telegram:
         elif callback["Method"] == "BotSetting":
             msgs = await query.edit_message_text(
                 text="เหรียญที่ดูอยู่ : {watchlist}\n\nโปรดเลือกการตั้งค่า",
-                reply_markup=self.reply_markup["setting"],
+                reply_markup=self.dynamic_reply_markup["setting"],
             )
         elif callback["Method"] == "apiSetting":
             msgs = await query.edit_message_text(
