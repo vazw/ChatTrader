@@ -29,6 +29,7 @@ pycares==4.3.0
 pycparser==2.21
 pyparsing==3.0.9
 python-dateutil==2.8.2
+python-dotenv==1.0.0
 python-telegram-bot==20.3
 pytz==2023.3
 requests==2.30.0
