@@ -358,6 +358,7 @@ class Telegram:
         await query.answer()
         callback = eval(query.data)
         if callback["Method"] == "BOT":
+            self.status_bot = False if self.status_bot else True
             msg = "เหรียญที่ดูอยู่ : {watchlist}\n\nโปรดเลือกการตั้งค่า"
             msgs = await query.edit_message_text(
                 text=msg, reply_markup=self.reply_markup["setting"]
