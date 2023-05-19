@@ -96,7 +96,6 @@ def config_setting():
         return None
 
 
-
 def max_margin_size(size, free_balance) -> float:
     if size[0] == "$":
         Max_Size = float(size[1 : len(size)])
@@ -124,9 +123,7 @@ class RiskManageTable:
         self.use_sl = self.check_bool(symbolist["UseSL"])
         self.use_tailing = self.check_bool(symbolist["Tail_SL"])
         self.free_balance = float(balance["free"][self.quote])
-        self.max_size = max_margin_size(
-            str(symbolist["maxMargin"]), self.free_balance
-        )
+        self.max_size = max_margin_size(str(symbolist["maxMargin"]), self.free_balance)
         self.risk_size = str(symbolist["Risk"])
         self.tp_percent = symbolist["TP1"]
         self.tp_percent_2 = symbolist["TP2"]
@@ -271,7 +268,8 @@ class AppConfig:
 #         print(e)
 #
 
-def candle(df, symbol, tf) -> tuple[str,str]:
+
+def candle(df, symbol, tf):
     data = df.tail(60)
     titles = f"{symbol}_{tf}"
     try:
@@ -344,9 +342,7 @@ def read_one_open_trade_record(
             and order_history["Position"][id] == direction
             and order_history["TF"][id] == timeframe
         ):
-            position = order_history.loc[
-                id,
-            ]
+            position = order_history.loc[id,]
             break
     return position
 
@@ -401,26 +397,19 @@ def write_tp_record(
             and order_history["Position"][id] == direction
             and order_history["TF"][id] == timeframe
         ):
-
             order_history["ExitTime"][id] = timestamp
             order_history["ClosePrice"][id] = price
             order_history["Amount"][id] = amount
 
             if order_history["Position"][id] == "Long":
                 order_history["PNL$"][id] = round(
-                    (
-                        order_history["ClosePrice"][id]
-                        - order_history["EntryPrice"][id]
-                    )
+                    (order_history["ClosePrice"][id] - order_history["EntryPrice"][id])
                     * order_history["Amount"][id],
                     3,
                 )
             else:
                 order_history["PNL$"][id] = round(
-                    (
-                        order_history["EntryPrice"][id]
-                        - order_history["ClosePrice"][id]
-                    )
+                    (order_history["EntryPrice"][id] - order_history["ClosePrice"][id])
                     * order_history["Amount"][id],
                     3,
                 )
@@ -473,19 +462,13 @@ def edit_trade_record(
 
             if order_history["Position"][id] == "Long":
                 order_history["PNL$"][id] = round(
-                    (
-                        order_history["ClosePrice"][id]
-                        - order_history["EntryPrice"][id]
-                    )
+                    (order_history["ClosePrice"][id] - order_history["EntryPrice"][id])
                     * order_history["Amount"][id],
                     3,
                 )
             else:
                 order_history["PNL$"][id] = round(
-                    (
-                        order_history["EntryPrice"][id]
-                        - order_history["ClosePrice"][id]
-                    )
+                    (order_history["EntryPrice"][id] - order_history["ClosePrice"][id])
                     * order_history["Amount"][id],
                     3,
                 )
@@ -516,19 +499,13 @@ def edit_all_trade_record(
 
             if order_history["Position"][id] == "Long":
                 order_history["PNL$"][id] = round(
-                    (
-                        order_history["ClosePrice"][id]
-                        - order_history["EntryPrice"][id]
-                    )
+                    (order_history["ClosePrice"][id] - order_history["EntryPrice"][id])
                     * order_history["Amount"][id],
                     3,
                 )
             else:
                 order_history["PNL$"][id] = round(
-                    (
-                        order_history["EntryPrice"][id]
-                        - order_history["ClosePrice"][id]
-                    )
+                    (order_history["EntryPrice"][id] - order_history["ClosePrice"][id])
                     * order_history["Amount"][id],
                     3,
                 )
