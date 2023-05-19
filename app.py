@@ -375,6 +375,40 @@ class Telegram:
         )
         self.uniq_msg_id.append(msg.message_id)
 
+    async def clear_command(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        self.msg_id.append(update.message.message_id)
+        delete_list = self.uniq_msg_id + self.msg_id + self.ask_msg_id
+        if len(delete_list) > 0:
+            for id in delete_list:
+                try:
+                    await context.bot.delete_message(
+                        chat_id=self.chat_id, message_id=id
+                    )
+                except Exception:
+                    continue
+
+        self.msg_id.clear()
+        self.uniq_msg_id.clear()
+        msg = await update.message.reply_text("Cleared!!")
+        self.msg_id.append(msg.message_id)
+
+    async def help_command(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+    ) -> None:
+        """Displays info on how to use the bot."""
+        msg = await update.message.reply_text(HELP_MESSAGE)
+        self.msg_id.append(msg.message_id)
+
+    async def unknown(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        msg = await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="Sorry, I didn't understand that command.",
+        )
+        self.msg_id.append(msg.message_id)
+
+    ## Main Menu Nesting
     async def menu_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Sends a message with three inline buttons attached."""
         await context.bot.delete_message(
@@ -385,128 +419,10 @@ class Telegram:
         )
         self.uniq_msg_id.append(msg.message_id)
 
-    async def fiat_handler(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """If received CheckBalance Mode do this"""
-        query = update.callback_query
-
-        await query.answer()
-        callback = eval(query.data)
-        await account_balance.update_balance()
-        await binance_i.disconnect()
-        fiat_balance = account_balance.fiat_balance
-        if callback["Method"] == "ALL":
-            msg = (
-                "BUSD"
-                + f"\nFree   : {round(fiat_balance['BUSD']['free'],2)}$"
-                + f"\nMargin : {round(fiat_balance['BUSD']['used'],2)}$"
-                + f"\nTotal  : {round(fiat_balance['BUSD']['total'],2)}$\nUSDT"
-                + f"\nFree   : {round(fiat_balance['USDT']['free'],2)}$"
-                + f"\nMargin : {round(fiat_balance['USDT']['used'],2)}$"
-                + f"\nTotal  : {round(fiat_balance['USDT']['total'],2)}$"
-            )
-        elif callback["Method"] == "BUSD":
-            msg = (
-                "BUSD"
-                + f"\nFree   : {round(fiat_balance['BUSD']['free'],2)}$"
-                + f"\nMargin : {round(fiat_balance['BUSD']['used'],2)}$"
-                + f"\nTotal  : {round(fiat_balance['BUSD']['total'],2)}$"
-            )
-        elif callback["Method"] == "USDT":
-            msg = (
-                "USDT"
-                + f"\nFree   : {round(fiat_balance['USDT']['free'],2)}$"
-                + f"\nMargin : {round(fiat_balance['USDT']['used'],2)}$"
-                + f"\nTotal  : {round(fiat_balance['USDT']['total'],2)}$"
-            )
-        msgs = await query.edit_message_text(
-            text=msg, reply_markup=self.reply_markup["menu"]
-        )
-        self.uniq_msg_id.append(msgs.message_id)
-
-    async def trade_handler(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """If received CheckBalance Mode do this"""
-        query = update.callback_query
-        await query.answer()
-        msg = await query.edit_message_text(text="โปรดใส่ชื่อเหรียญ ")
-        self.ask_msg_id.append(msg.message_id)
-        return STEP1
-
-    async def update_trade_symbol(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE
-    ):
-        respon = update.message.text
-        self.trade_order["symbol"] = respon.upper()
-        msg = await update.message.reply_text(
-            f"คู่เหรียญ  {self.trade_order['symbol']}\nราคาปัจจุบัน : 26,880",
-            reply_markup=self.dynamic_reply_markup["trade"],
-        )
-        self.uniq_msg_id.append(msg.message_id)
-        if len(self.ask_msg_id) > 0:
-            for id in self.ask_msg_id:
-                try:
-                    await context.bot.delete_message(
-                        chat_id=self.chat_id, message_id=id
-                    )
-                except Exception:
-                    continue
-
-        return ConversationHandler.END
-
-    async def analyse_handler(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE
-    ) -> None:
-        query = update.callback_query
-        await query.answer()
-        callback = eval(query.data)
-        if callback["Method"] == "VXMA":
-            msg = "Please choose:"
-            msgs = await query.edit_message_text(
-                text=msg, reply_markup=self.reply_markup["menu"]
-            )
-        self.uniq_msg_id.append(msgs.message_id)
-
-    async def setting_handler(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE
-    ) -> None:
-        query = update.callback_query
-        await query.answer()
-        callback = eval(query.data)
-        if callback["Method"] == "BOT":
-            self.status_bot = False if self.status_bot else True
-            self.update_inline_keyboard()
-            msg = "เหรียญที่ดูอยู่ : {watchlist}\n\nโปรดเลือกการตั้งค่า"
-            msgs = await query.edit_message_text(
-                text=msg, reply_markup=self.dynamic_reply_markup["setting"]
-            )
-        self.uniq_msg_id.append(msgs.message_id)
-
-    async def back_to_menu(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE
-    ) -> None:
-        query = update.callback_query
-        msg = "Please choose:"
-        try:
-            await query.answer()
-            msgs = await query.edit_message_text(
-                text=msg, reply_markup=self.reply_markup["menu"]
-            )
-        except Exception:
-            for id in self.uniq_msg_id:
-                try:
-                    await context.bot.delete_message(
-                        chat_id=self.chat_id, message_id=id
-                    )
-                except Exception:
-                    continue
-            msgs = await update.message.reply_text(
-                msg, reply_markup=self.reply_markup["menu"]
-            )
-        self.uniq_msg_id.append(msgs.message_id)
-
     async def button_menu(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
     ) -> None:
-        """Parses the CallbackQuery and updates the message text."""
+        """nested respons for each Method on main menu"""
         query = update.callback_query
 
         await query.answer()
@@ -551,6 +467,138 @@ class Telegram:
         # Save message_id to delete at the end.
         self.uniq_msg_id.append(msgs.message_id)
 
+    async def back_to_menu(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        """This Handler can Handle both command and inline button respons"""
+        query = update.callback_query
+        msg = "Please choose:"
+        try:
+            await query.answer()
+            msgs = await query.edit_message_text(
+                text=msg, reply_markup=self.reply_markup["menu"]
+            )
+        except Exception:
+            for id in self.uniq_msg_id:
+                try:
+                    await context.bot.delete_message(
+                        chat_id=self.chat_id, message_id=id
+                    )
+                except Exception:
+                    continue
+            msgs = await update.message.reply_text(
+                msg, reply_markup=self.reply_markup["menu"]
+            )
+        self.uniq_msg_id.append(msgs.message_id)
+
+    ## Fiat Balance menu
+    async def fiat_handler(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+    ):
+        """If received CheckBalance Mode
+        this is nested Method respon for CheckBalance"""
+        query = update.callback_query
+        await query.answer()
+        callback = eval(query.data)
+
+        await account_balance.update_balance()
+        await binance_i.disconnect()
+        fiat_balance = account_balance.fiat_balance
+
+        if callback["Method"] == "ALL":
+            msg = (
+                "BUSD"
+                + f"\nFree   : {round(fiat_balance['BUSD']['free'],2)}$"
+                + f"\nMargin : {round(fiat_balance['BUSD']['used'],2)}$"
+                + f"\nTotal  : {round(fiat_balance['BUSD']['total'],2)}$\nUSDT"
+                + f"\nFree   : {round(fiat_balance['USDT']['free'],2)}$"
+                + f"\nMargin : {round(fiat_balance['USDT']['used'],2)}$"
+                + f"\nTotal  : {round(fiat_balance['USDT']['total'],2)}$"
+            )
+        elif callback["Method"] == "BUSD":
+            msg = (
+                "BUSD"
+                + f"\nFree   : {round(fiat_balance['BUSD']['free'],2)}$"
+                + f"\nMargin : {round(fiat_balance['BUSD']['used'],2)}$"
+                + f"\nTotal  : {round(fiat_balance['BUSD']['total'],2)}$"
+            )
+        elif callback["Method"] == "USDT":
+            msg = (
+                "USDT"
+                + f"\nFree   : {round(fiat_balance['USDT']['free'],2)}$"
+                + f"\nMargin : {round(fiat_balance['USDT']['used'],2)}$"
+                + f"\nTotal  : {round(fiat_balance['USDT']['total'],2)}$"
+            )
+        msgs = await query.edit_message_text(
+            text=msg, reply_markup=self.reply_markup["menu"]
+        )
+        self.uniq_msg_id.append(msgs.message_id)
+
+    ## Trade menu
+    async def trade_handler(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+    ):
+        """Handler to asks for trade symbol"""
+        query = update.callback_query
+        await query.answer()
+        msg = await query.edit_message_text(text="โปรดใส่ชื่อเหรียญ ")
+        self.ask_msg_id.append(msg.message_id)
+        return STEP1
+
+    async def update_trade_symbol(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ):
+        """Handler that received trade symbol"""
+        respon = update.message.text
+        self.msg_id.append(update.message.message_id)
+        self.trade_order["symbol"] = respon.upper()
+        """TODO"""
+        msg = await update.message.reply_text(
+            f"คู่เหรียญ  {self.trade_order['symbol']}\nราคาปัจจุบัน : 26,880",
+            reply_markup=self.dynamic_reply_markup["trade"],
+        )
+        self.uniq_msg_id.append(msg.message_id)
+        if len(self.ask_msg_id) > 0:
+            for id in self.ask_msg_id:
+                try:
+                    await context.bot.delete_message(
+                        chat_id=self.chat_id, message_id=id
+                    )
+                except Exception:
+                    continue
+
+        return ConversationHandler.END
+
+    ## Analyser menu
+    async def analyse_handler(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+    ) -> None:
+        query = update.callback_query
+        await query.answer()
+        callback = eval(query.data)
+        if callback["Method"] == "VXMA":
+            msg = "Please choose:"
+            msgs = await query.edit_message_text(
+                text=msg, reply_markup=self.reply_markup["menu"]
+            )
+        self.uniq_msg_id.append(msgs.message_id)
+
+    ## Settings menu
+    async def setting_handler(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+    ) -> None:
+        query = update.callback_query
+        await query.answer()
+        callback = eval(query.data)
+        if callback["Method"] == "BOT":
+            self.status_bot = False if self.status_bot else True
+            self.update_inline_keyboard()
+            msg = "เหรียญที่ดูอยู่ : {watchlist}\n\nโปรดเลือกการตั้งค่า"
+            msgs = await query.edit_message_text(
+                text=msg, reply_markup=self.dynamic_reply_markup["setting"]
+            )
+        self.uniq_msg_id.append(msgs.message_id)
+
     async def clear_task(self, context: ContextTypes.DEFAULT_TYPE):
         while True:
             if len(self.msg_id) > 0:
@@ -563,39 +611,6 @@ class Telegram:
                     except Exception:
                         continue
             await asyncio.sleep(1)
-
-    async def clear_command(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE
-    ) -> None:
-        self.msg_id.append(update.message.message_id)
-        delete_list = self.uniq_msg_id + self.msg_id + self.ask_msg_id
-        if len(delete_list) > 0:
-            for id in delete_list:
-                try:
-                    await context.bot.delete_message(
-                        chat_id=self.chat_id, message_id=id
-                    )
-                except Exception:
-                    continue
-
-        self.msg_id.clear()
-        self.uniq_msg_id.clear()
-        msg = await update.message.reply_text("Cleared!!")
-        self.msg_id.append(msg.message_id)
-
-    async def help_command(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
-    ) -> None:
-        """Displays info on how to use the bot."""
-        msg = await update.message.reply_text(HELP_MESSAGE)
-        self.msg_id.append(msg.message_id)
-
-    async def unknown(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        msg = await context.bot.send_message(
-            chat_id=update.effective_chat.id,
-            text="Sorry, I didn't understand that command.",
-        )
-        self.msg_id.append(msg.message_id)
 
 
 def main():
