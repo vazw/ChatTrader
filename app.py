@@ -1,4 +1,3 @@
-import asyncio
 import os
 from telegram import (
     KeyboardButton,
@@ -359,7 +358,6 @@ class Telegram:
 
         # Running Background job.
         self.application.job_queue.run_repeating(self.clear_task, interval=2, first=0)
-        self.application.job_queue.run_custom()
 
         self.application.run_polling()
 
@@ -602,17 +600,17 @@ class Telegram:
 
     ## Customs Tasks to run repeatly
     async def clear_task(self, context: ContextTypes.DEFAULT_TYPE):
-        while True:
-            if len(self.msg_id) > 0:
-                for id in self.msg_id:
-                    try:
-                        await context.bot.delete_message(
-                            chat_id=self.chat_id, message_id=id
-                        )
-                        self.msg_id.remove(id)
-                    except Exception:
-                        continue
-            await asyncio.sleep(1)
+        # while True:
+        if len(self.msg_id) > 0:
+            for id in self.msg_id:
+                try:
+                    await context.bot.delete_message(
+                        chat_id=self.chat_id, message_id=id
+                    )
+                    self.msg_id.remove(id)
+                except Exception:
+                    continue
+            # await asyncio.sleep(1)
 
 
 def main():
