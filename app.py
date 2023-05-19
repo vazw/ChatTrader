@@ -433,11 +433,12 @@ class Telegram:
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
     ):
         respon = update.message.text
-        self.trade_order["symbol"] = respon
-        update.message.reply_text(
+        self.trade_order["symbol"] = respon.upper()
+        msg = await update.message.reply_text(
             f"คู่เหรียญ  {self.trade_order['symbol']}\nราคาปัจจุบัน : 26,880",
             reply_markup=self.dynamic_reply_markup["trade"],
         )
+        self.uniq_msg_id.append(msg.message_id)
         if len(self.ask_msg_id) > 0:
             for id in self.ask_msg_id:
                 try:
