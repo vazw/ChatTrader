@@ -482,7 +482,10 @@ class Telegram:
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
     ) -> None:
         query = update.callback_query
-        await query.answer()
+        try:
+            await query.answer()
+        except Exception:
+            pass
         msg = "Please choose:"
         msgs = await query.edit_message_text(
             text=msg, reply_markup=self.reply_markup["menu"]
