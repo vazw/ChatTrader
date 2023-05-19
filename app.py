@@ -358,9 +358,7 @@ class Telegram:
         self.application.add_handler(MessageHandler(filters.COMMAND, self.unknown))
 
         # Running Background job.
-        self.application.job_queue.run_repeating(
-            self.clear_task, interval=2, first=0, chat_id=self.chat_id
-        )
+        self.application.job_queue.run_repeating(self.clear_task, interval=2, first=0)
 
         self.application.run_polling()
 
