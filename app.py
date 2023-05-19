@@ -28,8 +28,9 @@ class Telegram:
     def __init__(self, token: str):
         self.Token = token
         self.application = ApplicationBuilder().token(self.Token).build()
-        self.msg_id = []
         self.chat_id = 0
+        self.msg_id = []
+        self.ask_msg_id = []
         self.uniq_msg_id = []
         self.status_bot = False
         self.status_scan = False
@@ -424,7 +425,8 @@ class Telegram:
         """If received CheckBalance Mode do this"""
         query = update.callback_query
         await query.answer()
-        await query.edit_message_text(text="โปรดใส่ชื่อเหรียญ ")
+        msg = await query.edit_message_text(text="โปรดใส่ชื่อเหรียญ ")
+        self.ask_msg_id.append(msg.message_id)
         return STEP1
 
     async def update_trade_symbol(
@@ -432,10 +434,19 @@ class Telegram:
     ):
         respon = update.message.text
         self.trade_order["symbol"] = respon
-        update.callback_query.edit_message_text(
+        update.message.reply_text(
             f"คู่เหรียญ  {self.trade_order['symbol']}\nราคาปัจจุบัน : 26,880",
             reply_markup=self.dynamic_reply_markup["trade"],
         )
+        if len(self.ask_msg_id) > 0:
+            for id in self.ask_msg_id:
+                try:
+                    await context.bot.delete_message(
+                        chat_id=self.chat_id, message_id=id
+                    )
+                except Exception:
+                    continue
+
         return ConversationHandler.END
 
     async def analyse_handler(
@@ -542,7 +553,7 @@ class Telegram:
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
     ) -> None:
         self.msg_id.append(update.message.message_id)
-        delete_list = self.uniq_msg_id + self.msg_id
+        delete_list = self.uniq_msg_id + self.msg_id + self.ask_msg_id
         if len(delete_list) > 0:
             for id in delete_list:
                 try:
