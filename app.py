@@ -205,19 +205,19 @@ class Telegram:
                     ],
                     [
                         InlineKeyboardButton(
-                            f"จำนวน : {self.trade_order['amt']}",
+                            f"จำนวน : {self.trade_order['amt'] if self.trade_order['amt'] > 0.0 else '--.--'}",
                             callback_data='{"Mode": "trade", "Method": "Amt"}',
                         ),
                     ],
                     [
                         InlineKeyboardButton(
-                            f"TP : {self.trade_order['tp_price']}",
+                            f"TP : {self.trade_order['tp_price'] if self.trade_order['tp_price'] > 0.0 else '--.--'}",
                             callback_data='{"Mode": "trade", "Method": "TP"}',
                         ),
                     ],
                     [
                         InlineKeyboardButton(
-                            f"SL : {self.trade_order['sl_price']}",
+                            f"SL : {self.trade_order['sl_price'] if self.trade_order['sl_price'] > 0.0 else '--.--'}",
                             callback_data='{"Mode": "trade", "Method": "SL"}',
                         ),
                     ],
@@ -359,6 +359,7 @@ class Telegram:
 
         # Running Background job.
         self.application.job_queue.run_repeating(self.clear_task, interval=2, first=0)
+        self.application.job_queue.run_custom()
 
         self.application.run_polling()
 
@@ -599,6 +600,7 @@ class Telegram:
             )
         self.uniq_msg_id.append(msgs.message_id)
 
+    ## Customs Tasks to run repeatly
     async def clear_task(self, context: ContextTypes.DEFAULT_TYPE):
         while True:
             if len(self.msg_id) > 0:
