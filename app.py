@@ -46,7 +46,7 @@ class Telegram:
         self.status_bot = False
         self.status_scan = False
         self.risk = {"max_risk": 50.0, "min_balance": 10.0}
-        self.trade_reply_text = ""
+        self.trade_reply_text = ":"
         self.trade_order = {
             "symbol": "",
             "type": "MARKET",
@@ -615,7 +615,6 @@ class Telegram:
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
     ) -> None:
         """This Handler can Handle both command and inline button respons"""
-        self.msg_id.append(update.message.message_id)
         query = update.callback_query
         msg = "Please choose:"
         if query is not None:
@@ -625,6 +624,7 @@ class Telegram:
             )
             self.uniq_msg_id.append(msgs.message_id)
         else:
+            self.msg_id.append(update.message.message_id)
             for id in self.uniq_msg_id:
                 try:
                     await context.bot.delete_message(
