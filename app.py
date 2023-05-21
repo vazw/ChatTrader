@@ -25,6 +25,9 @@ from src.CCXT_Binance import (
     check_current_position,
     get_bidask,
 )
+import warnings
+
+warnings.filterwarnings("ignore")
 
 ## Constanc represent ConversationHandler step
 ## TRADE HANDLER
@@ -322,41 +325,31 @@ class Telegram:
     def setup_bot(self) -> None:
         # Basic Commands
         self.update_inline_keyboard()
-        self.application.add_handler(CommandHandler("start", self.start))
-        self.application.add_handler(CommandHandler("help", self.help_command))
-        self.application.add_handler(CommandHandler("menu", self.menu_command))
-        self.application.add_handler(CommandHandler("clear", self.clear_command))
 
-        # Handler for Back to menu for all menu
-        self.application.add_handler(
+        handlers = [
+            CommandHandler("start", self.start),
+            CommandHandler("help", self.help_command),
+            CommandHandler("menu", self.menu_command),
+            CommandHandler("clear", self.clear_command),
+            # Handler for Back to menu for all menu
             CallbackQueryHandler(
                 self.back_to_menu,
                 lambda x: (eval(x))["Mode"]
                 in ["fiat", "trade", "analyse", "pnl", "setting", "secure"]
                 and (eval(x))["Method"] == "BACK",
-            )
-        )
-
-        # Handlers set for buttons workarounds.
-        self.application.add_handler(
+            ),
+            # Handlers set for buttons workarounds.
             CallbackQueryHandler(
                 self.button_menu, lambda x: (eval(x))["Mode"] == "menu"
-            )
-        )
-        self.application.add_handler(
+            ),
             CallbackQueryHandler(
                 self.fiat_handler, lambda x: (eval(x))["Mode"] == "fiat"
-            )
-        )
-        self.application.add_handler(
+            ),
             CallbackQueryHandler(
                 self.setting_handler, lambda x: (eval(x))["Mode"] == "setting"
-            )
-        )
-
-        # trade_handler
-        # symbol
-        self.application.add_handler(
+            ),
+            # trade_handler
+            # symbol
             ConversationHandler(
                 entry_points=[
                     CallbackQueryHandler(
@@ -373,10 +366,8 @@ class Telegram:
                     ],
                 },
                 fallbacks=[CommandHandler("cancel", self.back_to_menu)],
-            )
-        )
-        # Edit symbol
-        self.application.add_handler(
+            ),
+            # Edit symbol
             ConversationHandler(
                 entry_points=[
                     CallbackQueryHandler(
@@ -393,10 +384,8 @@ class Telegram:
                     ],
                 },
                 fallbacks=[CommandHandler("cancel", self.back_to_trade_menu)],
-            )
-        )
-        # amount
-        self.application.add_handler(
+            ),
+            # amount
             ConversationHandler(
                 entry_points=[
                     CallbackQueryHandler(
@@ -413,10 +402,8 @@ class Telegram:
                     ],
                 },
                 fallbacks=[CommandHandler("cancel", self.back_to_trade_menu)],
-            )
-        )
-        # TP price
-        self.application.add_handler(
+            ),
+            # TP price
             ConversationHandler(
                 entry_points=[
                     CallbackQueryHandler(
@@ -433,10 +420,8 @@ class Telegram:
                     ],
                 },
                 fallbacks=[CommandHandler("cancel", self.back_to_trade_menu)],
-            )
-        )
-        # SL price
-        self.application.add_handler(
+            ),
+            # SL price
             ConversationHandler(
                 entry_points=[
                     CallbackQueryHandler(
@@ -453,41 +438,30 @@ class Telegram:
                     ],
                 },
                 fallbacks=[CommandHandler("cancel", self.back_to_trade_menu)],
-            )
-        )
-        self.application.add_handler(
+            ),
             CallbackQueryHandler(
                 self.trade_order_type,
                 lambda x: (eval(x))["Mode"] == "trade"
                 and (eval(x))["Method"] == "Type",
-            )
-        )
-        self.application.add_handler(
+            ),
             CallbackQueryHandler(
                 self.trade_order_type_handler,
                 lambda x: (eval(x))["Mode"] == "order_type",
-            )
-        )
-        # Long Buttons
-        # self.application.add_handler(
-        #     CallbackQueryHandler(
-        #         self.trade_short_button,
-        #         lambda x: (eval(x))["Mode"] == "trade"
-        #         and (eval(x))["Method"] == "LONG",
-        #     )
-        # )
-        # Short Buttons
-        # self.application.add_handler(
-        #     CallbackQueryHandler(
-        #         self.trade_short_button,
-        #         lambda x: (eval(x))["Mode"] == "trade"
-        #         and (eval(x))["Method"] == "SHORT",
-        #     )
-        # )
-
-        # secure_handler
-        # API
-        self.application.add_handler(
+            ),
+            # Long Buttons
+            # CallbackQueryHandler(
+            #     self.trade_short_button,
+            #     lambda x: (eval(x))["Mode"] == "trade"
+            #     and (eval(x))["Method"] == "LONG",
+            # ),
+            # # Short Buttons
+            # CallbackQueryHandler(
+            #     self.trade_short_button,
+            #     lambda x: (eval(x))["Mode"] == "trade"
+            #     and (eval(x))["Method"] == "SHORT",
+            # ),
+            # secure_handler
+            # API
             ConversationHandler(
                 entry_points=[
                     CallbackQueryHandler(
@@ -509,14 +483,14 @@ class Telegram:
                     ],
                 },
                 fallbacks=[CommandHandler("cancel", self.back_to_menu)],
-            )
-        )
-        # PASS
-        # TODO
+            ),
+            # TODO
+            # Handler for unknown commands
+            MessageHandler(filters.COMMAND, self.unknown),
+        ]
 
-        # Handler for unknown commands
-        self.application.add_handler(MessageHandler(filters.COMMAND, self.unknown))
-
+        # Add all Handlers.
+        self.application.add_handlers(handlers)
         # Running Background job.
         self.application.job_queue.run_once(self.clear_task, when=1)
 
