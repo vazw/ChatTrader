@@ -43,6 +43,11 @@ class Telegram:
             "tp_price": 0.0,
             "sl_price": 0.0,
         }
+        self.sec_info = {
+            "API_KEY": "",
+            "API_SEC": "",
+            "PASS": "",
+        }
         self.dynamic_reply_markup = {}
         self.reply_markup = {
             "menu": InlineKeyboardMarkup(
@@ -334,6 +339,7 @@ class Telegram:
             )
         )
 
+        # trade_handler
         self.application.add_handler(
             ConversationHandler(
                 entry_points=[
@@ -353,6 +359,35 @@ class Telegram:
                 fallbacks=[CommandHandler("cancel", self.back_to_menu)],
             )
         )
+
+        # secure_handler
+        # API
+        self.application.add_handler(
+            ConversationHandler(
+                entry_points=[
+                    CallbackQueryHandler(
+                        self.set_api_handler,
+                        lambda x: (eval(x))["Mode"] == "secure"
+                        and (eval(x))["Method"] == "API",
+                    )
+                ],
+                states={
+                    STEP1: [
+                        MessageHandler(
+                            filters.TEXT & ~filters.COMMAND, self.get_api_key
+                        )
+                    ],
+                    STEP2: [
+                        MessageHandler(
+                            filters.TEXT & ~filters.COMMAND, self.get_api_sec
+                        )
+                    ],
+                },
+                fallbacks=[CommandHandler("cancel", self.back_to_menu)],
+            )
+        )
+        # PASS
+        # TODO
 
         # Handler for unknown commands
         self.application.add_handler(MessageHandler(filters.COMMAND, self.unknown))
@@ -566,7 +601,6 @@ class Telegram:
                     )
                 except Exception:
                     continue
-
         return ConversationHandler.END
 
     ## Analyser menu
@@ -598,6 +632,58 @@ class Telegram:
                 text=msg, reply_markup=self.dynamic_reply_markup["setting"]
             )
         self.uniq_msg_id.append(msgs.message_id)
+
+    ## Secure menu
+    ## API
+    async def set_api_handler(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+    ):
+        """Handler to asks for API setting"""
+        query = update.callback_query
+        await query.answer()
+        msg = await query.edit_message_text(text="โปรดกรอก API KEY จาก Binance")
+        self.ask_msg_id.append(msg.message_id)
+        return STEP1
+
+    async def get_api_key(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Handler that received API KEY STEP1"""
+        respon = update.message.text
+        self.msg_id.append(update.message.message_id)
+        self.sec_info["API_KEY"] = str(respon)
+        if len(self.ask_msg_id) > 0:
+            for id in self.ask_msg_id:
+                try:
+                    await context.bot.delete_message(
+                        chat_id=self.chat_id, message_id=id
+                    )
+                except Exception:
+                    continue
+        msg = await update.message.reply_text(
+            f"API KEY Binance ของท่าคือ {self.sec_info['API_KEY']}\nโปรดกรอก API SECRET ต่อไป",
+        )
+        self.ask_msg_id.append(msg.message_id)
+        return STEP2
+
+    async def get_api_sec(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Handler that received API SECRET STEP2"""
+        respon = update.message.text
+        self.msg_id.append(update.message.message_id)
+        self.sec_info["API_SEC"] = str(respon)
+        """TODO ACTIVE API AND FETCH BALANCE BEFORE SAVED"""
+        msg = await update.message.reply_text(
+            f"ตั้งค่าสำหรับ API {self.sec_info['API_KEY'][:10]} สำเร็จ",
+            reply_markup=self.reply_markup["secure"],
+        )
+        self.uniq_msg_id.append(msg.message_id)
+        if len(self.ask_msg_id) > 0:
+            for id in self.ask_msg_id:
+                try:
+                    await context.bot.delete_message(
+                        chat_id=self.chat_id, message_id=id
+                    )
+                except Exception:
+                    continue
+        return ConversationHandler.END
 
     ## Customs Tasks to run repeatly
     async def clear_task(self, context: ContextTypes.DEFAULT_TYPE):
