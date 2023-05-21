@@ -615,6 +615,7 @@ class Telegram:
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
     ) -> None:
         """This Handler can Handle both command and inline button respons"""
+        self.msg_id.append(update.message.message_id)
         query = update.callback_query
         msg = "Please choose:"
         if query is not None:
@@ -688,6 +689,7 @@ class Telegram:
         """
         CommandHandler for get back to trade menu
         """
+        self.msg_id.append(update.message.message_id)
         for id in self.ask_msg_id:
             try:
                 await context.bot.delete_message(chat_id=self.chat_id, message_id=id)
