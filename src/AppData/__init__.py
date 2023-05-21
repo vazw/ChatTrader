@@ -24,3 +24,13 @@ Welcome to the AssistancBot\n\
 Use /help for help menu\n\
 Use /clear to clear message\n\
 after Started Use /menu for App menu's inline menu to perfrom task"
+
+POSITION_COLLUMN = [
+    "symbol",
+    "entryPrice",
+    "positionSide",
+    "unrealizedProfit",
+    "positionAmt",
+    "initialMargin",
+    "leverage",
+]

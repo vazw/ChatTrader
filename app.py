@@ -1,5 +1,6 @@
 import asyncio
 import os
+import pandas as pd
 from telegram import (
     KeyboardButton,
     InlineKeyboardButton,
@@ -17,8 +18,13 @@ from telegram.ext import (
     filters,
 )
 
-from src.AppData import HELP_MESSAGE, WELCOME_MESSAGE
-from src.CCXT_Binance import account_balance, binance_i, get_bidask
+from src.AppData import HELP_MESSAGE, WELCOME_MESSAGE, POSITION_COLLUMN
+from src.CCXT_Binance import (
+    account_balance,
+    binance_i,
+    check_current_position,
+    get_bidask,
+)
 
 ## Constanc represent ConversationHandler step
 STEP1, STEP2 = range(2)
@@ -583,7 +589,7 @@ class Telegram:
     async def update_trade_symbol(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
     ):
-        """Handler that received trade symbol"""
+        """Handler that received trade symbol (STEP1)"""
         respon = update.message.text
         self.msg_id.append(update.message.message_id)
         self.trade_order["symbol"] = respon.upper()
@@ -592,9 +598,36 @@ class Telegram:
         self.trade_order["price"] = await get_bidask(
             self.trade_order["symbol"], exchange, "bid"
         )
+        await account_balance.update_balance()
+        balance = account_balance.balance
+        positions = balance["info"]["positions"]
+        status = pd.DataFrame(
+            [position for position in positions if float(position["positionAmt"]) != 0],
+            columns=POSITION_COLLUMN,
+        )
+        currnet_position = await check_current_position(
+            self.trade_order["symbol"], status
+        )
+        await binance_i.disconnect()
         self.update_inline_keyboard()
+        text = f"คู่เหรียญ  {self.trade_order['symbol']}\nราคาปัจจุบัน : {self.trade_order['price']}"
+        if currnet_position["long"]["position"]:
+            text = (
+                text
+                + f"\n\n ท่านมี Position Long ของ เหรียญนี้อยู่ในมือ\n\
+            เป็นจำนวน  {currnet_position['long']['amount']}\n\
+            กำไร/ขาทุน {currnet_position['long']['pnl']}"
+            )
+        elif currnet_position["short"]["position"]:
+            text = (
+                text
+                + f"\n\n ท่านมี Position Short ของ เหรียญนี้อยู่ในมือ\n\
+            เป็นจำนวน  {currnet_position['short']['amount']}\n\
+            กำไร/ขาทุน {currnet_position['short']['pnl']}"
+            )
+
         msg = await update.message.reply_text(
-            f"คู่เหรียญ  {self.trade_order['symbol']}\nราคาปัจจุบัน : {self.trade_order['price']}",
+            text,
             reply_markup=self.dynamic_reply_markup["trade"],
         )
         self.uniq_msg_id.append(msg.message_id)
@@ -636,7 +669,7 @@ class Telegram:
             msgs = await query.edit_message_text(
                 text=msg, reply_markup=self.dynamic_reply_markup["setting"]
             )
-        self.uniq_msg_id.append(msgs.message_id)
+            self.uniq_msg_id.append(msgs.message_id)
 
     ## Secure menu
     ## API

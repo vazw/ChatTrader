@@ -37,16 +37,12 @@ class AccountBalance:
         try:
             balance = await exchange.fetch_balance()
             self.balance = balance
-            self.fiat_balance = {
-                x: y for x, y in balance.items() if "USD" in x[-4:]
-            }
+            self.fiat_balance = {x: y for x, y in balance.items() if "USD" in x[-4:]}
         except Exception as e:
             lastUpdate.status = f"{e}"
             balance = await exchange.fetch_balance()
             self.balance = balance
-            self.fiat_balance = {
-                x: y for x, y in balance.items() if "USD" in x[-4:]
-            }
+            self.fiat_balance = {x: y for x, y in balance.items() if "USD" in x[-4:]}
 
 
 account_balance = AccountBalance()
@@ -129,9 +125,7 @@ binance_i = Binance()
 async def get_bidask(symbol, exchange, bidask="ask"):
     try:
         info = await exchange.fetch_bids_asks([symbol])
-        return float(
-            next(y[bidask] for x, y in info.items())  # pyright: ignore
-        )
+        return float(next(y[bidask] for x, y in info.items()))  # pyright: ignore
     except Exception:
         return await get_bidask(symbol, exchange, bidask)
 
@@ -210,9 +204,9 @@ async def fetchbars(symbol, timeframe) -> None:
             timer.get_time = False
 
         closed_time = int(df["timestamp"][len(df.index) - 1] / 1000)
-        df["timestamp"] = pd.to_datetime(
-            df["timestamp"], unit="ms", utc=True
-        ).map(lambda x: x.tz_convert("Asia/Bangkok"))
+        df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms", utc=True).map(
+            lambda x: x.tz_convert("Asia/Bangkok")
+        )
         df = df.set_index("timestamp")
         candle_ohlc.update(
             {
@@ -235,9 +229,9 @@ async def fetchbars(symbol, timeframe) -> None:
             timer.get_time = False
 
         closed_time = int(df["timestamp"][len(df.index) - 1] / 1000)
-        df["timestamp"] = pd.to_datetime(
-            df["timestamp"], unit="ms", utc=True
-        ).map(lambda x: x.tz_convert("Asia/Bangkok"))
+        df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms", utc=True).map(
+            lambda x: x.tz_convert("Asia/Bangkok")
+        )
         df = df.set_index("timestamp")
         df = pd.concat(
             [candle_ohlc[f"{symbol}_{timeframe}"]["candle"], df],
@@ -886,9 +880,7 @@ async def OpenShort(
 
 
 # CloseLong=Sell
-async def CloseLong(
-    df, balance, symbol, amt, pnl, Lside, tf, closeall: bool = False
-):
+async def CloseLong(df, balance, symbol, amt, pnl, Lside, tf, closeall: bool = False):
     exchange = await binance_i.get_exchange()
     await binance_i.connect_loads()
     try:
@@ -948,9 +940,7 @@ async def CloseLong(
 
 
 # CloseShort=Buy
-async def CloseShort(
-    df, balance, symbol, amt, pnl, Sside, tf, closeall: bool = False
-):
+async def CloseShort(df, balance, symbol, amt, pnl, Sside, tf, closeall: bool = False):
     exchange = await binance_i.get_exchange()
     await binance_i.connect_loads()
     try:
@@ -1024,7 +1014,10 @@ async def get_currentmode():
 
 
 async def check_current_position(symbol: str, status: pd.DataFrame) -> dict:
-    posim = symbol[:-5].replace("/", "")
+    if "/" in symbol:
+        posim = symbol[:-5].replace("/", "")
+    else:
+        posim = symbol
     if status is None:
         return
     status = status[status["symbol"] == posim]
@@ -1039,32 +1032,28 @@ async def check_current_position(symbol: str, status: pd.DataFrame) -> dict:
             (
                 status["positionAmt"][i]
                 for i in status.index
-                if status["symbol"][i] == posim
-                and status["positionSide"][i] == "LONG"
+                if status["symbol"][i] == posim and status["positionSide"][i] == "LONG"
             ).__next__()
         )
         amt_short = float(
             (
                 status["positionAmt"][i]
                 for i in status.index
-                if status["symbol"][i] == posim
-                and status["positionSide"][i] == "SHORT"
+                if status["symbol"][i] == posim and status["positionSide"][i] == "SHORT"
             ).__next__()
         )
         upnl_long = float(
             (
                 status["unrealizedProfit"][i]
                 for i in status.index
-                if status["symbol"][i] == posim
-                and status["positionSide"][i] == "LONG"
+                if status["symbol"][i] == posim and status["positionSide"][i] == "LONG"
             ).__next__()
         )
         upnl_short = float(
             (
                 status["unrealizedProfit"][i]
                 for i in status.index
-                if status["symbol"][i] == posim
-                and status["positionSide"][i] == "SHORT"
+                if status["symbol"][i] == posim and status["positionSide"][i] == "SHORT"
             ).__next__()
         )
     else:
@@ -1246,7 +1235,6 @@ async def feed(
     status,
     mm_permission,
 ):
-
     last = len(df.index) - 1
 
     current_position, closed = await asyncio.gather(  # pyright: ignore
@@ -1371,7 +1359,6 @@ async def feed_hedge(
     status: pd.DataFrame,
     mm_permission,
 ):
-
     last = len(df.index) - 1
 
     current_position, closed = await asyncio.gather(  # pyright: ignore
