@@ -355,12 +355,7 @@ class Telegram:
                         self.get_symbol_handler,
                         lambda x: (eval(x))["Mode"] == "menuex"
                         and (eval(x))["Method"] == "Trade",
-                    ),
-                    CallbackQueryHandler(
-                        self.get_symbol_handler,
-                        lambda x: (eval(x))["Mode"] == "trade"
-                        and (eval(x))["Method"] == "Change",
-                    ),
+                    )
                 ],
                 states={
                     STEP1: [
@@ -370,6 +365,26 @@ class Telegram:
                     ],
                 },
                 fallbacks=[CommandHandler("cancel", self.back_to_menu)],
+            )
+        )
+        # Edit symbol
+        self.application.add_handler(
+            ConversationHandler(
+                entry_points=[
+                    CallbackQueryHandler(
+                        self.get_symbol_handler,
+                        lambda x: (eval(x))["Mode"] == "trade"
+                        and (eval(x))["Method"] == "Change",
+                    )
+                ],
+                states={
+                    STEP1: [
+                        MessageHandler(
+                            filters.TEXT & ~filters.COMMAND, self.update_trade_symbol
+                        )
+                    ],
+                },
+                fallbacks=[CommandHandler("cancel", self.back_to_trade_menu)],
             )
         )
         # amount
