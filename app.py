@@ -433,21 +433,21 @@ class Telegram:
             )
         )
         # Long Buttons
-        self.application.add_handler(
-            CallbackQueryHandler(
-                self.trade_short_button,
-                lambda x: (eval(x))["Mode"] == "trade"
-                and (eval(x))["Method"] == "LONG",
-            )
-        )
+        # self.application.add_handler(
+        #     CallbackQueryHandler(
+        #         self.trade_short_button,
+        #         lambda x: (eval(x))["Mode"] == "trade"
+        #         and (eval(x))["Method"] == "LONG",
+        #     )
+        # )
         # Short Buttons
-        self.application.add_handler(
-            CallbackQueryHandler(
-                self.trade_short_button,
-                lambda x: (eval(x))["Mode"] == "trade"
-                and (eval(x))["Method"] == "SHORT",
-            )
-        )
+        # self.application.add_handler(
+        #     CallbackQueryHandler(
+        #         self.trade_short_button,
+        #         lambda x: (eval(x))["Mode"] == "trade"
+        #         and (eval(x))["Method"] == "SHORT",
+        #     )
+        # )
 
         # secure_handler
         # API
