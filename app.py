@@ -41,6 +41,7 @@ class Telegram:
         self.status_bot = False
         self.status_scan = False
         self.risk = {"max_risk": 50.0, "min_balance": 10.0}
+        self.trade_reply_text = ""
         self.trade_order = {
             "symbol": "",
             "type": "MARKET",
@@ -346,14 +347,20 @@ class Telegram:
         )
 
         # trade_handler
+        # symbol
         self.application.add_handler(
             ConversationHandler(
                 entry_points=[
                     CallbackQueryHandler(
-                        self.trade_handler,
+                        self.get_symbol_handler,
                         lambda x: (eval(x))["Mode"] == "menuex"
                         and (eval(x))["Method"] == "Trade",
-                    )
+                    ),
+                    CallbackQueryHandler(
+                        self.get_symbol_handler,
+                        lambda x: (eval(x))["Mode"] == "trade"
+                        and (eval(x))["Method"] == "Change",
+                    ),
                 ],
                 states={
                     STEP1: [
@@ -363,6 +370,82 @@ class Telegram:
                     ],
                 },
                 fallbacks=[CommandHandler("cancel", self.back_to_menu)],
+            )
+        )
+        # amount
+        self.application.add_handler(
+            ConversationHandler(
+                entry_points=[
+                    CallbackQueryHandler(
+                        self.get_amount_handler,
+                        lambda x: (eval(x))["Mode"] == "trade"
+                        and (eval(x))["Method"] == "Amt",
+                    )
+                ],
+                states={
+                    STEP1: [
+                        MessageHandler(
+                            filters.TEXT & ~filters.COMMAND, self.update_trade_amt
+                        )
+                    ],
+                },
+                fallbacks=[CommandHandler("cancel", self.back_to_trade_menu)],
+            )
+        )
+        # TP price
+        self.application.add_handler(
+            ConversationHandler(
+                entry_points=[
+                    CallbackQueryHandler(
+                        self.get_tp_price_handler,
+                        lambda x: (eval(x))["Mode"] == "trade"
+                        and (eval(x))["Method"] == "TP",
+                    )
+                ],
+                states={
+                    STEP1: [
+                        MessageHandler(
+                            filters.TEXT & ~filters.COMMAND, self.update_trade_tp_price
+                        )
+                    ],
+                },
+                fallbacks=[CommandHandler("cancel", self.back_to_trade_menu)],
+            )
+        )
+        # SL price
+        self.application.add_handler(
+            ConversationHandler(
+                entry_points=[
+                    CallbackQueryHandler(
+                        self.get_sl_price_handler,
+                        lambda x: (eval(x))["Mode"] == "trade"
+                        and (eval(x))["Method"] == "SL",
+                    )
+                ],
+                states={
+                    STEP1: [
+                        MessageHandler(
+                            filters.TEXT & ~filters.COMMAND, self.update_trade_sl_price
+                        )
+                    ],
+                },
+                fallbacks=[CommandHandler("cancel", self.back_to_trade_menu)],
+            )
+        )
+        # Long Buttons
+        self.application.add_handler(
+            CallbackQueryHandler(
+                self.trade_short_button,
+                lambda x: (eval(x))["Mode"] == "trade"
+                and (eval(x))["Method"] == "LONG",
+            )
+        )
+        # Short Buttons
+        self.application.add_handler(
+            CallbackQueryHandler(
+                self.trade_short_button,
+                lambda x: (eval(x))["Mode"] == "trade"
+                and (eval(x))["Method"] == "SHORT",
             )
         )
 
@@ -576,13 +659,31 @@ class Telegram:
         self.uniq_msg_id.append(msgs.message_id)
 
     ## Trade menu
-    async def trade_handler(
+    async def back_to_trade_menu(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ):
+        """
+        CommandHandler for get back to trade menu
+        """
+        for id in self.ask_msg_id:
+            try:
+                await context.bot.delete_message(chat_id=self.chat_id, message_id=id)
+            except Exception:
+                continue
+        msgs = await update.message.reply_text(
+            self.trade_reply_text, reply_markup=self.dynamic_reply_markup["trade"]
+        )
+        self.uniq_msg_id.append(msgs.message_id)
+
+    async def get_symbol_handler(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
     ):
         """Handler to asks for trade symbol"""
         query = update.callback_query
         await query.answer()
-        msg = await query.edit_message_text(text="โปรดใส่ชื่อเหรียญ ")
+        msg = await query.edit_message_text(
+            text="โปรดใส่ชื่อเหรียญ \n\n กด /cancel เพื่อยกเลิก"
+        )
         self.ask_msg_id.append(msg.message_id)
         return STEP1
 
@@ -615,19 +716,127 @@ class Telegram:
             text = (
                 text
                 + f"\n\n ท่านมี Position Long ของ เหรียญนี้อยู่ในมือ\n\
-            เป็นจำนวน  {currnet_position['long']['amount']}\n\
-            กำไร/ขาทุน {currnet_position['long']['pnl']}"
+            เป็นจำนวน  {round(currnet_position['long']['amount'], 3)} เหรียญ\n\
+            กำไร/ขาดทุน {round(currnet_position['long']['pnl'], 3)}$"
             )
         elif currnet_position["short"]["position"]:
             text = (
                 text
                 + f"\n\n ท่านมี Position Short ของ เหรียญนี้อยู่ในมือ\n\
-            เป็นจำนวน  {currnet_position['short']['amount']}\n\
-            กำไร/ขาทุน {currnet_position['short']['pnl']}"
+            เป็นจำนวน  {round(currnet_position['short']['amount'], 3)} เหรียญ\n\
+            กำไร/ขาดทุน {round(currnet_position['short']['pnl'], 3)}$"
             )
+        self.trade_reply_text = text
 
         msg = await update.message.reply_text(
             text,
+            reply_markup=self.dynamic_reply_markup["trade"],
+        )
+        self.uniq_msg_id.append(msg.message_id)
+        if len(self.ask_msg_id) > 0:
+            for id in self.ask_msg_id:
+                try:
+                    await context.bot.delete_message(
+                        chat_id=self.chat_id, message_id=id
+                    )
+                except Exception:
+                    continue
+        return ConversationHandler.END
+
+    async def get_amount_handler(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+    ):
+        """Handler to asks for trade amount"""
+        query = update.callback_query
+        await query.answer()
+        msg = await query.edit_message_text(
+            text="โปรดใส่จำนวนเหรียญ \n\n กด /cancel เพื่อยกเลิก"
+        )
+        self.ask_msg_id.append(msg.message_id)
+        return STEP1
+
+    async def update_trade_amt(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ):
+        """Handler that received trade amount (STEP1)"""
+        respon = update.message.text
+        self.msg_id.append(update.message.message_id)
+        self.trade_order["amt"] = float(respon)
+        self.update_inline_keyboard()
+
+        msg = await update.message.reply_text(
+            self.trade_reply_text,
+            reply_markup=self.dynamic_reply_markup["trade"],
+        )
+        self.uniq_msg_id.append(msg.message_id)
+        if len(self.ask_msg_id) > 0:
+            for id in self.ask_msg_id:
+                try:
+                    await context.bot.delete_message(
+                        chat_id=self.chat_id, message_id=id
+                    )
+                except Exception:
+                    continue
+        return ConversationHandler.END
+
+    async def get_tp_price_handler(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+    ):
+        """Handler to asks for trade TP Price"""
+        query = update.callback_query
+        await query.answer()
+        msg = await query.edit_message_text(
+            text="โปรดใส่ราคา Take Profit \n\n กด /cancel เพื่อยกเลิก"
+        )
+        self.ask_msg_id.append(msg.message_id)
+        return STEP1
+
+    async def update_trade_tp_price(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ):
+        """Handler that received trade TP Price (STEP1)"""
+        respon = update.message.text
+        self.msg_id.append(update.message.message_id)
+        self.trade_order["tp_price"] = float(respon)
+        self.update_inline_keyboard()
+        msg = await update.message.reply_text(
+            self.trade_reply_text,
+            reply_markup=self.dynamic_reply_markup["trade"],
+        )
+        self.uniq_msg_id.append(msg.message_id)
+        if len(self.ask_msg_id) > 0:
+            for id in self.ask_msg_id:
+                try:
+                    await context.bot.delete_message(
+                        chat_id=self.chat_id, message_id=id
+                    )
+                except Exception:
+                    continue
+        return ConversationHandler.END
+
+    async def get_sl_price_handler(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+    ):
+        """Handler to asks for trade SL Price"""
+        query = update.callback_query
+        await query.answer()
+        msg = await query.edit_message_text(
+            text="โปรดใส่ราคา Stop-Loss \n\n กด /cancel เพื่อยกเลิก"
+        )
+        self.ask_msg_id.append(msg.message_id)
+        return STEP1
+
+    async def update_trade_sl_price(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ):
+        """Handler that received trade SL Price (STEP1)"""
+        respon = update.message.text
+        self.msg_id.append(update.message.message_id)
+        self.trade_order["sl_price"] = float(respon)
+        self.update_inline_keyboard()
+
+        msg = await update.message.reply_text(
+            self.trade_reply_text,
             reply_markup=self.dynamic_reply_markup["trade"],
         )
         self.uniq_msg_id.append(msg.message_id)
