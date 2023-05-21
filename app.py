@@ -18,7 +18,7 @@ from telegram.ext import (
 )
 
 from src.AppData import HELP_MESSAGE, WELCOME_MESSAGE
-from src.CCXT_Binance import account_balance, binance_i
+from src.CCXT_Binance import account_balance, binance_i, get_bidask
 
 ## Constanc represent ConversationHandler step
 STEP1, STEP2 = range(2)
@@ -588,8 +588,13 @@ class Telegram:
         self.msg_id.append(update.message.message_id)
         self.trade_order["symbol"] = respon.upper()
         """TODO"""
+        exchange = await binance_i.get_exchange()
+        self.trade_order["price"] = await get_bidask(
+            self.trade_order["symbol"], exchange, "bid"
+        )
+        self.update_inline_keyboard()
         msg = await update.message.reply_text(
-            f"คู่เหรียญ  {self.trade_order['symbol']}\nราคาปัจจุบัน : 26,880",
+            f"คู่เหรียญ  {self.trade_order['symbol']}\nราคาปัจจุบัน : {self.trade_order['price']}",
             reply_markup=self.dynamic_reply_markup["trade"],
         )
         self.uniq_msg_id.append(msg.message_id)
