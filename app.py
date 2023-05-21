@@ -597,12 +597,12 @@ class Telegram:
         """This Handler can Handle both command and inline button respons"""
         query = update.callback_query
         msg = "Please choose:"
-        try:
+        if query is not None:
             await query.answer()
             msgs = await query.edit_message_text(
                 text=msg, reply_markup=self.reply_markup["menu"]
             )
-        except Exception:
+        else:
             for id in self.uniq_msg_id:
                 try:
                     await context.bot.delete_message(
