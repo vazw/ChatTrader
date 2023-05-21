@@ -66,31 +66,31 @@ class Telegram:
                 [
                     [
                         InlineKeyboardButton(
-                            "เช็คกระเป๋าเงิน",
+                            "💰เช็คกระเป๋าเงิน",
                             callback_data='{"Mode": "menu", "Method": "CheckBalance"}',
                         ),
                         InlineKeyboardButton(
-                            "เทรดมือ",
+                            "💹เทรดมือ",
                             callback_data='{"Mode": "menuex", "Method": "Trade"}',
                         ),
                     ],
                     [
                         InlineKeyboardButton(
-                            "วิเคราะห์กราฟ",
+                            "📈📉วิเคราะห์กราฟ",
                             callback_data='{"Mode": "menu", "Method": "Analyser"}',
                         ),
                         InlineKeyboardButton(
-                            "กำไร/ขาดทุน",
+                            "📊กำไร/ขาดทุน",
                             callback_data='{"Mode": "menu", "Method": "PositionData"}',
                         ),
                     ],
                     [
                         InlineKeyboardButton(
-                            "ตั้งค่าบอท",
+                            "⚙️ตั้งค่าบอท",
                             callback_data='{"Mode": "menu", "Method": "BotSetting"}',
                         ),
                         InlineKeyboardButton(
-                            "ตั้งค่า API",
+                            "🤖ตั้งค่า API",
                             callback_data='{"Mode": "menu", "Method": "apiSetting"}',
                         ),
                     ],
@@ -111,7 +111,7 @@ class Telegram:
                             "ทั้งหมด", callback_data='{"Mode": "fiat", "Method": "ALL"}'
                         ),
                         InlineKeyboardButton(
-                            "กลับ", callback_data='{"Mode": "fiat", "Method": "BACK"}'
+                            "❌ กลับ", callback_data='{"Mode": "fiat", "Method": "BACK"}'
                         ),
                     ],
                 ]
@@ -120,19 +120,20 @@ class Telegram:
                 [
                     [
                         InlineKeyboardButton(
-                            "ตั้งค่า API",
+                            "⚙️ตั้งค่า API",
                             callback_data='{"Mode": "secure", "Method": "API"}',
                         ),
                     ],
                     [
                         InlineKeyboardButton(
-                            "ตั้งค่ารหัสผ่าน",
+                            "⚙️ตั้งค่ารหัสผ่าน",
                             callback_data='{"Mode": "secure", "Method": "PASS"}',
                         ),
                     ],
                     [
                         InlineKeyboardButton(
-                            "กลับ", callback_data='{"Mode": "secure", "Method": "BACK"}'
+                            "❌ กลับ",
+                            callback_data='{"Mode": "secure", "Method": "BACK"}',
                         ),
                     ],
                 ]
@@ -147,7 +148,7 @@ class Telegram:
                     ],
                     [
                         InlineKeyboardButton(
-                            "กลับ",
+                            "❌ กลับ",
                             callback_data='{"Mode": "analyse", "Method": "BACK"}',
                         )
                     ],
@@ -163,7 +164,7 @@ class Telegram:
                     ],
                     [
                         InlineKeyboardButton(
-                            "กลับ",
+                            "❌ กลับ",
                             callback_data='{"Mode": "order_type", "Method": "BACK"}',
                         )
                     ],
@@ -173,7 +174,7 @@ class Telegram:
                 [
                     [
                         InlineKeyboardButton(
-                            "ดูรายละเอียด",
+                            "ℹ️ดูรายละเอียด",
                             callback_data='{"Mode": "pnl", "Method": "COINS"}',
                         ),
                     ],
@@ -185,7 +186,7 @@ class Telegram:
                     ],
                     [
                         InlineKeyboardButton(
-                            "กลับ", callback_data='{"Mode": "pnl", "Method": "BACK"}'
+                            "❌ กลับ", callback_data='{"Mode": "pnl", "Method": "BACK"}'
                         ),
                     ],
                 ]
@@ -240,10 +241,11 @@ class Telegram:
                     ],
                     [
                         InlineKeyboardButton(
-                            "LONG", callback_data='{"Mode": "trade", "Method": "LONG"}'
+                            "LONG 📈",
+                            callback_data='{"Mode": "trade", "Method": "LONG"}',
                         ),
                         InlineKeyboardButton(
-                            "SHORT",
+                            "📉 SHORT",
                             callback_data='{"Mode": "trade", "Method": "SHORT"}',
                         ),
                     ],
@@ -253,7 +255,8 @@ class Telegram:
                             callback_data='{"Mode": "trade", "Method": "Change"}',
                         ),
                         InlineKeyboardButton(
-                            "กลับ", callback_data='{"Mode": "trade", "Method": "BACK"}'
+                            "❌ กลับ",
+                            callback_data='{"Mode": "trade", "Method": "BACK"}',
                         ),
                     ],
                 ]
@@ -262,7 +265,7 @@ class Telegram:
                 [
                     [
                         InlineKeyboardButton(
-                            f"BOT STATUS : {'ON' if self.status_bot else 'OFF'}",
+                            f"BOT STATUS : {'ON 🟢' if self.status_bot else 'OFF 🔴'}",
                             callback_data='{"Mode": "setting", "Method": "BOT"}',
                         ),
                     ],
@@ -278,11 +281,11 @@ class Telegram:
                     ],
                     [
                         InlineKeyboardButton(
-                            f"SCAN : {'ON' if self.status_scan else 'OFF'}",
+                            f"SCAN : {'ON 🟢' if self.status_scan else 'OFF 🔴'}",
                             callback_data='{"Mode": "setting", "Method": "SCAN"}',
                         ),
                         InlineKeyboardButton(
-                            "กลับ",
+                            "❌ กลับ",
                             callback_data='{"Mode": "setting", "Method": "BACK"}',
                         ),
                     ],
@@ -308,7 +311,7 @@ class Telegram:
                             callback_data='{"Mode": "risk", "Method": "SAVE"}',
                         ),
                         InlineKeyboardButton(
-                            "กลับ",
+                            "❌ กลับ",
                             callback_data='{"Mode": "risk", "Method": "BACK"}',
                         ),
                     ],
@@ -450,6 +453,19 @@ class Telegram:
                     ],
                 },
                 fallbacks=[CommandHandler("cancel", self.back_to_trade_menu)],
+            )
+        )
+        self.application.add_handler(
+            CallbackQueryHandler(
+                self.trade_order_type,
+                lambda x: (eval(x))["Mode"] == "trade"
+                and (eval(x))["Method"] == "Type",
+            )
+        )
+        self.application.add_handler(
+            CallbackQueryHandler(
+                self.trade_order_type_handler,
+                lambda x: (eval(x))["Mode"] == "order_type",
             )
         )
         # Long Buttons
@@ -883,6 +899,37 @@ class Telegram:
                 except Exception:
                     continue
         return ConversationHandler.END
+
+    async def trade_order_type(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+    ):
+        query = update.callback_query
+        await query.answer()
+        msg = "โปรดเลือกประเภทคำสั่งซื้อ-ขาย:"
+        msgs = await query.edit_message_text(
+            text=msg, reply_markup=self.reply_markup["order_type"]
+        )
+        self.uniq_msg_id.append(msgs.message_id)
+
+    async def trade_order_type_handler(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+    ):
+        query = update.callback_query
+        await query.answer()
+        callback = eval(query.data)
+        if callback["Method"] == "BACK":
+            msgs = await query.edit_message_text(
+                text=self.trade_reply_text,
+                reply_markup=self.dynamic_reply_markup["trade"],
+            )
+        else:
+            self.trade_order["type"] = f"{callback['Method']}"
+            self.update_inline_keyboard()
+            msgs = await query.edit_message_text(
+                text=self.trade_reply_text,
+                reply_markup=self.dynamic_reply_markup["trade"],
+            )
+        self.uniq_msg_id.append(msgs.message_id)
 
     ## Analyser menu
     async def analyse_handler(
