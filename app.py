@@ -734,7 +734,7 @@ class Telegram:
         )
         await binance_i.disconnect()
         self.update_inline_keyboard()
-        text = f"คู่เหรียญ  {self.trade_order['symbol']}\nราคาปัจจุบัน : {self.trade_order['price']}"
+        text = f"คู่เหรียญ  {self.trade_order['symbol']}\nราคาปัจจุบัน : {self.trade_order['price']}$"
         if currnet_position["long"]["position"]:
             text = (
                 text

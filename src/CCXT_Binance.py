@@ -126,7 +126,8 @@ async def get_bidask(symbol, exchange, bidask="ask"):
     try:
         info = await exchange.fetch_bids_asks([symbol])
         return float(next(y[bidask] for x, y in info.items()))  # pyright: ignore
-    except Exception:
+    except Exception as e:
+        print(e)
         return await get_bidask(symbol, exchange, bidask)
 
 
