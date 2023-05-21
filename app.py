@@ -622,6 +622,7 @@ class Telegram:
             msgs = await query.edit_message_text(
                 text=msg, reply_markup=self.reply_markup["menu"]
             )
+            self.uniq_msg_id.append(msgs.message_id)
         else:
             for id in self.uniq_msg_id:
                 try:
@@ -633,7 +634,9 @@ class Telegram:
             msgs = await update.message.reply_text(
                 msg, reply_markup=self.reply_markup["menu"]
             )
-        self.uniq_msg_id.append(msgs.message_id)
+            self.uniq_msg_id.append(msgs.message_id)
+
+            return ConversationHandler.END
 
     ## Fiat Balance menu
     async def fiat_handler(
@@ -694,6 +697,7 @@ class Telegram:
             self.trade_reply_text, reply_markup=self.dynamic_reply_markup["trade"]
         )
         self.uniq_msg_id.append(msgs.message_id)
+        return ConversationHandler.END
 
     async def get_symbol_handler(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
