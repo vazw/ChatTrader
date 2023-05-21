@@ -27,7 +27,12 @@ from src.CCXT_Binance import (
 )
 
 ## Constanc represent ConversationHandler step
-STEP1, STEP2 = range(2)
+## TRADE HANDLER
+T_SYMBOL, T_AMT, T_PRICE, T_TP, T_SL = range(5)
+## API MENU
+STEP1_API, STEP2_API_SEC = range(5, 7)
+## BotSetting
+B_RISK, B_MIN_BL, B_SYMBOL = range(7, 10)
 
 
 class Telegram:
@@ -358,7 +363,7 @@ class Telegram:
                     )
                 ],
                 states={
-                    STEP1: [
+                    T_SYMBOL: [
                         MessageHandler(
                             filters.TEXT & ~filters.COMMAND, self.update_trade_symbol
                         )
@@ -378,7 +383,7 @@ class Telegram:
                     )
                 ],
                 states={
-                    STEP1: [
+                    T_SYMBOL: [
                         MessageHandler(
                             filters.TEXT & ~filters.COMMAND, self.update_trade_symbol
                         )
@@ -398,7 +403,7 @@ class Telegram:
                     )
                 ],
                 states={
-                    STEP1: [
+                    T_AMT: [
                         MessageHandler(
                             filters.TEXT & ~filters.COMMAND, self.update_trade_amt
                         )
@@ -418,7 +423,7 @@ class Telegram:
                     )
                 ],
                 states={
-                    STEP1: [
+                    T_TP: [
                         MessageHandler(
                             filters.TEXT & ~filters.COMMAND, self.update_trade_tp_price
                         )
@@ -438,7 +443,7 @@ class Telegram:
                     )
                 ],
                 states={
-                    STEP1: [
+                    T_SL: [
                         MessageHandler(
                             filters.TEXT & ~filters.COMMAND, self.update_trade_sl_price
                         )
@@ -476,12 +481,12 @@ class Telegram:
                     )
                 ],
                 states={
-                    STEP1: [
+                    STEP1_API: [
                         MessageHandler(
                             filters.TEXT & ~filters.COMMAND, self.get_api_key
                         )
                     ],
-                    STEP2: [
+                    STEP2_API_SEC: [
                         MessageHandler(
                             filters.TEXT & ~filters.COMMAND, self.get_api_sec
                         )
@@ -700,7 +705,7 @@ class Telegram:
             text="โปรดใส่ชื่อเหรียญ \n\n กด /cancel เพื่อยกเลิก"
         )
         self.ask_msg_id.append(msg.message_id)
-        return STEP1
+        return T_SYMBOL
 
     async def update_trade_symbol(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
@@ -776,7 +781,7 @@ class Telegram:
             text="โปรดใส่จำนวนเหรียญ \n\n กด /cancel เพื่อยกเลิก"
         )
         self.ask_msg_id.append(msg.message_id)
-        return STEP1
+        return T_AMT
 
     async def update_trade_amt(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
@@ -812,7 +817,7 @@ class Telegram:
             text="โปรดใส่ราคา Take Profit \n\n กด /cancel เพื่อยกเลิก"
         )
         self.ask_msg_id.append(msg.message_id)
-        return STEP1
+        return T_TP
 
     async def update_trade_tp_price(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
@@ -847,7 +852,7 @@ class Telegram:
             text="โปรดใส่ราคา Stop-Loss \n\n กด /cancel เพื่อยกเลิก"
         )
         self.ask_msg_id.append(msg.message_id)
-        return STEP1
+        return T_SL
 
     async def update_trade_sl_price(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
@@ -913,7 +918,7 @@ class Telegram:
         await query.answer()
         msg = await query.edit_message_text(text="โปรดกรอก API KEY จาก Binance")
         self.ask_msg_id.append(msg.message_id)
-        return STEP1
+        return STEP1_API
 
     async def get_api_key(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handler that received API KEY STEP1"""
@@ -932,7 +937,7 @@ class Telegram:
             f"API KEY Binance ของท่าคือ {self.sec_info['API_KEY']}\nโปรดกรอก API SECRET ต่อไป",
         )
         self.ask_msg_id.append(msg.message_id)
-        return STEP2
+        return STEP2_API_SEC
 
     async def get_api_sec(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handler that received API SECRET STEP2"""
