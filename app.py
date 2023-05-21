@@ -370,7 +370,6 @@ class Telegram:
                     ],
                 },
                 fallbacks=[CommandHandler("cancel", self.back_to_menu)],
-                per_message=True,
             )
         )
         # amount
@@ -391,7 +390,6 @@ class Telegram:
                     ],
                 },
                 fallbacks=[CommandHandler("cancel", self.back_to_trade_menu)],
-                per_message=True,
             )
         )
         # TP price
@@ -412,7 +410,6 @@ class Telegram:
                     ],
                 },
                 fallbacks=[CommandHandler("cancel", self.back_to_trade_menu)],
-                per_message=True,
             )
         )
         # SL price
@@ -433,7 +430,6 @@ class Telegram:
                     ],
                 },
                 fallbacks=[CommandHandler("cancel", self.back_to_trade_menu)],
-                per_message=True,
             )
         )
         # Long Buttons
@@ -477,7 +473,6 @@ class Telegram:
                     ],
                 },
                 fallbacks=[CommandHandler("cancel", self.back_to_menu)],
-                per_message=True,
             )
         )
         # PASS
