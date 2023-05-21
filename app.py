@@ -370,6 +370,7 @@ class Telegram:
                     ],
                 },
                 fallbacks=[CommandHandler("cancel", self.back_to_menu)],
+                per_message=True,
             )
         )
         # amount
@@ -390,6 +391,7 @@ class Telegram:
                     ],
                 },
                 fallbacks=[CommandHandler("cancel", self.back_to_trade_menu)],
+                per_message=True,
             )
         )
         # TP price
@@ -410,6 +412,7 @@ class Telegram:
                     ],
                 },
                 fallbacks=[CommandHandler("cancel", self.back_to_trade_menu)],
+                per_message=True,
             )
         )
         # SL price
@@ -430,6 +433,7 @@ class Telegram:
                     ],
                 },
                 fallbacks=[CommandHandler("cancel", self.back_to_trade_menu)],
+                per_message=True,
             )
         )
         # Long Buttons
@@ -473,6 +477,7 @@ class Telegram:
                     ],
                 },
                 fallbacks=[CommandHandler("cancel", self.back_to_menu)],
+                per_message=True,
             )
         )
         # PASS
@@ -693,6 +698,14 @@ class Telegram:
         """Handler that received trade symbol (STEP1)"""
         respon = update.message.text
         self.msg_id.append(update.message.message_id)
+        self.trade_order = {
+            "symbol": "",
+            "type": "MARKET",
+            "price": 0.0,
+            "amt": 0.0,
+            "tp_price": 0.0,
+            "sl_price": 0.0,
+        }
         self.trade_order["symbol"] = respon.upper()
         """TODO"""
         exchange = await binance_i.get_exchange()
