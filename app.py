@@ -2,6 +2,7 @@ import asyncio
 import os
 import pandas as pd
 import sqlite3
+import json
 from telegram import (
     KeyboardButton,
     InlineKeyboardButton,
@@ -346,10 +347,6 @@ class Telegram:
             CommandHandler("help", self.help_command),
             CommandHandler("menu", self.menu_command),
             CommandHandler("clear", self.clear_command),
-            ## Regex callback at the top
-            CallbackQueryHandler(self.info_pnl_per_coin, filters.Regex("^PNL")),
-            ## TODO add symbols handler for setting
-            CallbackQueryHandler(self.edit_config_per_coin, filters.Regex("^COINS")),
             # Handler for Back to menu for all menu
             CallbackQueryHandler(
                 self.back_to_menu,
@@ -525,6 +522,15 @@ class Telegram:
                 and (eval(x))["Method"] == "BACK",
             ),
             # Symbols
+            CallbackQueryHandler(
+                self.info_pnl_per_coin,
+                lambda x: (eval(x))["Mode"] == "PNLC",
+            ),
+            ## TODO add symbols handler for setting
+            CallbackQueryHandler(
+                self.edit_config_per_coin,
+                lambda x: (eval(x))["Mode"] == "COINS",
+            ),
             # edit symbol fot pnl
             CallbackQueryHandler(
                 self.show_info_pnl_per_coin,
@@ -1054,7 +1060,7 @@ class Telegram:
                 [
                     InlineKeyboardButton(
                         f"{symbol[:-5]}".replace("/", ""),
-                        callback_data=f"COINS:{symbol}",
+                        callback_data=json.dumps({"Mode": "COINS", "Method": symbol}),
                     )
                     for symbol in symbol_list
                 ]
@@ -1066,7 +1072,7 @@ class Telegram:
                     [
                         InlineKeyboardButton(
                             "❌ กลับ",
-                            callback_data="COINS:BACK_TO_MENU",
+                            callback_data="'Mode': 'COINS', 'Method': 'BACK_TO_MENU'",
                         )
                     ]
                 ]
@@ -1089,7 +1095,7 @@ class Telegram:
         if len(status.index) > 0:
             positiondata = [
                 (
-                    f"{status['symbol'][i]}",
+                    json.dumps({"Mode": "PNL", "Method": status["symbol"][i]}),
                     f"{status['symbol'][i]} P/L {status['unrealizedProfit'][i]}",
                 )
                 for i in range(len(status.index))
@@ -1099,7 +1105,7 @@ class Telegram:
                 [
                     InlineKeyboardButton(
                         f"{x}",
-                        callback_data=f"PNL:{i}",
+                        callback_data=f"{i}",
                     )
                     for i, x in symbol_list
                 ]
@@ -1111,12 +1117,24 @@ class Telegram:
                     [
                         InlineKeyboardButton(
                             "❌ กลับ",
-                            callback_data="PNL:BACK_TO_MENU",
+                            callback_data="'Mode': 'PNLC', 'Method' :'BACK_TO_MENU'",
+                            ## Chnage back to JSONDict
                         )
                     ]
                 ]
             )
         else:
+            coins_key = InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            "❌ กลับ",
+                            callback_data="'Mode': 'PNLC', 'Method' :'BACK_TO_MENU'",
+                            ## Chnage back to JSONDict
+                        )
+                    ]
+                ]
+            )
             msg = "ท่านไม่มี Position ใด ๆ อยู่ในขณะนี้"
         msgs = await query.edit_message_text(text=msg, reply_markup=coins_key)
         self.uniq_msg_id.append(msgs.message_id)
@@ -1126,8 +1144,8 @@ class Telegram:
     ):
         query = update.callback_query
         await query.answer()
-        callback = query.data
-        if callback[4:] == "BACK_TO_MENU":
+        callback = eval(query.data)
+        if callback["Method"] == "BACK_TO_MENU":
             msgs = await query.edit_message_text(
                 text=f"{self.pnl_reply}",
                 reply_markup=self.reply_markup["pnl"],
@@ -1135,7 +1153,7 @@ class Telegram:
         else:
             ## TODO EDIT POSITION
             msgs = await query.edit_message_text(
-                text=f"ท่านได้เลือกเหรียญ : {callback}",
+                text=f"ท่านได้เลือกเหรียญ : {callback['Method']}",
                 reply_markup=self.reply_markup["pnl"],
             )
 
@@ -1291,8 +1309,8 @@ class Telegram:
     ):
         query = update.callback_query
         await query.answer()
-        callback = query.data
-        symbol = callback[6:]
+        callback = eval(query.data)
+        symbol = callback["Method"]
         msgs = await query.edit_message_text(
             text=f"ท่านได้เลือกเหรียญ : {symbol}",
             reply_markup=self.dynamic_reply_markup["setting"],
