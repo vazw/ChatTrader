@@ -1144,13 +1144,12 @@ class Telegram:
         self.uniq_msg_id.append(msgs.message_id)
 
     async def back_from_risk_menu(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
     ) -> None:
-        """This Handler can Handle both command and inline button respons"""
         query = update.callback_query
         msg = (
             self.risk_reply_text
-            + "เหรียญที่ดูอยู่ : {watchlist}\n\nโปรดเลือกการตั้งค่า"
+            + f"เหรียญที่ดูอยู่ : {self.bot_trade.watchlist}\n\nโปรดเลือกการตั้งค่า"
         )
         await query.answer()
         msgs = await query.edit_message_text(
@@ -1161,7 +1160,6 @@ class Telegram:
     async def back_to_risk_menu(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
     ) -> None:
-        """This Handler can Handle both command and inline button respons"""
         self.msg_id.append(update.message.message_id)
         for id in self.uniq_msg_id:
             try:
