@@ -1514,13 +1514,13 @@ class BotTrade:
     async def get_currentmode(self):
         exchange = await binance_i.get_exchange()
         try:
-            currentMODE = await exchange.fapiPrivate_get_positionside_dual()
+            data = await exchange.fetch_account_positions(["BTCUSDT"])
         except Exception as e:
             lastUpdate.status = f"{e}"
             await binance_i.connect_loads()
-            currentMODE = await exchange.fapiPrivate_get_positionside_dual()
+            data = await exchange.fetch_account_positions(["BTCUSDT"])
         await binance_i.disconnect()
-        currentMode.dualSidePosition = currentMODE["dualSidePosition"]
+        currentMode.dualSidePosition = data[0]["hedged"]
         if currentMode.dualSidePosition:
             currentMode.Sside = "SHORT"
             currentMode.Lside = "LONG"
