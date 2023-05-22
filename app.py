@@ -786,7 +786,7 @@ class Telegram:
             [position for position in positions if float(position["positionAmt"]) != 0],
             columns=POSITION_COLLUMN,
         )
-        currnet_position = await self.check_current_position(
+        currnet_position = await self.bot_trade.check_current_position(
             self.trade_order["symbol"], status
         )
         await binance_i.disconnect()
