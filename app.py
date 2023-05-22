@@ -687,8 +687,7 @@ class Telegram:
                 reply_markup=self.reply_markup["secure"],
             )
         elif callback["Method"] == "X":
-            query.message.delete()
-
+            await query.message.delete()
         else:
             msgs = await query.edit_message_text(
                 text="Selected again!", reply_markup=self.reply_markup["menu"]
