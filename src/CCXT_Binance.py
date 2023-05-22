@@ -1,5 +1,6 @@
 import asyncio  # pyright: ignore # noqa:
 from datetime import datetime
+from time import time
 import ccxt.async_support as ccxt
 import pandas as pd
 
@@ -7,6 +8,7 @@ from .AppData import (
     lastUpdate,
     candle_ohlc,
     timer,
+    retry,
 )
 from .AppData.Appdata import (
     AppConfig,
@@ -22,16 +24,14 @@ class AccountBalance:
     def __init__(self):
         self.balance = ""
         self.fiat_balance = ""
+        self.update_time = 0
 
-    async def update_balance(self):
-        exchange = await binance_i.get_exchange()
-        try:
+    @retry(5, lambda e: print(f"ERROR in update_balance: {e}"))
+    async def update_balance(self, force: bool = False):
+        if time() - self.update_time > 600 or force:
+            exchange = await binance_i.get_exchange()
             balance = await exchange.fetch_balance()
-            self.balance = balance
-            self.fiat_balance = {x: y for x, y in balance.items() if "USD" in x[-4:]}
-        except Exception as e:
-            lastUpdate.status = f"{e}"
-            balance = await exchange.fetch_balance()
+            self.update_time = time()
             self.balance = balance
             self.fiat_balance = {x: y for x, y in balance.items() if "USD" in x[-4:]}
 
@@ -174,6 +174,7 @@ async def getAllsymbol():
     return [symbol for symbol in symbols["symbol"]]
 
 
+@retry(10, lambda e: print(f"ERROR in update_balance: {e}"))
 async def fetching_candle_ohlc(symbol, timeframe, limits):
     exchange = await binance_i.get_exchange()
     try:
@@ -184,9 +185,6 @@ async def fetching_candle_ohlc(symbol, timeframe, limits):
     except ccxt.errors.BadSymbol as e:
         print(f"No symbols skip : {e}")
         return None
-    except Exception as e:
-        print(f"failed to fetching_candle_ohlc : {e}")
-        return await fetching_candle_ohlc(symbol, timeframe, limits)
 
 
 async def fetchbars(symbol, timeframe) -> None:

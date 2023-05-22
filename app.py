@@ -101,6 +101,10 @@ class Telegram:
                             "⚙️ตั้งค่า API",
                             callback_data='{"Mode": "menu", "Method": "apiSetting"}',
                         ),
+                        InlineKeyboardButton(
+                            "❌ปิด",
+                            callback_data='{"Mode": "menu", "Method": "X"}',
+                        ),
                     ],
                 ]
             ),
@@ -186,12 +190,12 @@ class Telegram:
                             callback_data='{"Mode": "pnl", "Method": "COINS"}',
                         ),
                     ],
-                    [
-                        InlineKeyboardButton(
-                            "ตั้งค่า TP/SL",
-                            callback_data='{"Mode": "pnl", "Method": "TPSL"}',
-                        ),
-                    ],
+                    # [
+                    #     InlineKeyboardButton(
+                    #         "ตั้งค่า TP/SL",
+                    #         callback_data='{"Mode": "pnl", "Method": "TPSL"}',
+                    #     ),
+                    # ],
                     [
                         InlineKeyboardButton(
                             "❌ กลับ", callback_data='{"Mode": "pnl", "Method": "BACK"}'
@@ -516,6 +520,15 @@ class Telegram:
                 lambda x: ((eval(x))["Mode"] == "risk" or (eval(x))["Mode"] == "COINS")
                 and (eval(x))["Method"] == "BACK",
             ),
+            # Symbols
+            # edit symbol fot pnl
+            CallbackQueryHandler(
+                self.show_info_pnl_per_coin,
+                lambda x: (eval(x))["Mode"] == "pnl" and (eval(x))["Method"] == "COINS",
+            ),
+            CallbackQueryHandler(self.info_pnl_per_coin, filters.Regex("^PNL:")),
+            ## TODO add symbols handler for setting
+            CallbackQueryHandler(self.edit_config_per_coin, filters.Regex("^COINS:")),
             # secure_handler
             # API
             ConversationHandler(
@@ -639,8 +652,27 @@ class Telegram:
                 reply_markup=self.reply_markup["analyse"],
             )
         elif callback["Method"] == "PositionData":
+            await account_balance.update_balance()
+            balance = account_balance.balance
+            positions = balance["info"]["positions"]
+            status = pd.DataFrame(
+                [
+                    position
+                    for position in positions
+                    if float(position["positionAmt"]) != 0
+                ],
+                columns=POSITION_COLLUMN,
+            )
+            if len(status.index) > 0:
+                text = [
+                    f"{status['symbol'][i]} จำนวน {status['positionAmt'][i]} P/L {status['unrealizedProfit'][i]}\n"
+                    for i in range(len(status.index))
+                ]
+                self.pnl_reply = "Postion ที่มีการเปิดอยู่\n".join(text)
+            else:
+                text_reply = "ไม่มี Postion ที่มีการเปิดอยู่"
             msgs = await query.edit_message_text(
-                text="Postion ที่มีการเปิดอยู่\n{position_data}",
+                text=text_reply,
                 reply_markup=self.reply_markup["pnl"],
             )
         elif callback["Method"] == "BotSetting":
@@ -1018,7 +1050,7 @@ class Telegram:
             coins = [
                 [
                     InlineKeyboardButton(
-                        f"{symbol}",
+                        f"{symbol[:-5]}".replace("/", ""),
                         callback_data=f"COINS:{symbol}",
                     )
                     for symbol in symbol_list
@@ -1031,12 +1063,79 @@ class Telegram:
                     [
                         InlineKeyboardButton(
                             "❌ กลับ",
-                            callback_data='{"Mode": "COINS", "Method": "BACK"}',
+                            callback_data="COINS:BACK_TO_MENU",
                         )
                     ]
                 ]
             )
             msgs = await query.edit_message_text(text=msg, reply_markup=coins_key)
+        self.uniq_msg_id.append(msgs.message_id)
+
+    async def show_info_pnl_per_coin(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+    ):
+        query = update.callback_query
+        await query.answer()
+        await account_balance.update_balance()
+        balance = account_balance.balance
+        positions = balance["info"]["positions"]
+        status = pd.DataFrame(
+            [position for position in positions if float(position["positionAmt"]) != 0],
+            columns=POSITION_COLLUMN,
+        )
+        if len(status.index) > 0:
+            positiondata = [
+                (
+                    f"{status['symbol'][i]}",
+                    f"{status['symbol'][i]} P/L {status['unrealizedProfit'][i]}",
+                )
+                for i in range(len(status.index))
+            ]
+            msg = "โปรดเลือกเหรียญดังนี้:"
+            coins = [
+                [
+                    InlineKeyboardButton(
+                        f"{x}",
+                        callback_data=f"PNL:{i}",
+                    )
+                    for i, x in symbol_list
+                ]
+                for symbol_list in split_list(positiondata, 3)
+            ]
+            coins_key = InlineKeyboardMarkup(
+                coins
+                + [
+                    [
+                        InlineKeyboardButton(
+                            "❌ กลับ",
+                            callback_data="PNL:BACK_TO_MENU",
+                        )
+                    ]
+                ]
+            )
+        else:
+            msg = "ท่านไม่มี Position ใด ๆ อยู่ในขณะนี้"
+        msgs = await query.edit_message_text(text=msg, reply_markup=coins_key)
+        self.uniq_msg_id.append(msgs.message_id)
+
+    async def info_pnl_per_coin(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+    ):
+        query = update.callback_query
+        await query.answer()
+        callback = query.data
+        if callback[4:] == "BACK_TO_MENU":
+            msgs = await query.edit_message_text(
+                text=f"{self.pnl_reply}",
+                reply_markup=self.reply_markup["pnl"],
+            )
+        else:
+            ## TODO EDIT POSITION
+            msgs = await query.edit_message_text(
+                text=f"ท่านได้เลือกเหรียญ : {callback}",
+                reply_markup=self.reply_markup["pnl"],
+            )
+
         self.uniq_msg_id.append(msgs.message_id)
 
     async def get_max_risk_handler(
@@ -1182,6 +1281,20 @@ class Telegram:
         )
         self.uniq_msg_id.append(msgs.message_id)
         return ConversationHandler.END
+
+    # Coin config Setting
+    async def edit_config_per_coin(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+    ):
+        query = update.callback_query
+        await query.answer()
+        callback = query.data
+        symbol = callback[6:]
+        msgs = await query.edit_message_text(
+            text=f"ท่านได้เลือกเหรียญ : {symbol}",
+            reply_markup=self.dynamic_reply_markup["setting"],
+        )
+        self.uniq_msg_id.append(msgs.message_id)
 
     ## Secure menu
     ## API

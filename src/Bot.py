@@ -1780,7 +1780,7 @@ class BotTrade:
                     risk_manage["timeframe"],
                     closeall=True,
                 )
-                await account_balance.update_balance()
+                await account_balance.update_balance(force=True)
                 if risk_manage["use_long"]:
                     if mm_permission["can_trade"]:
                         await self.OpenLong(
@@ -1791,7 +1791,7 @@ class BotTrade:
                             mm_permission["min_balance"],
                             risk_manage["timeframe"],
                         )
-                        await account_balance.update_balance()
+                        await account_balance.update_balance(force=True)
                     else:
                         await self.notify_signal(df, risk_manage, mm_permission, "Long")
                 else:
@@ -1808,7 +1808,7 @@ class BotTrade:
                             mm_permission["min_balance"],
                             risk_manage["timeframe"],
                         )
-                        await account_balance.update_balance()
+                        await account_balance.update_balance(force=True)
                     else:
                         await self.notify_signal(df, risk_manage, mm_permission, "Long")
                 else:
@@ -1828,7 +1828,7 @@ class BotTrade:
                     risk_manage["timeframe"],
                     closeall=True,
                 )
-                await account_balance.update_balance()
+                await account_balance.update_balance(force=True)
                 if risk_manage["use_short"]:
                     if mm_permission["can_trade"]:
                         await self.OpenShort(
@@ -1839,7 +1839,7 @@ class BotTrade:
                             mm_permission["min_balance"],
                             risk_manage["timeframe"],
                         )
-                        await account_balance.update_balance()
+                        await account_balance.update_balance(force=True)
                     else:
                         await self.notify_signal(
                             df, risk_manage, mm_permission, "Short"
@@ -1857,7 +1857,7 @@ class BotTrade:
                             mm_permission["min_balance"],
                             risk_manage["timeframe"],
                         )
-                        await account_balance.update_balance()
+                        await account_balance.update_balance(force=True)
                     else:
                         await self.notify_signal(
                             df, risk_manage, mm_permission, "Short"
@@ -1915,7 +1915,7 @@ class BotTrade:
                     risk_manage["hedge_timeframe"],
                     False,
                 )
-                await account_balance.update_balance()
+                await account_balance.update_balance(force=True)
             else:
                 print("No permission for excute order : Do nothing")
 
@@ -1937,7 +1937,7 @@ class BotTrade:
                 currentMode.Sside,
                 risk_manage["hedge_timeframe"],
             )
-            await account_balance.update_balance()
+            await account_balance.update_balance(force=True)
 
         # Open Short if the higher trend are bullish
         # but got Sell signal form lower timeframe
@@ -1958,7 +1958,7 @@ class BotTrade:
                     risk_manage["hedge_timeframe"],
                     False,
                 )
-                await account_balance.update_balance()
+                await account_balance.update_balance(force=True)
             else:
                 print("No permission for excute order : Do nothing")
 
@@ -1980,4 +1980,4 @@ class BotTrade:
                 currentMode.Lside,
                 risk_manage["hedge_timeframe"],
             )
-            await account_balance.update_balance()
+            await account_balance.update_balance(force=True)
