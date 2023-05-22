@@ -1020,7 +1020,7 @@ class Telegram:
                     [
                         InlineKeyboardButton(
                             f"{symbol}",
-                            callback_data=f'{"Mode": "COINS", "Method": "{symbol}"}',
+                            callback_data=f"COINS:{symbol}",
                         )
                         for symbol in symbol_list
                     ]
@@ -1028,7 +1028,7 @@ class Telegram:
                     + [
                         InlineKeyboardButton(
                             "❌ กลับ",
-                            callback_data=f'{"Mode": "COINS", "Method": "BACK"}',
+                            callback_data='{"Mode": "COINS", "Method": "BACK"}',
                         )
                     ]
                 ]
