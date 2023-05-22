@@ -1015,22 +1015,23 @@ class Telegram:
             )
         elif callback["Method"] == "COINS":
             msg = "โปรดเลือกเหรียญดังนี้:"
-            coins_key = InlineKeyboardMarkup(
+            coins = [
                 [
-                    [
-                        InlineKeyboardButton(
-                            f"{symbol}",
-                            callback_data=f"COINS:{symbol}",
-                        )
-                        for symbol in symbol_list
-                    ]
-                    for symbol_list in split_list(self.bot_trade.watchlist, 3)
-                    + [
-                        InlineKeyboardButton(
-                            "❌ กลับ",
-                            callback_data='{"Mode": "COINS", "Method": "BACK"}',
-                        )
-                    ]
+                    InlineKeyboardButton(
+                        f"{symbol}",
+                        callback_data=f"COINS:{symbol}",
+                    )
+                    for symbol in symbol_list
+                ]
+                for symbol_list in split_list(self.bot_trade.watchlist, 3)
+            ]
+            coins_key = InlineKeyboardMarkup(
+                coins
+                + [
+                    InlineKeyboardButton(
+                        "❌ กลับ",
+                        callback_data='{"Mode": "COINS", "Method": "BACK"}',
+                    )
                 ]
             )
             msgs = await query.edit_message_text(text=msg, reply_markup=coins_key)
