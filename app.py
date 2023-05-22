@@ -94,11 +94,11 @@ class Telegram:
                     ],
                     [
                         InlineKeyboardButton(
-                            "⚙️ตั้งค่าบอท",
+                            "🤖ตั้งค่าบอท",
                             callback_data='{"Mode": "menu", "Method": "BotSetting"}',
                         ),
                         InlineKeyboardButton(
-                            "🤖ตั้งค่า API",
+                            "⚙️ตั้งค่า API",
                             callback_data='{"Mode": "menu", "Method": "apiSetting"}',
                         ),
                     ],
@@ -513,7 +513,8 @@ class Telegram:
             ),
             CallbackQueryHandler(
                 self.back_from_risk_menu,
-                lambda x: (eval(x))["Mode"] == "risk" and (eval(x))["Method"] == "BACK",
+                lambda x: ((eval(x))["Mode"] == "risk" or (eval(x))["Mode"] == "COINS")
+                and (eval(x))["Method"] == "BACK",
             ),
             # secure_handler
             # API
@@ -644,7 +645,7 @@ class Telegram:
             )
         elif callback["Method"] == "BotSetting":
             msgs = await query.edit_message_text(
-                text="เหรียญที่ดูอยู่ : {watchlist}\n\nโปรดเลือกการตั้งค่า",
+                text=f"เหรียญที่ดูอยู่ : {self.bot_trade.watchlist}\n\nโปรดเลือกการตั้งค่า",
                 reply_markup=self.dynamic_reply_markup["setting"],
             )
         elif callback["Method"] == "apiSetting":
@@ -991,7 +992,7 @@ class Telegram:
                 self.status_bot = True
                 self.bot_trade.start_bot()
             self.update_inline_keyboard()
-            msg = "เหรียญที่ดูอยู่ : {watchlist}\n\nโปรดเลือกการตั้งค่า"
+            msg = f"เหรียญที่ดูอยู่ : {self.bot_trade.watchlist}\n\nโปรดเลือกการตั้งค่า"
             msgs = await query.edit_message_text(
                 text=msg, reply_markup=self.dynamic_reply_markup["setting"]
             )
@@ -1003,7 +1004,7 @@ class Telegram:
                 self.status_scan = True
                 self.bot_trade.enable_scan()
             self.update_inline_keyboard()
-            msg = "เหรียญที่ดูอยู่ : {watchlist}\n\nโปรดเลือกการตั้งค่า"
+            msg = f"เหรียญที่ดูอยู่ : {self.bot_trade.watchlist}\n\nโปรดเลือกการตั้งค่า"
             msgs = await query.edit_message_text(
                 text=msg, reply_markup=self.dynamic_reply_markup["setting"]
             )
@@ -1019,11 +1020,17 @@ class Telegram:
                     [
                         InlineKeyboardButton(
                             f"{symbol}",
-                            callback_data=f'{"Mode": "COINS", "Method": {symbol}}',
+                            callback_data=f'{"Mode": "COINS", "Method": "{symbol}"}',
                         )
                         for symbol in symbol_list
                     ]
                     for symbol_list in split_list(self.bot_trade.watchlist, 3)
+                    + [
+                        InlineKeyboardButton(
+                            "❌ กลับ",
+                            callback_data=f'{"Mode": "COINS", "Method": "BACK"}',
+                        )
+                    ]
                 ]
             )
             msgs = await query.edit_message_text(text=msg, reply_markup=coins_key)
