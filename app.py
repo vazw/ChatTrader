@@ -347,9 +347,9 @@ class Telegram:
             CommandHandler("menu", self.menu_command),
             CommandHandler("clear", self.clear_command),
             ## Regex callback at the top
-            CallbackQueryHandler(self.info_pnl_per_coin, filters.Regex("^PNL:")),
+            CallbackQueryHandler(self.info_pnl_per_coin, filters.Regex("^PNL")),
             ## TODO add symbols handler for setting
-            CallbackQueryHandler(self.edit_config_per_coin, filters.Regex("^COINS:")),
+            CallbackQueryHandler(self.edit_config_per_coin, filters.Regex("^COINS")),
             # Handler for Back to menu for all menu
             CallbackQueryHandler(
                 self.back_to_menu,
