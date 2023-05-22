@@ -511,7 +511,7 @@ class Telegram:
                 lambda x: (eval(x))["Mode"] == "risk" and (eval(x))["Method"] == "SAVE",
             ),
             CallbackQueryHandler(
-                self.back_to_risk_menu,
+                self.back_from_risk_menu,
                 lambda x: (eval(x))["Mode"] == "risk" and (eval(x))["Method"] == "BACK",
             ),
             # secure_handler
@@ -1090,6 +1090,7 @@ class Telegram:
                 self.risk_reply_text
                 + f"\nท่านได้กำหนดกระเป๋าเงินขั้นต่ำไว้ที่ : {self.risk['min_balance']}"
             )
+            self.risk_reply_text = text
             self.update_inline_keyboard()
         except Exception as e:
             text = f"เกิดข้อผิดพลาด {e}\nโปรดทำรายการใหม่อีกรั้ง"
@@ -1141,34 +1142,37 @@ class Telegram:
         )
         self.uniq_msg_id.append(msgs.message_id)
 
-    async def back_to_risk_menu(
+    async def back_from_risk_menu(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
     ) -> None:
         """This Handler can Handle both command and inline button respons"""
         query = update.callback_query
-        msg = self.risk_reply_text + "อย่าเสี่ยงมากนะคะนายท่าน"
-        if query is not None:
-            # For Back Buttons
-            await query.answer()
-            msgs = await query.edit_message_text(
-                text=msg, reply_markup=self.dynamic_reply_markup["risk"]
-            )
-            self.uniq_msg_id.append(msgs.message_id)
-        else:
-            # For Commands cancel
-            self.msg_id.append(update.message.message_id)
-            for id in self.uniq_msg_id:
-                try:
-                    await context.bot.delete_message(
-                        chat_id=self.chat_id, message_id=id
-                    )
-                except Exception:
-                    continue
-            msgs = await update.message.reply_text(
-                msg, reply_markup=self.dynamic_reply_markup["risk"]
-            )
-            self.uniq_msg_id.append(msgs.message_id)
-            return ConversationHandler.END
+        msg = (
+            self.risk_reply_text
+            + "เหรียญที่ดูอยู่ : {watchlist}\n\nโปรดเลือกการตั้งค่า"
+        )
+        await query.answer()
+        msgs = await query.edit_message_text(
+            text=msg, reply_markup=self.dynamic_reply_markup["setting"]
+        )
+        self.uniq_msg_id.append(msgs.message_id)
+
+    async def back_to_risk_menu(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        """This Handler can Handle both command and inline button respons"""
+        self.msg_id.append(update.message.message_id)
+        for id in self.uniq_msg_id:
+            try:
+                await context.bot.delete_message(chat_id=self.chat_id, message_id=id)
+            except Exception:
+                continue
+        msg = self.risk_reply_text + "\n\nอย่าเสี่ยงมากนะคะนายท่าน"
+        msgs = await update.message.reply_text(
+            msg, reply_markup=self.dynamic_reply_markup["risk"]
+        )
+        self.uniq_msg_id.append(msgs.message_id)
+        return ConversationHandler.END
 
     ## Secure menu
     ## API
