@@ -187,6 +187,7 @@ class BotTrade:
 
     async def run_bot(self):
         print(f"{colorCS.CBOLD}{colorCS.CGREEN}{bot_name}{colorCS.CEND}")
+        await self.notify_send("Bot Started")
         while True:
             try:
                 if not self.status_bot:
