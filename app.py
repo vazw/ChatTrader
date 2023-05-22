@@ -1296,7 +1296,7 @@ class Telegram:
         while True:
             if self.status_bot:
                 try:
-                    asyncio.run(self.bot_trade.run_bot())
+                    await self.bot_trade.run_bot()
                 except Exception as e:
                     print(e)
                     continue
