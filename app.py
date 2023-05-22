@@ -26,7 +26,6 @@ from src.CCXT_Binance import (
     Binance,
     account_balance,
     binance_i,
-    check_current_position,
     get_bidask,
 )
 import warnings
@@ -787,7 +786,7 @@ class Telegram:
             [position for position in positions if float(position["positionAmt"]) != 0],
             columns=POSITION_COLLUMN,
         )
-        currnet_position = await check_current_position(
+        currnet_position = await self.check_current_position(
             self.trade_order["symbol"], status
         )
         await binance_i.disconnect()
