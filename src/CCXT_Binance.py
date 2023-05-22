@@ -86,13 +86,26 @@ def RRTP(df, direction, step, price, TPRR1, TPRR2):
 class Binance:
     """Binance singleton instance"""
 
-    def __init__(self):
+    def __init__(self, api: str = None, sapi: str = None):
         self.exchange = None
+        self.test_api = api
+        self.test_sapi = sapi
 
     async def connect(self) -> None:
-        config = AppConfig()
-        exchange = ccxt.binance(config.BNBCZ)
-        self.exchange = exchange
+        if self.test_api is not None:
+            BNBCZ = {
+                "apiKey": self.test_api,
+                "secret": self.test_sapi,
+                "options": {"defaultType": "future"},
+                "enableRateLimit": True,
+                "adjustForTimeDifference": True,
+            }
+            exchange = ccxt.binance(BNBCZ)
+            self.exchange = exchange
+        else:
+            config = AppConfig()
+            exchange = ccxt.binance(config.BNBCZ)
+            self.exchange = exchange
 
     async def connect_loads(self) -> None:
         await self.exchange.load_markets(reload=True)

@@ -23,6 +23,7 @@ from src.AppData import HELP_MESSAGE, WELCOME_MESSAGE, POSITION_COLLUMN, split_l
 from src.AppData.Appdata import AppConfig
 from src.Bot import BotTrade
 from src.CCXT_Binance import (
+    Binance,
     account_balance,
     binance_i,
     check_current_position,
@@ -1210,6 +1211,12 @@ class Telegram:
         self.sec_info["API_SEC"] = str(respon)
         """TODO ACTIVE API AND FETCH BALANCE BEFORE SAVED"""
         try:
+            binance_test = Binance(
+                api=self.sec_info["API_KEY"], sapi=self.sec_info["API_SEC"]
+            )
+            exchange = await binance_test.get_exchange()
+            balance = exchange.fetch_balance()
+            fiat_balance = {x: y for x, y in balance.items() if "USD" in x[-4:]}
             with sqlite3.connect("vxma.db", check_same_thread=False) as con:
                 # Read
                 config = pd.read_sql("SELECT * FROM key", con=con)
@@ -1227,8 +1234,17 @@ class Telegram:
                     index_label="apikey",
                 )
                 con.commit()
+            text = (
+                "BUSD"
+                + f"\nFree   : {round(fiat_balance['BUSD']['free'],2)}$"
+                + f"\nMargin : {round(fiat_balance['BUSD']['used'],2)}$"
+                + f"\nTotal  : {round(fiat_balance['BUSD']['total'],2)}$\nUSDT"
+                + f"\nFree   : {round(fiat_balance['USDT']['free'],2)}$"
+                + f"\nMargin : {round(fiat_balance['USDT']['used'],2)}$"
+                + f"\nTotal  : {round(fiat_balance['USDT']['total'],2)}$"
+            )
             msg = await update.message.reply_text(
-                f"ตั้งค่าสำหรับ API {self.sec_info['API_KEY'][:10]} สำเร็จ",
+                f"ตั้งค่าสำหรับ API {self.sec_info['API_KEY'][:10]} สำเร็จ\n{text}",
                 reply_markup=self.reply_markup["secure"],
             )
         except Exception as e:
