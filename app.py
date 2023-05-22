@@ -212,6 +212,7 @@ class Telegram:
             ],
             resize_keyboard=True,
         )
+        self.load_database()
 
     def update_inline_keyboard(self):
         self.dynamic_reply_markup = {
