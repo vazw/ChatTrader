@@ -1,6 +1,7 @@
 import asyncio
 import os
 import pandas as pd
+import sqlite3
 from telegram import (
     KeyboardButton,
     InlineKeyboardButton,
@@ -18,7 +19,9 @@ from telegram.ext import (
     filters,
 )
 
-from src.AppData import HELP_MESSAGE, WELCOME_MESSAGE, POSITION_COLLUMN
+from src.AppData import HELP_MESSAGE, WELCOME_MESSAGE, POSITION_COLLUMN, split_list
+from src.AppData.Appdata import AppConfig
+from src.Bot import BotTrade
 from src.CCXT_Binance import (
     account_balance,
     binance_i,
@@ -46,10 +49,12 @@ class Telegram:
         self.msg_id = []
         self.ask_msg_id = []
         self.uniq_msg_id = []
+        self.bot_trade = ""
         self.status_bot = False
         self.status_scan = False
         self.risk = {"max_risk": 50.0, "min_balance": 10.0}
         self.trade_reply_text = ":"
+        self.risk_reply_text = ":"
         self.trade_order = {
             "symbol": "",
             "type": "MARKET",
@@ -322,6 +327,11 @@ class Telegram:
             ),
         }
 
+    def load_database(self) -> None:
+        config = AppConfig()
+        self.risk["max_risk"] = config.max_margin
+        self.risk["min_balance"] = config.min_balance
+
     def setup_bot(self) -> None:
         # Basic Commands
         self.update_inline_keyboard()
@@ -460,6 +470,50 @@ class Telegram:
             #     lambda x: (eval(x))["Mode"] == "trade"
             #     and (eval(x))["Method"] == "SHORT",
             # ),
+            # Setting Handler
+            # Risk
+            ConversationHandler(
+                entry_points=[
+                    CallbackQueryHandler(
+                        self.get_max_risk_handler,
+                        lambda x: (eval(x))["Mode"] == "risk"
+                        and (eval(x))["Method"] == "MAX_RISK",
+                    )
+                ],
+                states={
+                    B_RISK: [
+                        MessageHandler(
+                            filters.TEXT & ~filters.COMMAND, self.update_max_risk
+                        )
+                    ],
+                },
+                fallbacks=[CommandHandler("cancel", self.back_to_risk_menu)],
+            ),
+            ConversationHandler(
+                entry_points=[
+                    CallbackQueryHandler(
+                        self.get_min_balance_handler,
+                        lambda x: (eval(x))["Mode"] == "risk"
+                        and (eval(x))["Method"] == "MIN_BALANCE",
+                    )
+                ],
+                states={
+                    B_MIN_BL: [
+                        MessageHandler(
+                            filters.TEXT & ~filters.COMMAND, self.update_min_balance
+                        )
+                    ],
+                },
+                fallbacks=[CommandHandler("cancel", self.back_to_risk_menu)],
+            ),
+            CallbackQueryHandler(
+                self.save_risk_to_db,
+                lambda x: (eval(x))["Mode"] == "risk" and (eval(x))["Method"] == "SAVE",
+            ),
+            CallbackQueryHandler(
+                self.back_to_risk_menu,
+                lambda x: (eval(x))["Mode"] == "risk" and (eval(x))["Method"] == "BACK",
+            ),
             # secure_handler
             # API
             ConversationHandler(
@@ -492,6 +546,7 @@ class Telegram:
         # Add all Handlers.
         self.application.add_handlers(handlers)
         # Running Background job.
+        self.application.job_queue.run_once(self.make_bot_task, when=1)
         self.application.job_queue.run_once(self.clear_task, when=1)
 
         self.application.run_polling()
@@ -499,6 +554,7 @@ class Telegram:
     async def start(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Sends a message with three Keyboard buttons attached."""
         self.chat_id = update.effective_chat.id
+        self.bot_trade.update_chat_id(self.chat_id)
         print("App Started")
         await context.bot.delete_message(
             chat_id=self.chat_id, message_id=update.message.message_id
@@ -567,6 +623,8 @@ class Telegram:
                 text="โปรดเลือกกระเป๋าเงินเฟียต",
                 reply_markup=self.reply_markup["fiat"],
             )
+            await account_balance.update_balance()
+            await binance_i.disconnect()
             # Trade use different callback
         # elif callback["Method"] == "Trade":
         #     msgs = await query.edit_message_text(
@@ -608,12 +666,14 @@ class Telegram:
         query = update.callback_query
         msg = "Please choose:"
         if query is not None:
+            # For Back Buttons
             await query.answer()
             msgs = await query.edit_message_text(
                 text=msg, reply_markup=self.reply_markup["menu"]
             )
             self.uniq_msg_id.append(msgs.message_id)
         else:
+            # For Commands cancel
             self.msg_id.append(update.message.message_id)
             for id in self.uniq_msg_id:
                 try:
@@ -626,7 +686,6 @@ class Telegram:
                 msg, reply_markup=self.reply_markup["menu"]
             )
             self.uniq_msg_id.append(msgs.message_id)
-
             return ConversationHandler.END
 
     ## Fiat Balance menu
@@ -638,9 +697,6 @@ class Telegram:
         query = update.callback_query
         await query.answer()
         callback = eval(query.data)
-
-        await account_balance.update_balance()
-        await binance_i.disconnect()
         fiat_balance = account_balance.fiat_balance
 
         if callback["Method"] == "ALL":
@@ -927,13 +983,192 @@ class Telegram:
         await query.answer()
         callback = eval(query.data)
         if callback["Method"] == "BOT":
-            self.status_bot = False if self.status_bot else True
+            if self.status_bot:
+                self.status_bot = False
+                self.bot_trade.stop_bot()
+            elif not self.status_bot:
+                self.status_bot = True
+                self.bot_trade.start_bot()
             self.update_inline_keyboard()
             msg = "เหรียญที่ดูอยู่ : {watchlist}\n\nโปรดเลือกการตั้งค่า"
             msgs = await query.edit_message_text(
                 text=msg, reply_markup=self.dynamic_reply_markup["setting"]
             )
+        elif callback["Method"] == "SCAN":
+            if self.status_scan:
+                self.status_scan = False
+                self.bot_trade.disable_scan()
+            elif not self.status_bot:
+                self.status_scan = True
+                self.bot_trade.enable_scan()
+            self.update_inline_keyboard()
+            msg = "เหรียญที่ดูอยู่ : {watchlist}\n\nโปรดเลือกการตั้งค่า"
+            msgs = await query.edit_message_text(
+                text=msg, reply_markup=self.dynamic_reply_markup["setting"]
+            )
+        elif callback["Method"] == "RISK":
+            msg = "อย่าเสี่ยงมากนะคะนายท่าน :"
+            msgs = await query.edit_message_text(
+                text=msg, reply_markup=self.dynamic_reply_markup["risk"]
+            )
+        elif callback["Method"] == "COINS":
+            msg = "โปรดเลือกเหรียญดังนี้:"
+            coins_key = InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            f"{symbol}",
+                            callback_data=f'{"Mode": "COINS", "Method": {symbol}}',
+                        )
+                        for symbol in symbol_list
+                    ]
+                    for symbol_list in split_list(self.bot_trade.watchlist, 3)
+                ]
+            )
+            msgs = await query.edit_message_text(text=msg, reply_markup=coins_key)
+        self.uniq_msg_id.append(msgs.message_id)
+
+    async def get_max_risk_handler(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+    ):
+        query = update.callback_query
+        await query.answer()
+        msg = await query.edit_message_text(
+            text="โปรดกรอกจำนวนความเสี่ยงที่ท่านรับได้\n\
+จำนวนนี้ จะนำไปคำนวนระหว่างความเสี่ยงทั้งหมด และ Postion ในมือ\n\n กด /cancel เพื่อยกเลิก"
+        )
+        self.ask_msg_id.append(msg.message_id)
+        return B_RISK
+
+    async def update_max_risk(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+    ):
+        respon = update.message.text
+        self.msg_id.append(update.message.message_id)
+        try:
+            self.risk["max_risk"] = float(respon)
+            text = f"ท่านได้กำหนดความเสี่ยงทั้งหมดไว้ที่ : {self.risk['max_risk']}"
+            self.risk_reply_text = text
+            self.update_inline_keyboard()
+        except Exception as e:
+            text = f"เกิดข้อผิดพลาด {e}\nโปรดทำรายการใหม่อีกรั้ง"
+
+        msg = await update.message.reply_text(
+            text,
+            reply_markup=self.dynamic_reply_markup["risk"],
+        )
+        self.uniq_msg_id.append(msg.message_id)
+        if len(self.ask_msg_id) > 0:
+            for id in self.ask_msg_id:
+                try:
+                    await context.bot.delete_message(
+                        chat_id=self.chat_id, message_id=id
+                    )
+                except Exception:
+                    continue
+        return ConversationHandler.END
+
+    async def get_min_balance_handler(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+    ):
+        query = update.callback_query
+        await query.answer()
+        msg = await query.edit_message_text(
+            text="โปรดกรอกจำนวน กระเ๋าเงินขั้นต่ำที่จะทำการหยุดบอท\n\n กด /cancel เพื่อยกเลิก"
+        )
+        self.ask_msg_id.append(msg.message_id)
+        return B_MIN_BL
+
+    async def update_min_balance(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+    ):
+        respon = update.message.text
+        self.msg_id.append(update.message.message_id)
+        try:
+            self.risk["max_risk"] = float(respon)
+            text = (
+                self.risk_reply_text
+                + f"ท่านได้กำหนดกระเป๋าเงินขั้นต่ำไว้ที่ : {self.risk['min_balance']}"
+            )
+            self.update_inline_keyboard()
+        except Exception as e:
+            text = f"เกิดข้อผิดพลาด {e}\nโปรดทำรายการใหม่อีกรั้ง"
+
+        msg = await update.message.reply_text(
+            text,
+            reply_markup=self.dynamic_reply_markup["risk"],
+        )
+        self.uniq_msg_id.append(msg.message_id)
+        if len(self.ask_msg_id) > 0:
+            for id in self.ask_msg_id:
+                try:
+                    await context.bot.delete_message(
+                        chat_id=self.chat_id, message_id=id
+                    )
+                except Exception:
+                    continue
+        return ConversationHandler.END
+
+    async def save_risk_to_db(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+    ):
+        query = update.callback_query
+        await query.answer()
+        try:
+            with sqlite3.connect("vxma.db", check_same_thread=False) as con:
+                # Read
+                config = pd.read_sql("SELECT * FROM key", con=con)
+                # Edit
+                config["freeB"][0] = self.risk["max_risk"]
+                config["minB"][0] = self.risk["min_balance"]
+                # Save
+                config = config.set_index("apikey")
+                config.to_sql(
+                    "key",
+                    con=con,
+                    if_exists="replace",
+                    index=True,
+                    index_label="apikey",
+                )
+                con.commit()
+            text = "บันทึกข้อมูลสำเร็จแล้วค่ะ"
+        except Exception as e:
+            text = (
+                f"เกิดข้อผิดพลาดขึ้นเนื่องจาก {e}\n\nโปรดทดลองทำรายการใหม่อีกครั้งค่ะ"
+            )
+        msgs = await query.edit_message_text(
+            text=text, reply_markup=self.dynamic_reply_markup["risk"]
+        )
+        self.uniq_msg_id.append(msgs.message_id)
+
+    async def back_to_risk_menu(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        """This Handler can Handle both command and inline button respons"""
+        query = update.callback_query
+        msg = self.risk_reply_text + "อย่าเสี่ยงมากนะคะนายท่าน"
+        if query is not None:
+            # For Back Buttons
+            await query.answer()
+            msgs = await query.edit_message_text(
+                text=msg, reply_markup=self.dynamic_reply_markup["risk"]
+            )
             self.uniq_msg_id.append(msgs.message_id)
+        else:
+            # For Commands cancel
+            self.msg_id.append(update.message.message_id)
+            for id in self.uniq_msg_id:
+                try:
+                    await context.bot.delete_message(
+                        chat_id=self.chat_id, message_id=id
+                    )
+                except Exception:
+                    continue
+            msgs = await update.message.reply_text(
+                msg, reply_markup=self.dynamic_reply_markup["risk"]
+            )
+            self.uniq_msg_id.append(msgs.message_id)
+            return ConversationHandler.END
 
     ## Secure menu
     ## API
@@ -943,7 +1178,9 @@ class Telegram:
         """Handler to asks for API setting"""
         query = update.callback_query
         await query.answer()
-        msg = await query.edit_message_text(text="โปรดกรอก API KEY จาก Binance")
+        msg = await query.edit_message_text(
+            text="โปรดกรอก API KEY จาก Binance\n\n กด /cancel เพื่อยกเลิก"
+        )
         self.ask_msg_id.append(msg.message_id)
         return STEP1_API
 
@@ -961,7 +1198,7 @@ class Telegram:
                 except Exception:
                     continue
         msg = await update.message.reply_text(
-            f"API KEY Binance ของท่าคือ {self.sec_info['API_KEY']}\nโปรดกรอก API SECRET ต่อไป",
+            f"API KEY Binance ของท่าคือ {self.sec_info['API_KEY']}\nโปรดกรอก API SECRET ต่อไป\n\n กด /cancel เพื่อยกเลิก",
         )
         self.ask_msg_id.append(msg.message_id)
         return STEP2_API_SEC
@@ -972,10 +1209,33 @@ class Telegram:
         self.msg_id.append(update.message.message_id)
         self.sec_info["API_SEC"] = str(respon)
         """TODO ACTIVE API AND FETCH BALANCE BEFORE SAVED"""
-        msg = await update.message.reply_text(
-            f"ตั้งค่าสำหรับ API {self.sec_info['API_KEY'][:10]} สำเร็จ",
-            reply_markup=self.reply_markup["secure"],
-        )
+        try:
+            with sqlite3.connect("vxma.db", check_same_thread=False) as con:
+                # Read
+                config = pd.read_sql("SELECT * FROM key", con=con)
+                # Edit able
+                # apikey freeB minB apisec notify
+                config["apikey"][0] = self.sec_info["API_KEY"]
+                config["apisec"][0] = self.sec_info["API_SEC"]
+                # Save
+                config = config.set_index("apikey")
+                config.to_sql(
+                    "key",
+                    con=con,
+                    if_exists="replace",
+                    index=True,
+                    index_label="apikey",
+                )
+                con.commit()
+            msg = await update.message.reply_text(
+                f"ตั้งค่าสำหรับ API {self.sec_info['API_KEY'][:10]} สำเร็จ",
+                reply_markup=self.reply_markup["secure"],
+            )
+        except Exception as e:
+            msg = await update.message.reply_text(
+                f"ตั้งค่าสำหรับ API {self.sec_info['API_KEY'][:10]} เกิดข้อผิดพลาด\n{e}",
+                reply_markup=self.reply_markup["secure"],
+            )
         self.uniq_msg_id.append(msg.message_id)
         if len(self.ask_msg_id) > 0:
             for id in self.ask_msg_id:
@@ -987,7 +1247,7 @@ class Telegram:
                     continue
         return ConversationHandler.END
 
-    ## Customs Tasks to run repeatly
+    ## Customs Tasks to run once
     async def clear_task(self, context: ContextTypes.DEFAULT_TYPE):
         while True:
             if len(self.msg_id) > 0:
@@ -1000,6 +1260,17 @@ class Telegram:
                     except Exception:
                         continue
             await asyncio.sleep(1)
+
+    async def make_bot_task(self, context: ContextTypes.DEFAULT_TYPE):
+        self.bot_trade = BotTrade(
+            context, self.chat_id, self.status_bot, self.status_scan
+        )
+        while True:
+            await asyncio.sleep(1)
+            try:
+                asyncio.run(self.bot_trade.run_bot())
+            except Exception:
+                continue
 
 
 def main():

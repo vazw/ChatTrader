@@ -10,6 +10,7 @@
 from datetime import datetime
 import os
 import sqlite3
+import bcrypt
 from dataclasses import dataclass
 
 import mplfinance as mplf
@@ -91,6 +92,33 @@ def config_setting():
         with sqlite3.connect("vxma.db", check_same_thread=False) as con:
             config = pd.read_sql("SELECT * FROM key", con=con)
         return config
+    except Exception as e:
+        print(e)
+        return None
+
+
+def cooking(id, pwd):
+    try:
+        pepper = f"{id}{pwd}!{barsC}vz{id}"
+        bytePwd = pepper.encode("utf-8")
+        Salt = bcrypt.gensalt(rounds=12)
+        return bcrypt.hashpw(bytePwd, Salt)
+    except Exception as e:
+        print(e)
+        return None
+
+
+def perf(id, pwd):
+    hash1 = "X"
+    try:
+        with sqlite3.connect("vxma.db", check_same_thread=False) as con:
+            bata = pd.read_sql("SELECT * FROM user", con=con)
+        iid = bata["id"][0]
+        if iid == id:
+            hash1 = bata["pass"][0]
+        egg = f"{id}{pwd}!{barsC}vz{id}"
+        bytePwd = egg.encode("utf-8")
+        return bcrypt.checkpw(bytePwd, hash1)
     except Exception as e:
         print(e)
         return None
@@ -309,7 +337,7 @@ def candle(df, symbol, tf):
             datetime_format="%y/%b/%d %H:%M",
             xrotation=20,
         )
-    return f"{titles}", "/candle.png"
+    return "./candle.png"
 
 
 def clearconsol():
