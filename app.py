@@ -1000,7 +1000,7 @@ class Telegram:
             if self.status_scan:
                 self.status_scan = False
                 self.bot_trade.disable_scan()
-            elif not self.status_bot:
+            elif not self.status_scan:
                 self.status_scan = True
                 self.bot_trade.enable_scan()
             self.update_inline_keyboard()
@@ -1294,11 +1294,12 @@ class Telegram:
             context, self.chat_id, self.status_bot, self.status_scan
         )
         while True:
+            if self.status_bot:
+                try:
+                    asyncio.run(self.bot_trade.run_bot())
+                except Exception:
+                    continue
             await asyncio.sleep(1)
-            try:
-                asyncio.run(self.bot_trade.run_bot())
-            except Exception:
-                continue
 
 
 def main():
