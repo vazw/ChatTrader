@@ -671,8 +671,13 @@ class Telegram:
                 columns=POSITION_COLLUMN,
             )
             if len(status.index) > 0:
+                status["unrealizedProfit"] = (
+                    (status["unrealizedProfit"]).astype("float64").round(2)
+                )
+
+                status["initialMargin"] = (status["initialMargin"]).astype("float64")
                 text = [
-                    f"{status['symbol'][i]} จำนวน {status['positionAmt'][i]} P/L {round(status['unrealizedProfit'][i], 3)}\n"
+                    f"{status['symbol'][i]} จำนวน {status['positionAmt'][i]} P/L {round(status['unrealizedProfit'][i], 3)}$\n"
                     for i in range(len(status.index))
                 ]
                 text_reply = self.pnl_reply = "Postion ที่มีการเปิดอยู่\n".join(text)
