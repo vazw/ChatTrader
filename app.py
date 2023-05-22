@@ -704,8 +704,11 @@ class Telegram:
                 text="Selected again!", reply_markup=self.reply_markup["menu"]
             )
         # Save message_id to delete at the end.
-        if isinstance(msgs.message_id, int):
+        try:
             self.uniq_msg_id.append(msgs.message_id)
+        except Exception:
+            # Just pass if "X"
+            pass
 
     async def back_to_menu(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
