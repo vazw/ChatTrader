@@ -1098,6 +1098,11 @@ class Telegram:
             columns=POSITION_COLLUMN,
         )
         if len(status.index) > 0:
+            status["unrealizedProfit"] = (
+                (status["unrealizedProfit"]).astype("float64").round(2)
+            )
+
+            status["initialMargin"] = (status["initialMargin"]).astype("float64")
             positiondata = [
                 (
                     json.dumps({"Mode": "PNLC", "Method": status["symbol"][i]}),
