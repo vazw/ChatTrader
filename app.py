@@ -346,6 +346,10 @@ class Telegram:
             CommandHandler("help", self.help_command),
             CommandHandler("menu", self.menu_command),
             CommandHandler("clear", self.clear_command),
+            ## Regex callback at the top
+            CallbackQueryHandler(self.info_pnl_per_coin, filters.Regex("^PNL:")),
+            ## TODO add symbols handler for setting
+            CallbackQueryHandler(self.edit_config_per_coin, filters.Regex("^COINS:")),
             # Handler for Back to menu for all menu
             CallbackQueryHandler(
                 self.back_to_menu,
@@ -526,9 +530,6 @@ class Telegram:
                 self.show_info_pnl_per_coin,
                 lambda x: (eval(x))["Mode"] == "pnl" and (eval(x))["Method"] == "COINS",
             ),
-            CallbackQueryHandler(self.info_pnl_per_coin, filters.Regex("^PNL:")),
-            ## TODO add symbols handler for setting
-            CallbackQueryHandler(self.edit_config_per_coin, filters.Regex("^COINS:")),
             # secure_handler
             # API
             ConversationHandler(
