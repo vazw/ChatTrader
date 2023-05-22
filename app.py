@@ -668,7 +668,7 @@ class Telegram:
                     f"{status['symbol'][i]} จำนวน {status['positionAmt'][i]} P/L {status['unrealizedProfit'][i]}\n"
                     for i in range(len(status.index))
                 ]
-                self.pnl_reply = "Postion ที่มีการเปิดอยู่\n".join(text)
+                text_reply = self.pnl_reply = "Postion ที่มีการเปิดอยู่\n".join(text)
             else:
                 text_reply = "ไม่มี Postion ที่มีการเปิดอยู่"
             msgs = await query.edit_message_text(
@@ -685,13 +685,16 @@ class Telegram:
                 text="โปรดเลือกการตั้งค่า",
                 reply_markup=self.reply_markup["secure"],
             )
+        elif callback["Method"] == "X":
+            query.message.delete()
 
         else:
             msgs = await query.edit_message_text(
                 text="Selected again!", reply_markup=self.reply_markup["menu"]
             )
         # Save message_id to delete at the end.
-        self.uniq_msg_id.append(msgs.message_id)
+        if isinstance(msgs.message_id, int):
+            self.uniq_msg_id.append(msgs.message_id)
 
     async def back_to_menu(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
