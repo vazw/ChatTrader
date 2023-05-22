@@ -1028,10 +1028,12 @@ class Telegram:
             coins_key = InlineKeyboardMarkup(
                 coins
                 + [
-                    InlineKeyboardButton(
-                        "❌ กลับ",
-                        callback_data='{"Mode": "COINS", "Method": "BACK"}',
-                    )
+                    [
+                        InlineKeyboardButton(
+                            "❌ กลับ",
+                            callback_data='{"Mode": "COINS", "Method": "BACK"}',
+                        )
+                    ]
                 ]
             )
             msgs = await query.edit_message_text(text=msg, reply_markup=coins_key)
