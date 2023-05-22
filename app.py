@@ -1085,10 +1085,10 @@ class Telegram:
         respon = update.message.text
         self.msg_id.append(update.message.message_id)
         try:
-            self.risk["max_risk"] = float(respon)
+            self.risk["min_balance"] = float(respon)
             text = (
                 self.risk_reply_text
-                + f"ท่านได้กำหนดกระเป๋าเงินขั้นต่ำไว้ที่ : {self.risk['min_balance']}"
+                + f"\nท่านได้กำหนดกระเป๋าเงินขั้นต่ำไว้ที่ : {self.risk['min_balance']}"
             )
             self.update_inline_keyboard()
         except Exception as e:
