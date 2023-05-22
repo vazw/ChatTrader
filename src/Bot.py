@@ -201,6 +201,8 @@ class BotTrade:
                 print(f"Restarting :{e}")
                 lastUpdate.status = "Fallback Mode : Restarting..."
                 continue
+            finally:
+                await binance_i.disconnect()
 
     async def notify_send(self, message: str):
         return await self.context.bot.send_message(chat_id=self.chat_id, text=message)
@@ -560,6 +562,7 @@ class BotTrade:
             balance = account_balance.balance
             risk_manage_data = RiskManageTable(symbolist, balance)
             lastUpdate.status = f"Scaning {risk_manage_data.symbol}"
+            await self.notify_send(f"we can do it! {risk_manage_data.symbol}")
 
             if risk_manage_data.usehedge:
                 data, df_hedge = await asyncio.gather(
