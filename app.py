@@ -672,7 +672,7 @@ class Telegram:
             )
             if len(status.index) > 0:
                 text = [
-                    f"{status['symbol'][i]} จำนวน {status['positionAmt'][i]} P/L {status['unrealizedProfit'][i]}\n"
+                    f"{status['symbol'][i]} จำนวน {status['positionAmt'][i]} P/L {round(status['unrealizedProfit'][i], 3)}\n"
                     for i in range(len(status.index))
                 ]
                 text_reply = self.pnl_reply = "Postion ที่มีการเปิดอยู่\n".join(text)
@@ -693,7 +693,7 @@ class Telegram:
                 reply_markup=self.reply_markup["secure"],
             )
         elif callback["Method"] == "X":
-            await query.message.delete()
+            await query.delete_message()
         else:
             msgs = await query.edit_message_text(
                 text="Selected again!", reply_markup=self.reply_markup["menu"]
@@ -1072,7 +1072,7 @@ class Telegram:
                     [
                         InlineKeyboardButton(
                             "❌ กลับ",
-                            callback_data="'Mode': 'COINS', 'Method': 'BACK_TO_MENU'",
+                            callback_data="{'Mode': 'COINS', 'Method': 'BACK_TO_MENU'}",
                         )
                     ]
                 ]
@@ -1095,8 +1095,8 @@ class Telegram:
         if len(status.index) > 0:
             positiondata = [
                 (
-                    json.dumps({"Mode": "PNL", "Method": status["symbol"][i]}),
-                    f"{status['symbol'][i]} P/L {status['unrealizedProfit'][i]}",
+                    json.dumps({"Mode": "PNLC", "Method": status["symbol"][i]}),
+                    f"{status['symbol'][i]} P/L {round(status['unrealizedProfit'][i], 3)}$",
                 )
                 for i in range(len(status.index))
             ]
@@ -1117,7 +1117,7 @@ class Telegram:
                     [
                         InlineKeyboardButton(
                             "❌ กลับ",
-                            callback_data="'Mode': 'PNLC', 'Method' :'BACK_TO_MENU'",
+                            callback_data="{'Mode': 'PNLC', 'Method' :'BACK_TO_MENU'}",
                             ## Chnage back to JSONDict
                         )
                     ]
