@@ -247,7 +247,7 @@ class Telegram:
         self.risk["max_risk"] = config.max_margin
         self.risk["min_balance"] = config.min_balance
 
-    def reset_trade_order(self) -> None:
+    def reset_trade_order_data(self) -> None:
         self.trade_order = {
             "symbol": "",
             "type": "MARKET",
@@ -270,6 +270,7 @@ class Telegram:
 
     def setup_bot(self) -> None:
         # Basic Commands
+        self.reset_trade_order_data()
         self.update_inline_keyboard()
 
         default_handlers = [
@@ -852,7 +853,7 @@ class Telegram:
         """Handler that received trade symbol (STEP1)"""
         respon = update.message.text
         self.msg_id.append(update.message.message_id)
-        self.reset_trade_order()
+        self.reset_trade_order_data()
         self.trade_order["symbol"] = respon.upper()
         """TODO"""
         try:
@@ -1254,7 +1255,7 @@ class Telegram:
             )
         else:
             ## TODO EDIT POSITION
-            self.reset_trade_order()
+            self.reset_trade_order_data()
             self.trade_order["symbol"] = f"{callback['Method']}"
             self.trade_order["price"] = await self.binance_.get_bidask(
                 self.trade_order["symbol"], "bid"
