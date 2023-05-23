@@ -1321,14 +1321,15 @@ class Telegram:
                 if position_data["long"]["position"]
                 else "short"
             )
+            symbol_order = await get_tp_sl_price(
+                self.trade_order["symbol"], f"{callback['Side']}".upper()
+            )
+            await binance_i.disconnect()
             self.trade_order["amt"] = position_data[f"{side}"]["amount"]
             entry_price = position_data[f"{side}"]["price"]
             pnl = position_data[f"{side}"]["pnl"]
             margin = position_data[f"{side}"]["margin"]
             pnl_t = "กำไร" if pnl > 0.0 else "ขาดทุน"
-            symbol_order = await get_tp_sl_price(
-                self.trade_order["symbol"], side.upper()
-            )
             self.trade_order["tp_price"] = symbol_order["tp_price"]
             self.trade_order["sl_price"] = symbol_order["sl_price"]
             text = f"\n{side.upper()} Postion จำนวน {self.trade_order['amt']}\n\
