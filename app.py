@@ -285,8 +285,6 @@ class Telegram:
                 in ["fiat", "trade", "analyse", "pnl", "setting", "secure"]
                 and (eval(x))["Method"] == "BACK",
             ),
-            # Handler for unknown commands
-            MessageHandler(filters.COMMAND, self.unknown),
         ]
 
         main_menu_handlers = [
@@ -601,7 +599,7 @@ class Telegram:
                         )
                     ],
                 },
-                fallbacks=[CommandHandler("cancel", self.back_to_menu)],
+                fallbacks=[CommandHandler("cancel", self.back_to_secure_menu)],
             ),
         ]
 
@@ -612,6 +610,9 @@ class Telegram:
         self.application.add_handlers(trade_menu_handlers)
         self.application.add_handlers(bot_setting_handlers)
         self.application.add_handlers(api_setting_handlers)
+        # Handler for unknown commands at the last handler
+        self.application.add_handlers(MessageHandler(filters.COMMAND, self.unknown))
+
         # Running Background job.
         self.application.job_queue.run_once(self.make_bot_task, when=1)
         self.application.job_queue.run_once(self.clear_task, when=1)
@@ -1206,7 +1207,7 @@ Order นี้จะใช้ Margin จะปรับเป็น: {round(mar
             self.trade_order["margin"] = position_data[self.trade_order["type"]][
                 "margin"
             ]
-            pnl_t = "กำไร" if self.trade_order["pnl"] > 0.0 else "ขาดทุน"
+            pnl_t = "ขาดทุน" if self.trade_order["pnl"] < 0.0 else "กำไร"
             text = f"\n{self.trade_order['type'].upper()} Postion\
 จำนวน {self.trade_order['amt']}🪙\n\
 💶ราคาเข้า : {self.trade_order['e_price']}\n\
@@ -1576,7 +1577,7 @@ Leverage : X{self.trade_order['lev']}\n\
             self.trade_order["margin"] = position_data[self.trade_order["type"]][
                 "margin"
             ]
-            pnl_t = "กำไร" if self.trade_order["pnl"] > 0.0 else "ขาดทุน"
+            pnl_t = "ขาดทุน" if self.trade_order["pnl"] < 0.0 else "กำไร"
             self.trade_order["tp_id"] = symbol_order["tp_id"]
             self.trade_order["sl_id"] = symbol_order["sl_id"]
             self.trade_order["tp_price"] = symbol_order["tp_price"]
@@ -1915,6 +1916,36 @@ Leverage : X{self.trade_order['lev']}\n\
                 except Exception:
                     continue
         return ConversationHandler.END
+
+    async def back_to_secure_menu(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        """This Handler can Handle both command and inline button respons"""
+        query = update.callback_query
+        if query is not None:
+            # For Back Buttons
+            await query.answer()
+            msgs = await query.edit_message_text(
+                text="โปรดเลือกการตั้งค่า",
+                reply_markup=self.reply_markup["secure"],
+            )
+            self.uniq_msg_id.append(msgs.message_id)
+        else:
+            # For Commands cancel
+            self.msg_id.append(update.message.message_id)
+            for id in self.uniq_msg_id:
+                try:
+                    await context.bot.delete_message(
+                        chat_id=self.chat_id, message_id=id
+                    )
+                except Exception:
+                    continue
+            msgs = await query.edit_message_text(
+                text="โปรดเลือกการตั้งค่า",
+                reply_markup=self.reply_markup["secure"],
+            )
+            self.uniq_msg_id.append(msgs.message_id)
+            return ConversationHandler.END
 
     ## Customs Tasks to run once
     async def clear_task(self, context: ContextTypes.DEFAULT_TYPE):

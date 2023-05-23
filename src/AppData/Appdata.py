@@ -567,15 +567,15 @@ REPLY_MARKUP = {
             ],
             [
                 InlineKeyboardButton(
-                    "🤖ตั้งค่าบอท",
+                    "🤖บอท",
                     callback_data='{"Mode": "menu", "Method": "BotSetting"}',
                 ),
                 InlineKeyboardButton(
-                    "⚙️ตั้งค่า API",
+                    "⚙️ตั้งค่า",
                     callback_data='{"Mode": "menu", "Method": "apiSetting"}',
                 ),
                 InlineKeyboardButton(
-                    "❌ปิด",
+                    "❌ปิดเมนู",
                     callback_data='{"Mode": "menu", "Method": "X"}',
                 ),
             ],
