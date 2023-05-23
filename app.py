@@ -1223,10 +1223,10 @@ class Telegram:
             coins = [
                 [
                     InlineKeyboardButton(
-                        f"{symbol[:-5]}".replace("/", ""),
+                        f"{symbol[:-5]} {tf}".replace("/", ""),
                         callback_data=json.dumps({"Mode": "COINS", "Method": symbol}),
                     )
-                    for symbol in symbol_list
+                    for symbol, tf in symbol_list
                 ]
                 for symbol_list in split_list(self.bot_trade.watchlist, 3)
             ]
@@ -1631,7 +1631,7 @@ Margin ที่ใช้ : {margin} X {position_data['leverage']}\n\
                 await setleverage(
                     self.trade_order["symbol"], self.trade_order["lev"], exchange
                 )
-                order = await exchange.create_market_order(
+                await exchange.create_market_order(
                     self.trade_order["symbol"],
                     "buy",
                     self.trade_order["amt"],
@@ -1641,7 +1641,7 @@ Margin ที่ใช้ : {margin} X {position_data['leverage']}\n\
                     },
                 )
                 await account_balance.update_balance(force=True)
-                return f"รายงานการทำธุรกรรม : {order['status']}\n\
+                return f"\n\nรายงานการทำธุรกรรม :\n\
 ได้ออกคำสั่งเปิด Long สำหรับ : {self.trade_order['symbol']}\n\
 จำนวน : {self.trade_order['amt']}\n\
 Leverage: {self.trade_order['lev']}\n"
@@ -1752,7 +1752,7 @@ Leverage: {self.trade_order['lev']}\n"
 
         await query.edit_message_text(
             self.trade_reply_text + text,
-            reply_markup=self.dynamic_reply_markup["trade"],
+            reply_markup=self.reply_markup["menu"],
         )
 
     async def trade_short_button(
@@ -1764,7 +1764,7 @@ Leverage: {self.trade_order['lev']}\n"
                 await setleverage(
                     self.trade_order["symbol"], self.trade_order["lev"], exchange
                 )
-                order = await exchange.create_market_order(
+                await exchange.create_market_order(
                     self.trade_order["symbol"],
                     "sell",
                     self.trade_order["amt"],
@@ -1774,7 +1774,7 @@ Leverage: {self.trade_order['lev']}\n"
                     },
                 )
                 await account_balance.update_balance(force=True)
-                return f"รายงานการทำธุรกรรม : {order['status']}\n\
+                return f"\n\nรายงานการทำธุรกรรม :\n\
 ได้ออกคำสั่งเปิด Short สำหรับ : {self.trade_order['symbol']}\n\
 จำนวน : {self.trade_order['amt']}\n\
 Leverage: {self.trade_order['lev']}\n"
@@ -1885,7 +1885,7 @@ Leverage: {self.trade_order['lev']}\n"
 
         await query.edit_message_text(
             self.trade_reply_text + text,
-            reply_markup=self.dynamic_reply_markup["trade"],
+            reply_markup=self.reply_markup["menu"],
         )
 
 
