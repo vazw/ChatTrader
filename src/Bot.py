@@ -897,7 +897,7 @@ class BotTrade:
             else:
                 orderSL = await exchange.create_order(
                     symbol,
-                    "stop",
+                    "stop_market",
                     "buy",
                     amount,
                     float(high),
@@ -936,7 +936,7 @@ class BotTrade:
             else:
                 orderSL = await exchange.create_order(
                     symbol,
-                    "stop",
+                    "stop_market",
                     "sell",
                     amount,
                     float(low),
