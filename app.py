@@ -378,8 +378,6 @@ class Telegram:
                                 "กราฟ📈",
                                 callback_data='{"Mode": "vxma_settings", "Method": "CHART"}',
                             ),
-                        ],
-                        [
                             InlineKeyboardButton(
                                 "💾บันทึก",
                                 callback_data='{"Mode": "vxma_settings", "Method": "SAVE"}',
@@ -390,8 +388,6 @@ class Telegram:
                                 "ลบ🗑",
                                 callback_data='{"Mode": "vxma_settings", "Method": "DELETE"}',
                             ),
-                        ],
-                        [
                             InlineKeyboardButton(
                                 "❌ กลับ",
                                 callback_data='{"Mode": "vxma_settings", "Method": "BACK"}',
