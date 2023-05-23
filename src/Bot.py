@@ -1543,8 +1543,9 @@ class BotTrade:
             amt_long = 0.0
             upnl_short = 0.0
             upnl_long = 0.0
-            margin_long = 0, 0
-            margin_short = 0, 0
+            margin_long = 0.0
+            margin_short = 0.0
+            leverage = 1
         elif len(status.index) > 1:
             amt_long = float(
                 (
@@ -1610,6 +1611,13 @@ class BotTrade:
                     and status["positionSide"][i] == "SHORT"
                 ).__next__()
             )
+            leverage = int(
+                (
+                    status["leverage"][i]
+                    for i in status.index
+                    if status["symbol"][i] == posim
+                ).__next__()
+            )
         else:
             amt = float(
                 (
@@ -1647,14 +1655,13 @@ class BotTrade:
             upnl_short = upnl if amt != 0 else 0.0
             price_long = price_ if amt > 0 else 0.0
             price_short = price_ if amt < 0 else 0.0
-
-        leverage = int(
-            (
-                status["leverage"][i]
-                for i in status.index
-                if status["symbol"][i] == posim
-            ).__next__()
-        )
+            leverage = int(
+                (
+                    status["leverage"][i]
+                    for i in status.index
+                    if status["symbol"][i] == posim
+                ).__next__()
+            )
         is_in_Long = True if amt_long != 0 else False
         is_in_Short = True if amt_short != 0 else False
         del status
