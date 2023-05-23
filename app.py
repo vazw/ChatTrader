@@ -1224,7 +1224,9 @@ class Telegram:
                 [
                     InlineKeyboardButton(
                         f"{symbol[:-5]} {tf}".replace("/", ""),
-                        callback_data=json.dumps({"Mode": "COINS", "Method": symbol}),
+                        callback_data=json.dumps(
+                            {"Mode": "COINS", "Method": symbol, "tf": tf}
+                        ),
                     )
                     for symbol, tf in symbol_list
                 ]
