@@ -77,11 +77,39 @@ BOTCOL = [
     "hedge",
     "hedgeTF",
 ]
+vxma_settings = {
+    "id": "0",
+    "symbol": "BTCUSDT",
+    "timeframe": "6h",
+    "ATR": 12,
+    "ATR_m": 1.6,
+    "EMA": 30,
+    "subhag": 30,
+    "smooth": 30,
+    "RSI": 25,
+    "Andean": 30,
+    "Uselong": True,
+    "Useshort": True,
+    "UseTP": True,
+    "UseTP2": False,
+    "UseSL": True,
+    "Tail_SL": True,
+    "leverage": 50,
+    "Pivot": 15,
+    "RR1": 3,
+    "RR2": 4.5,
+    "TP1": 50,
+    "TP2": 50,
+    "Risk": "$2",
+    "maxMargin": "%10",
+    "hedge": True,
+    "hedgeTF": "30m",
+}
 
 
 def bot_setting() -> pd.DataFrame:
     try:
-        symbolist = pd.read_csv("bot_config.csv")
+        symbolist = pd.read_csv("bot_config.csv", index_col="id")
         return symbolist
     except Exception as e:
         print(e)

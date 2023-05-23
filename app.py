@@ -26,8 +26,12 @@ from src.AppData import HELP_MESSAGE, WELCOME_MESSAGE, split_list
 from src.AppData.Appdata import (
     REPLY_MARKUP,
     AppConfig,
+    TATable,
+    bot_setting,
+    candle,
     write_trade_record,
     edit_all_trade_record,
+    vxma_settings,
 )
 from src.Bot import BotTrade
 from src.CCXT_Binance import (
@@ -75,6 +79,7 @@ class Telegram:
             "API_SEC": "",
             "PASS": "",
         }
+        self.vxma_settings = vxma_settings
         self.dynamic_reply_markup = {}
         self.reply_markup = REPLY_MARKUP
 
@@ -236,6 +241,162 @@ class Telegram:
                             "❌ กลับ",
                             callback_data='{"Mode": "position_", "Method": "BACK"}',
                         ),
+                    ],
+                ]
+            ),
+            "vxma_settings": InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "symbol"}',
+                            text=f"symbol : {self.vxma_settings['symbol']}",
+                        ),
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings" , "Method": "timeframe"}',
+                            text=f"timeframe : {self.vxma_settings['timeframe']}",
+                        ),
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "ATR"}',
+                            text=f"ATR : {self.vxma_settings['ATR']}",
+                        ),
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "ATR_m"}',
+                            text=f"ATR_m : {self.vxma_settings['ATR_m']}",
+                        ),
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "EMA"}',
+                            text=f"EMA : {self.vxma_settings['EMA']}",
+                        ),
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "subhag"}',
+                            text=f"subhag : {self.vxma_settings['subhag']}",
+                        ),
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method" : "smooth"}',
+                            text=f"smooth : {self.vxma_settings['smooth']}",
+                        ),
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "RSI"}',
+                            text=f"RSI : {self.vxma_settings['RSI']}",
+                        ),
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "Andean"}',
+                            text=f"Andean : {self.vxma_settings['Andean']}",
+                        ),
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "Uselong"}',
+                            text=f"Uselong : {'ON' if self.vxma_settings['Uselong'] else 'OFF'}",
+                        ),
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "Useshort"}',
+                            text=f"Useshort : {'ON' if self.vxma_settings['Useshort'] else 'OFF'}",
+                        ),
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method":"UseTP"}',
+                            text=f"UseTP : {'ON' if self.vxma_settings['UseTP'] else 'OFF'}",
+                        ),
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "UseTP2"}',
+                            text=f"UseTP2 : {'ON' if self.vxma_settings['UseTP2'] else 'OFF'}",
+                        ),
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "UseSL"}',
+                            text=f"UseSL : {'ON' if self.vxma_settings['UseSL'] else 'OFF'}",
+                        ),
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "Tail_SL"}',
+                            text=f"Tail_SL : {'ON' if self.vxma_settings['Tail_SL'] else 'OFF'}",
+                        ),
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "leverage"}',
+                            text=f"leverage : {self.vxma_settings['leverage']}",
+                        ),
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "Pivot"}',
+                            text=f"Pivot : {self.vxma_settings['Pivot']}",
+                        ),
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "RR1"}',
+                            text=f"RR1 : {self.vxma_settings['RR1']}",
+                        ),
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "RR2"}',
+                            text=f"RR2 : {self.vxma_settings['RR2']}",
+                        ),
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "TP1"}',
+                            text=f"TP1 : {self.vxma_settings['TP1']}",
+                        ),
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "TP2"}',
+                            text=f"TP2 : {self.vxma_settings['TP2']}",
+                        ),
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "Risk"}',
+                            text=f"Risk : {self.vxma_settings['Risk']}",
+                        ),
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "maxMargin"}',
+                            text=f"maxMargin : {self.vxma_settings['maxMargin']}",
+                        ),
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "hedge"}',
+                            text=f"hedge : {'ON' if self.vxma_settings['hedge'] else 'OFF'}",
+                        ),
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "hedgeTF"}',
+                            text=f"hedgeTF : {self.vxma_settings['hedgeTF']}",
+                        )
+                    ],
+                    [
+                        [
+                            InlineKeyboardButton(
+                                "กราฟ📈",
+                                callback_data='{"Mode": "vxma_settings", "Method": "CHART"}',
+                            ),
+                        ],
+                        [
+                            InlineKeyboardButton(
+                                "💾บันทึก",
+                                callback_data='{"Mode": "vxma_settings", "Method": "SAVE"}',
+                            ),
+                        ],
+                        [
+                            InlineKeyboardButton(
+                                "ลบ🗑",
+                                callback_data='{"Mode": "vxma_settings", "Method": "DELETE"}',
+                            ),
+                        ],
+                        [
+                            InlineKeyboardButton(
+                                "❌ กลับ",
+                                callback_data='{"Mode": "vxma_settings", "Method": "BACK"}',
+                            ),
+                        ],
                     ],
                 ]
             ),
@@ -573,6 +734,10 @@ class Telegram:
                 self.edit_config_per_coin,
                 lambda x: (eval(x))["Mode"] == "COINS",
             ),
+            CallbackQueryHandler(
+                self.vxma_settings_handler,
+                lambda x: (eval(x))["Mode"] == "vxma_settings",
+            ),
         ]
 
         # secure_handler
@@ -787,6 +952,12 @@ class Telegram:
         await query.answer()
         callback = eval(query.data)
         fiat_balance = self.binance_.fiat_balance
+        status = self.binance_.position_data
+        netunpl = float(
+            status["unrealizedProfit"].astype("float64").sum()
+            if not status.empty
+            else 0.0
+        )
 
         if callback["Method"] == "ALL":
             msg = (
@@ -797,6 +968,7 @@ class Telegram:
                 + f"\nFree   : {round(fiat_balance['USDT']['free'],2)}$"
                 + f"\nMargin : {round(fiat_balance['USDT']['used'],2)}$"
                 + f"\nTotal  : {round(fiat_balance['USDT']['total'],2)}$"
+                + f"\nNet Profit/Loss  : {round(netunpl,2)}$"
             )
         elif callback["Method"] == "BUSD":
             msg = (
@@ -804,6 +976,7 @@ class Telegram:
                 + f"\nFree   : {round(fiat_balance['BUSD']['free'],2)}$"
                 + f"\nMargin : {round(fiat_balance['BUSD']['used'],2)}$"
                 + f"\nTotal  : {round(fiat_balance['BUSD']['total'],2)}$"
+                + f"\nNet Profit/Loss  : {round(netunpl,2)}$"
             )
         elif callback["Method"] == "USDT":
             msg = (
@@ -811,6 +984,7 @@ class Telegram:
                 + f"\nFree   : {round(fiat_balance['USDT']['free'],2)}$"
                 + f"\nMargin : {round(fiat_balance['USDT']['used'],2)}$"
                 + f"\nTotal  : {round(fiat_balance['USDT']['total'],2)}$"
+                + f"\nNet Profit/Loss  : {round(netunpl,2)}$"
             )
         msgs = await query.edit_message_text(
             text=msg, reply_markup=self.reply_markup["menu"]
@@ -1112,6 +1286,276 @@ class Telegram:
                 reply_markup=self.dynamic_reply_markup["trade"],
             )
         self.uniq_msg_id.append(msgs.message_id)
+
+    async def trade_long_button(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+    ):
+        async def open_long():
+            orderid = get_order_id()
+            try:
+                await exchange.cancel_all_orders(self.trade_order["symbol"])
+                await self.binance_.setleverage(
+                    self.trade_order["symbol"], self.trade_order["lev"]
+                )
+                await exchange.create_market_order(
+                    self.trade_order["symbol"],
+                    "buy",
+                    self.trade_order["amt"],
+                    params={
+                        "positionSide": self.bot_trade.currentMode.Lside,
+                        "newClientOrderId": orderid,
+                    },
+                )
+                await self.binance_.update_balance(force=True)
+                return f"\n\nรายงานการทำธุรกรรม :\n\
+ได้ออกคำสั่งเปิด Long สำหรับ : {self.trade_order['symbol']}\n\
+จำนวน : {self.trade_order['amt']}\n\
+Leverage: {self.trade_order['lev']}\n"
+            except ccxt.InsufficientFunds:
+                return "\nข้ออภัยค่ะ ยอดเงินของท่านไม่เพียงพอในการออก Order💸\
+    โปรดตรวจสอบ Size โดยระเอียดอีกครั้ง แล้วทำรายการใหม่ ขอบคุณค่ะ🙏"
+            except Exception as e:
+                return f"\nข้ออภัยค่ะ เกิดข้อพิดพลาดขณะที่บอททำการส่งคำสั่ง Long ได้เกิด Error :{e}"
+
+        async def open_tp_long():
+            orderid = get_order_id()
+            try:
+                orderTP = await exchange.create_order(
+                    self.trade_order["symbol"],
+                    "TAKE_PROFIT_MARKET",
+                    "sell",
+                    self.trade_order["amt"],
+                    self.trade_order["tp_price"],
+                    params={
+                        "stopPrice": self.trade_order["tp_price"],
+                        "triggerPrice": self.trade_order["tp_price"],
+                        "positionSide": self.bot_trade.currentMode.Lside,
+                        "newClientOrderId": orderid,
+                    },
+                )
+                return f"\n{orderTP['status']} -> ส่งคำสั่ง Take Profit ที่ {self.trade_order['tp_price']} เรียบร้อยแล้ว"
+
+            except Exception as e:
+                return f"\nเกิดข้อผิดพลาดตอนส่งคำสั่ง Take Profit :{e}"
+
+        async def open_sl_long():
+            orderid = get_order_id()
+            try:
+                orderSL = await exchange.create_order(
+                    self.trade_order["symbol"],
+                    "stop_market",
+                    "sell",
+                    self.trade_order["amt"],
+                    params={
+                        "stopPrice": self.trade_order["sl_price"],
+                        "positionSide": self.bot_trade.currentMode.Lside,
+                        "newClientOrderId": orderid,
+                    },
+                )
+                return f"\n{orderSL['status']} -> ส่งคำสั่ง Stop-Loss ที่ {self.trade_order['sl_price']} เรียบร้อยแล้ว"
+            except Exception as e:
+                return f"\nเกิดข้อผิดพลาดในการส่งคำสั่ง Stop-Loss :{e}"
+
+        async def close_short():
+            orderid = get_order_id()
+            try:
+                order = await exchange.create_market_order(
+                    self.trade_order["symbol"],
+                    "buy",
+                    abs(position_data["short"]["amount"]),
+                    params={
+                        "positionSide": self.bot_trade.currentMode.Sside,
+                        "newClientOrderId": orderid,
+                    },
+                )
+                await self.binance_.update_balance(force=True)
+                pnl = "กำไร" if position_data["short"]["pnl"] > 0.0 else "ขาดทุน"
+                return f"\n{order['status']} - ธุรกรรมที่ถูกปิดไป{pnl} : {position_data['short']['pnl']}$"
+            except Exception as e:
+                return f"\nเกิดข้อผิดพลาดในการปิด Order เดิม :{e}"
+
+        query = update.callback_query
+        text_repons = ["", "", "", ""]
+        await query.answer()
+        exchange = await self.binance_.get_exchange()
+        await self.binance_.connect_loads()
+        try:
+            await self.bot_trade.get_currentmode()
+            position_data = await self.bot_trade.check_current_position(
+                self.trade_order["symbol"], self.binance_.position_data.copy()
+            )
+            if position_data["short"]["position"]:
+                text1 = await close_short()
+                text_repons[1] = text1
+                edit_all_trade_record(
+                    datetime.now(),
+                    self.trade_order["symbol"],
+                    "-",
+                    "Short",
+                    self.trade_order["price"],
+                )
+            text0 = await open_long()
+            text_repons[0] = text0
+            if self.trade_order["tp"]:
+                text2 = await open_tp_long()
+                text_repons[2] = text2
+            if self.trade_order["sl"]:
+                text3 = await open_sl_long()
+                text_repons[3] = text3
+            text = "".join(text_repons)
+            await self.binance_.disconnect()
+            write_trade_record(
+                datetime.now(),
+                self.trade_order["symbol"],
+                "-",
+                self.trade_order["amt"],
+                self.trade_order["price"],
+                "Long",
+                self.trade_order["tp_price"] if self.trade_order["tp"] else None,
+                self.trade_order["sl_price"] if self.trade_order["sl"] else None,
+            )
+        except Exception as e:
+            text = f"\nเกิดข้อผิดพลาด {e}\n\nโปรดลองส่ง Order อีกครั้งค่ะ"
+
+        await query.edit_message_text(
+            self.trade_reply_text + text,
+            reply_markup=self.reply_markup["menu"],
+        )
+
+    async def trade_short_button(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+    ):
+        async def open_short():
+            orderid = get_order_id()
+            try:
+                await exchange.cancel_all_orders(self.trade_order["symbol"])
+                await self.binance_.setleverage(
+                    self.trade_order["symbol"], self.trade_order["lev"]
+                )
+                await exchange.create_market_order(
+                    self.trade_order["symbol"],
+                    "sell",
+                    self.trade_order["amt"],
+                    params={
+                        "positionSide": self.bot_trade.currentMode.Sside,
+                        "newClientOrderId": orderid,
+                    },
+                )
+                await self.binance_.update_balance(force=True)
+                return f"\n\nรายงานการทำธุรกรรม :\n\
+ได้ออกคำสั่งเปิด Short สำหรับ : {self.trade_order['symbol']}\n\
+จำนวน : {self.trade_order['amt']}\n\
+Leverage: {self.trade_order['lev']}\n"
+            except ccxt.InsufficientFunds:
+                return "\nข้ออภัยค่ะ ยอดเงินของท่านไม่เพียงพอในการออก Order💸\
+    โปรดตรวจสอบ Size โดยระเอียดอีกครั้ง แล้วทำรายการใหม่ ขอบคุณค่ะ🙏"
+            except Exception as e:
+                return f"\nข้ออภัยค่ะ เกิดข้อพิดพลาดขณะที่บอททำการส่งคำสั่ง Short ได้เกิด Error :{e}"
+
+        async def open_tp_short():
+            orderid = get_order_id()
+            try:
+                orderTP = await exchange.create_order(
+                    self.trade_order["symbol"],
+                    "TAKE_PROFIT_MARKET",
+                    "buy",
+                    self.trade_order["amt"],
+                    self.trade_order["tp_price"],
+                    params={
+                        "stopPrice": self.trade_order["tp_price"],
+                        "triggerPrice": self.trade_order["tp_price"],
+                        "positionSide": self.bot_trade.currentMode.Sside,
+                        "newClientOrderId": orderid,
+                    },
+                )
+                return f"\n{orderTP['status']} -> ส่งคำสั่ง Take Profit ที่ {self.trade_order['tp_price']} เรียบร้อยแล้ว"
+
+            except Exception as e:
+                return f"\nเกิดข้อผิดพลาดตอนส่งคำสั่ง Take Profit :{e}"
+
+        async def open_sl_short():
+            orderid = get_order_id()
+            try:
+                orderSL = await exchange.create_order(
+                    self.trade_order["symbol"],
+                    "stop_market",
+                    "buy",
+                    self.trade_order["amt"],
+                    params={
+                        "stopPrice": self.trade_order["sl_price"],
+                        "positionSide": self.bot_trade.currentMode.Sside,
+                        "newClientOrderId": orderid,
+                    },
+                )
+                return f"\n{orderSL['status']} -> ส่งคำสั่ง Stop-Loss ที่ {self.trade_order['sl_price']} เรียบร้อยแล้ว"
+            except Exception as e:
+                return f"\nเกิดข้อผิดพลาดในการส่งคำสั่ง Stop-Loss :{e}"
+
+        async def close_long():
+            orderid = get_order_id()
+            try:
+                order = await exchange.create_market_order(
+                    self.trade_order["symbol"],
+                    "sell",
+                    abs(position_data["long"]["amount"]),
+                    params={
+                        "positionSide": self.bot_trade.currentMode.Lside,
+                        "newClientOrderId": orderid,
+                    },
+                )
+                await self.binance_.update_balance(force=True)
+                pnl = "กำไร" if position_data["long"]["pnl"] > 0.0 else "ขาดทุน"
+                return f"\n{order['status']} - ธุรกรรมที่ถูกปิดไป{pnl} : {position_data['long']['pnl']}$"
+            except Exception as e:
+                return f"\nเกิดข้อผิดพลาดในการปิด Order เดิม :{e}"
+
+        query = update.callback_query
+        text_repons = ["", "", "", ""]
+        await query.answer()
+        exchange = await self.binance_.get_exchange()
+        await self.binance_.connect_loads()
+        try:
+            await self.bot_trade.get_currentmode()
+            position_data = await self.bot_trade.check_current_position(
+                self.trade_order["symbol"], self.binance_.position_data.copy()
+            )
+            if position_data["long"]["position"]:
+                text1 = await close_long()
+                text_repons[1] = text1
+                edit_all_trade_record(
+                    datetime.now(),
+                    self.trade_order["symbol"],
+                    "-",
+                    "Long",
+                    self.trade_order["price"],
+                )
+            text0 = await open_short()
+            text_repons[0] = text0
+            if self.trade_order["tp"]:
+                text2 = await open_tp_short()
+                text_repons[2] = text2
+            if self.trade_order["sl"]:
+                text3 = await open_sl_short()
+                text_repons[3] = text3
+            await self.binance_.disconnect()
+            text = "".join(text_repons)
+            write_trade_record(
+                datetime.now(),
+                self.trade_order["symbol"],
+                "-",
+                self.trade_order["amt"],
+                self.trade_order["price"],
+                "Short",
+                self.trade_order["tp_price"] if self.trade_order["tp"] else None,
+                self.trade_order["sl_price"] if self.trade_order["sl"] else None,
+            )
+        except Exception as e:
+            text = f"\nเกิดข้อผิดพลาด {e}\n\nโปรดลองส่ง Order อีกครั้งค่ะ"
+
+        await query.edit_message_text(
+            self.trade_reply_text + text,
+            reply_markup=self.reply_markup["menu"],
+        )
 
     ## Analyser menu
     async def analyse_handler(
@@ -1647,14 +2091,14 @@ Leverage : X{self.trade_order['lev']}\n\
                     InlineKeyboardButton(
                         f"{symbol[:-5]} {tf}".replace("/", ""),
                         callback_data=json.dumps(
-                            {"Mode": "COINS", "Method": symbol, "tf": tf}
+                            {"Mode": "COINS", "id": cid, "Method": symbol, "tf": tf}
                         ),
                     )
-                    for symbol, tf in symbol_list
+                    for cid, symbol, tf in symbol_list
                 ]
                 for symbol_list in split_list(self.bot_trade.watchlist, 3)
             ]
-            coins_key = InlineKeyboardMarkup(
+            self.coins_settings_key = InlineKeyboardMarkup(
                 coins
                 + [
                     [
@@ -1665,7 +2109,9 @@ Leverage : X{self.trade_order['lev']}\n\
                     ]
                 ]
             )
-            msgs = await query.edit_message_text(text=msg, reply_markup=coins_key)
+            msgs = await query.edit_message_text(
+                text=msg, reply_markup=self.coins_settings_key
+            )
         self.uniq_msg_id.append(msgs.message_id)
 
     ## Risk Settings
@@ -1817,11 +2263,86 @@ Leverage : X{self.trade_order['lev']}\n\
         query = update.callback_query
         await query.answer()
         callback = eval(query.data)
-        symbol = callback["Method"]
-        msgs = await query.edit_message_text(
-            text=f"ท่านได้เลือกเหรียญ : {symbol}",
-            reply_markup=self.dynamic_reply_markup["setting"],
-        )
+        if callback["Method"] == "BACK_TO_MENU":
+            msgs = await query.edit_message_text(
+                text=f"{self.watchlist_reply_text}",
+                reply_markup=self.dynamic_reply_markup["setting"],
+            )
+        else:
+            configs = bot_setting()
+            self.vxma_settings["id"] = callback["id"]
+            symbol = callback["Method"]
+            timeframe = callback["tf"]
+            config = configs.loc[id,]
+            ta_data = TATable(
+                atr_p=config["ATR"],
+                atr_m=config["ATR_m"],
+                ema=config["EMA"],
+                linear=config["subhag"],
+                smooth=config["smooth"],
+                rsi=config["RSI"],
+                aol=config["Andean"],
+                pivot=config["Pivot"],
+            )
+
+            for config_ in split_list(config.items(), 2):
+                for x, y in config_:
+                    self.vxma_settings[x] = y
+            self.update_inline_keyboard()
+            df = await self.bot_trade.bot_3(
+                self.vxma_settings["symbol"], ta_data.__dict__, timeframe
+            )
+            path = candle(df, symbol, timeframe)
+            msgs0 = await update.message.reply_photo(path)
+            self.uniq_msg_id.append(msgs0.message_id)
+            self.text_reply_bot_setting = "รายการตั้งค่า สำหรับกลยุทธ์"
+            msgs = await query.edit_message_text(
+                text=self.text_reply_bot_setting,
+                reply_markup=self.dynamic_reply_markup["vxma_settings"],
+            )
+        self.uniq_msg_id.append(msgs.message_id)
+
+    async def vxma_settings_handler(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+    ) -> None:
+        query = update.callback_query
+        await query.answer()
+        callback = eval(query.data)
+        if callback["Method"] == "BACK":
+            msgs = await query.edit_message_text(
+                text="โปรดเลือกเหรียญดังนี้:", reply_markup=self.coins_settings_key
+            )
+        elif callback["Method"] == "CHART":
+            ta_data = TATable(
+                atr_p=self.vxma_settings["ATR"],
+                atr_m=self.vxma_settings["ATR_m"],
+                ema=self.vxma_settings["EMA"],
+                linear=self.vxma_settings["subhag"],
+                smooth=self.vxma_settings["smooth"],
+                rsi=self.vxma_settings["RSI"],
+                aol=self.vxma_settings["Andean"],
+                pivot=self.vxma_settings["Pivot"],
+            )
+            df = await self.bot_trade.bot_3(
+                self.vxma_settings["symbol"],
+                ta_data.__dict__,
+                self.vxma_settings["timeframe"],
+            )
+            path = candle(
+                df, self.vxma_settings["symbol"], self.vxma_settings["timeframe"]
+            )
+            msgs0 = await update.message.reply_photo(path)
+            self.uniq_msg_id.append(msgs0.message_id)
+            msgs = await query.edit_message_text(
+                text=self.text_reply_bot_setting,
+                reply_markup=self.dynamic_reply_markup["vxma_settings"],
+            )
+        else:
+            msgs = await query.edit_message_text(
+                text=self.text_reply_bot_setting + f"{callback['Method']}",
+                reply_markup=self.dynamic_reply_markup["vxma_settings"],
+            )
+
         self.uniq_msg_id.append(msgs.message_id)
 
     ## Secure menu
@@ -1973,276 +2494,6 @@ Leverage : X{self.trade_order['lev']}\n\
                     print(e)
                     continue
             await asyncio.sleep(1)
-
-    async def trade_long_button(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
-    ):
-        async def open_long():
-            orderid = get_order_id()
-            try:
-                await exchange.cancel_all_orders(self.trade_order["symbol"])
-                await self.binance_.setleverage(
-                    self.trade_order["symbol"], self.trade_order["lev"]
-                )
-                await exchange.create_market_order(
-                    self.trade_order["symbol"],
-                    "buy",
-                    self.trade_order["amt"],
-                    params={
-                        "positionSide": self.bot_trade.currentMode.Lside,
-                        "newClientOrderId": orderid,
-                    },
-                )
-                await self.binance_.update_balance(force=True)
-                return f"\n\nรายงานการทำธุรกรรม :\n\
-ได้ออกคำสั่งเปิด Long สำหรับ : {self.trade_order['symbol']}\n\
-จำนวน : {self.trade_order['amt']}\n\
-Leverage: {self.trade_order['lev']}\n"
-            except ccxt.InsufficientFunds:
-                return "ข้ออภัยค่ะ ยอดเงินของท่านไม่เพียงพอในการออก Order💸\
-    โปรดตรวจสอบ Size โดยระเอียดอีกครั้ง แล้วทำรายการใหม่ ขอบคุณค่ะ🙏"
-            except Exception as e:
-                return f"ข้ออภัยค่ะ เกิดข้อพิดพลาดขณะที่บอททำการส่งคำสั่ง Long ได้เกิด Error :{e}"
-
-        async def open_tp_long():
-            orderid = get_order_id()
-            try:
-                orderTP = await exchange.create_order(
-                    self.trade_order["symbol"],
-                    "TAKE_PROFIT_MARKET",
-                    "sell",
-                    self.trade_order["amt"],
-                    self.trade_order["tp_price"],
-                    params={
-                        "stopPrice": self.trade_order["tp_price"],
-                        "triggerPrice": self.trade_order["tp_price"],
-                        "positionSide": self.bot_trade.currentMode.Lside,
-                        "newClientOrderId": orderid,
-                    },
-                )
-                return f"\n{orderTP['status']} -> ส่งคำสั่ง Take Profit ที่ {self.trade_order['tp_price']} เรียบร้อยแล้ว"
-
-            except Exception as e:
-                return f"\nเกิดข้อผิดพลาดตอนส่งคำสั่ง Take Profit :{e}"
-
-        async def open_sl_long():
-            orderid = get_order_id()
-            try:
-                orderSL = await exchange.create_order(
-                    self.trade_order["symbol"],
-                    "stop_market",
-                    "sell",
-                    self.trade_order["amt"],
-                    params={
-                        "stopPrice": self.trade_order["sl_price"],
-                        "positionSide": self.bot_trade.currentMode.Lside,
-                        "newClientOrderId": orderid,
-                    },
-                )
-                return f"{orderSL['status']} -> ส่งคำสั่ง Stop-Loss ที่ {self.trade_order['sl_price']} เรียบร้อยแล้ว"
-            except Exception as e:
-                return f"\nเกิดข้อผิดพลาดในการส่งคำสั่ง Stop-Loss :{e}"
-
-        async def close_short():
-            orderid = get_order_id()
-            try:
-                order = await exchange.create_market_order(
-                    self.trade_order["symbol"],
-                    "buy",
-                    abs(position_data["short"]["amount"]),
-                    params={
-                        "positionSide": self.bot_trade.currentMode.Sside,
-                        "newClientOrderId": orderid,
-                    },
-                )
-                await self.binance_.update_balance(force=True)
-                pnl = "\nกำไร" if position_data["short"]["pnl"] > 0.0 else "ขาดทุน"
-                return f"{order['status']} - ธุรกรรมที่ถูกปิดไป{pnl} : {position_data['short']['pnl']}$"
-            except Exception as e:
-                return f"\nเกิดข้อผิดพลาดในการปิด Order เดิม :{e}"
-
-        query = update.callback_query
-        text_repons = ["", "", "", ""]
-        await query.answer()
-        exchange = await self.binance_.get_exchange()
-        await self.binance_.connect_loads()
-        try:
-            await self.bot_trade.get_currentmode()
-            position_data = await self.bot_trade.check_current_position(
-                self.trade_order["symbol"], self.binance_.position_data.copy()
-            )
-            if position_data["short"]["position"]:
-                text1 = await close_short()
-                text_repons[1] = text1
-                edit_all_trade_record(
-                    datetime.now(),
-                    self.trade_order["symbol"],
-                    "-",
-                    "Short",
-                    self.trade_order["price"],
-                )
-            text0 = await open_long()
-            text_repons[0] = text0
-            if self.trade_order["tp"]:
-                text2 = await open_tp_long()
-                text_repons[2] = text2
-            if self.trade_order["sl"]:
-                text3 = await open_sl_long()
-                text_repons[3] = text3
-            text = "".join(text_repons)
-            await self.binance_.disconnect()
-            write_trade_record(
-                datetime.now(),
-                self.trade_order["symbol"],
-                "-",
-                self.trade_order["amt"],
-                self.trade_order["price"],
-                "Long",
-                self.trade_order["tp_price"] if self.trade_order["tp"] else None,
-                self.trade_order["sl_price"] if self.trade_order["sl"] else None,
-            )
-        except Exception as e:
-            text = f"เกิดข้อผิดพลาด {e}\n\nโปรดลองส่ง Order อีกครั้งค่ะ"
-
-        await query.edit_message_text(
-            self.trade_reply_text + text,
-            reply_markup=self.reply_markup["menu"],
-        )
-
-    async def trade_short_button(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
-    ):
-        async def open_short():
-            orderid = get_order_id()
-            try:
-                await exchange.cancel_all_orders(self.trade_order["symbol"])
-                await self.binance_.setleverage(
-                    self.trade_order["symbol"], self.trade_order["lev"]
-                )
-                await exchange.create_market_order(
-                    self.trade_order["symbol"],
-                    "sell",
-                    self.trade_order["amt"],
-                    params={
-                        "positionSide": self.bot_trade.currentMode.Sside,
-                        "newClientOrderId": orderid,
-                    },
-                )
-                await self.binance_.update_balance(force=True)
-                return f"\n\nรายงานการทำธุรกรรม :\n\
-ได้ออกคำสั่งเปิด Short สำหรับ : {self.trade_order['symbol']}\n\
-จำนวน : {self.trade_order['amt']}\n\
-Leverage: {self.trade_order['lev']}\n"
-            except ccxt.InsufficientFunds:
-                return "ข้ออภัยค่ะ ยอดเงินของท่านไม่เพียงพอในการออก Order💸\
-    โปรดตรวจสอบ Size โดยระเอียดอีกครั้ง แล้วทำรายการใหม่ ขอบคุณค่ะ🙏"
-            except Exception as e:
-                return f"ข้ออภัยค่ะ เกิดข้อพิดพลาดขณะที่บอททำการส่งคำสั่ง Short ได้เกิด Error :{e}"
-
-        async def open_tp_short():
-            orderid = get_order_id()
-            try:
-                orderTP = await exchange.create_order(
-                    self.trade_order["symbol"],
-                    "TAKE_PROFIT_MARKET",
-                    "buy",
-                    self.trade_order["amt"],
-                    self.trade_order["tp_price"],
-                    params={
-                        "stopPrice": self.trade_order["tp_price"],
-                        "triggerPrice": self.trade_order["tp_price"],
-                        "positionSide": self.bot_trade.currentMode.Sside,
-                        "newClientOrderId": orderid,
-                    },
-                )
-                return f"\n{orderTP['status']} -> ส่งคำสั่ง Take Profit ที่ {self.trade_order['tp_price']} เรียบร้อยแล้ว"
-
-            except Exception as e:
-                return f"\nเกิดข้อผิดพลาดตอนส่งคำสั่ง Take Profit :{e}"
-
-        async def open_sl_short():
-            orderid = get_order_id()
-            try:
-                orderSL = await exchange.create_order(
-                    self.trade_order["symbol"],
-                    "stop_market",
-                    "buy",
-                    self.trade_order["amt"],
-                    params={
-                        "stopPrice": self.trade_order["sl_price"],
-                        "positionSide": self.bot_trade.currentMode.Sside,
-                        "newClientOrderId": orderid,
-                    },
-                )
-                return f"\n{orderSL['status']} -> ส่งคำสั่ง Stop-Loss ที่ {self.trade_order['sl_price']} เรียบร้อยแล้ว"
-            except Exception as e:
-                return f"\nเกิดข้อผิดพลาดในการส่งคำสั่ง Stop-Loss :{e}"
-
-        async def close_long():
-            orderid = get_order_id()
-            try:
-                order = await exchange.create_market_order(
-                    self.trade_order["symbol"],
-                    "sell",
-                    abs(position_data["long"]["amount"]),
-                    params={
-                        "positionSide": self.bot_trade.currentMode.Lside,
-                        "newClientOrderId": orderid,
-                    },
-                )
-                await self.binance_.update_balance(force=True)
-                pnl = "\nกำไร" if position_data["long"]["pnl"] > 0.0 else "ขาดทุน"
-                return f"{order['status']} - ธุรกรรมที่ถูกปิดไป{pnl} : {position_data['long']['pnl']}$"
-            except Exception as e:
-                return f"\nเกิดข้อผิดพลาดในการปิด Order เดิม :{e}"
-
-        query = update.callback_query
-        text_repons = ["", "", "", ""]
-        await query.answer()
-        exchange = await self.binance_.get_exchange()
-        await self.binance_.connect_loads()
-        try:
-            await self.bot_trade.get_currentmode()
-            position_data = await self.bot_trade.check_current_position(
-                self.trade_order["symbol"], self.binance_.position_data.copy()
-            )
-            if position_data["long"]["position"]:
-                text1 = await close_long()
-                text_repons[1] = text1
-                edit_all_trade_record(
-                    datetime.now(),
-                    self.trade_order["symbol"],
-                    "-",
-                    "Long",
-                    self.trade_order["price"],
-                )
-            text0 = await open_short()
-            text_repons[0] = text0
-            if self.trade_order["tp"]:
-                text2 = await open_tp_short()
-                text_repons[2] = text2
-            if self.trade_order["sl"]:
-                text3 = await open_sl_short()
-                text_repons[3] = text3
-            await self.binance_.disconnect()
-            text = "".join(text_repons)
-            write_trade_record(
-                datetime.now(),
-                self.trade_order["symbol"],
-                "-",
-                self.trade_order["amt"],
-                self.trade_order["price"],
-                "Short",
-                self.trade_order["tp_price"] if self.trade_order["tp"] else None,
-                self.trade_order["sl_price"] if self.trade_order["sl"] else None,
-            )
-        except Exception as e:
-            text = f"เกิดข้อผิดพลาด {e}\n\nโปรดลองส่ง Order อีกครั้งค่ะ"
-
-        await query.edit_message_text(
-            self.trade_reply_text + text,
-            reply_markup=self.reply_markup["menu"],
-        )
 
 
 def main():

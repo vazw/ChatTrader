@@ -364,13 +364,8 @@ class BotTrade:
         df.to_csv("balance.csv", mode="a", index=False, header=False)
 
     async def hourly_report(self):
-        balance = binance_i.balance
         lastUpdate.status = "Hourly report"
-        positions = balance["info"]["positions"]
-        status = pd.DataFrame(
-            [position for position in positions if float(position["positionAmt"]) != 0],
-            columns=statcln,
-        )
+        status = binance_i.position_data
         netunpl = float(
             status["unrealizedProfit"].astype("float64").sum()
             if not status.empty
@@ -470,7 +465,7 @@ class BotTrade:
             risk_manage_data = DefaultRiskTable(symbol, balance)
             lastUpdate.status = f"Scaning {risk_manage_data.symbol}"
 
-            if risk_manage_data.usehedge:
+            if risk_manage_data.usehedge and self.currentMode.dualSidePosition:
                 data, df_hedge = await asyncio.gather(
                     self.bot_1(
                         risk_manage_data.symbol,
@@ -556,7 +551,7 @@ class BotTrade:
             risk_manage_data = RiskManageTable(symbolist, balance)
             lastUpdate.status = f"Scaning {risk_manage_data.symbol}"
 
-            if risk_manage_data.usehedge:
+            if risk_manage_data.usehedge and self.currentMode.dualSidePosition:
                 data, df_hedge = await asyncio.gather(
                     self.bot_1(
                         risk_manage_data.symbol,
@@ -727,7 +722,7 @@ class BotTrade:
                 all_symbols = await binance_i.getAllsymbol()
                 configed_symbol = symbolist["symbol"].tolist()
                 self.watchlist = [
-                    (symbolist["symbol"][i], symbolist["timeframe"][i])
+                    (i, symbolist["symbol"][i], symbolist["timeframe"][i])
                     for i in symbolist.index
                 ]
                 if self.status_scan:
