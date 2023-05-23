@@ -712,7 +712,9 @@ class Telegram:
                     f"{status['symbol'][i]} จำนวน {status['positionAmt'][i]} P/L {round(status['unrealizedProfit'][i], 3)}$\n"
                     for i in range(len(status.index))
                 ]
-                text_reply = self.pnl_reply = "Postion ที่มีการเปิดอยู่\n".join(text)
+                text_reply = self.pnl_reply = "Postion ที่มีการเปิดอยู่\n" + "".join(
+                    text
+                )
             else:
                 text_reply = "ไม่มี Postion ที่มีการเปิดอยู่"
             msgs = await query.edit_message_text(
@@ -1125,73 +1127,365 @@ class Telegram:
             )
         self.uniq_msg_id.append(msgs.message_id)
 
-    ## Settings menu
-    async def setting_handler(
+    ## Position PNL Handlers
+    async def position_get_lev_handler(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
-    ) -> None:
+    ):
+        """Handler to asks for trade Leverage"""
+        query = update.callback_query
+        await query.answer()
+        msg = await query.edit_message_text(
+            text=f"Leverage ที่ใช้อยู่คือ {self.trade_order['lev']}\n\
+หากต้องการแก้ไขโปรดใส่จำนวนตัวคูณ เช่น 1 , 5 , 10 , 20 , 25 , 50 , 100 , 125\
+\n\n กด /cancel เพื่อยกเลิก"
+        )
+        self.ask_msg_id.append(msg.message_id)
+        return P_LEV
+
+    async def position_update_trade_lev(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ):
+        """Handler that received trade amount (STEP1)"""
+        respon = update.message.text
+        self.msg_id.append(update.message.message_id)
+        try:
+            self.trade_order["new_lev"] = int(respon)
+            margin = (
+                self.trade_order["price"]
+                * self.trade_order["amt"]
+                / self.trade_order["new_lev"]
+            )
+
+            text = f"ท่านต้องการแก้ไข Leverage จาก {self.trade_order['lev']}\
+ไปเป็น {self.trade_order['new_lev']}\n\
+Order นี้จะใช้ Margin จะปรับเป็น: {round(margin, 3)}$\n\
+\nหากถูกต้องกด \"ยืนยัน\" เพื่อส่งคำสั่ง"
+            msg = await update.message.reply_text(
+                text,
+                reply_markup=self.reply_markup["position_confirm_lev"],
+            )
+        except Exception as e:
+            text = f"\n\nเกิดข้อผิดพลาด {e}\nLeverage ต้องเป็นตัวเลขเท่านั้น โปรดทำรายการใหม่อีกครั้งค่ะ"
+            msg = await update.message.reply_text(
+                self.coin_pnl_reply_text + text,
+                reply_markup=self.dynamic_reply_markup["position"],
+            )
+        self.uniq_msg_id.append(msg.message_id)
+        if len(self.ask_msg_id) > 0:
+            for id in self.ask_msg_id:
+                try:
+                    await context.bot.delete_message(
+                        chat_id=self.chat_id, message_id=id
+                    )
+                except Exception:
+                    continue
+        return ConversationHandler.END
+
+    async def position_confirm_lev(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+    ):
         query = update.callback_query
         await query.answer()
         callback = eval(query.data)
-        if callback["Method"] == "BOT":
-            if self.status_bot:
-                self.status_bot = False
-                text = "\n\n🔴ปิดบอทสำเร็จ"
-                self.bot_trade.stop_bot()
-            elif not self.status_bot:
-                self.status_bot = True
-                text = "\n\n🟢เปิดบอทสำเร็จ"
-                self.bot_trade.start_bot()
-            self.update_inline_keyboard()
-            msg = f"{self.watchlist_reply_text}" + text
+        if callback["Method"] == "BACK":
             msgs = await query.edit_message_text(
-                text=msg, reply_markup=self.dynamic_reply_markup["setting"]
+                text=self.coin_pnl_reply_text,
+                reply_markup=self.dynamic_reply_markup["position"],
             )
-        elif callback["Method"] == "SCAN":
-            if self.status_scan:
-                self.status_scan = False
-                text = "\n\n🔴ปิดบอทแสกนตลาดสำเร็จ"
-                self.bot_trade.disable_scan()
-            elif not self.status_scan:
-                self.status_scan = True
-                text = "\n\n🟢เปิดบอทแสกนตลาดสำเร็จ"
-                self.bot_trade.enable_scan()
-            self.update_inline_keyboard()
-            msg = f"{self.watchlist_reply_text}" + text
-            msgs = await query.edit_message_text(
-                text=msg, reply_markup=self.dynamic_reply_markup["setting"]
+        elif callback["Method"] == "OK":
+            await self.binance_.setleverage(
+                self.trade_order["symbol"], self.trade_order["new_lev"]
             )
-        elif callback["Method"] == "RISK":
-            msg = "อย่าเสี่ยงมากนะคะนายท่าน :"
-            msgs = await query.edit_message_text(
-                text=msg, reply_markup=self.dynamic_reply_markup["risk"]
+            await account_balance.update_balance(True)
+            await self.binance_.disconnect()
+            position_data = await self.bot_trade.check_current_position(
+                self.trade_order["symbol"], account_balance.position_data.copy()
             )
-        elif callback["Method"] == "COINS":
-            msg = "โปรดเลือกเหรียญดังนี้:"
-            coins = [
-                [
-                    InlineKeyboardButton(
-                        f"{symbol[:-5]} {tf}".replace("/", ""),
-                        callback_data=json.dumps(
-                            {"Mode": "COINS", "Method": symbol, "tf": tf}
-                        ),
-                    )
-                    for symbol, tf in symbol_list
-                ]
-                for symbol_list in split_list(self.bot_trade.watchlist, 3)
+            self.trade_order["lev"] = self.trade_order["new_lev"]
+            self.trade_order["pnl"] = position_data[self.trade_order["type"]]["pnl"]
+            self.trade_order["margin"] = position_data[self.trade_order["type"]][
+                "margin"
             ]
-            coins_key = InlineKeyboardMarkup(
-                coins
-                + [
-                    [
-                        InlineKeyboardButton(
-                            "❌ กลับ",
-                            callback_data="{'Mode': 'COINS', 'Method': 'BACK_TO_MENU'}",
-                        )
-                    ]
-                ]
+            pnl_t = "กำไร" if self.trade_order["pnl"] > 0.0 else "ขาดทุน"
+            text = f"\n{self.trade_order['type'].upper()} Postion\
+จำนวน {self.trade_order['amt']}🪙\n\
+💶ราคาเข้า : {self.trade_order['e_price']}\n\
+💵ราคาปัจจุบัน : {self.trade_order['price']}\n\
+💰Margin ที่ใช้ : {self.trade_order['margin']}$\n\
+Leverage : X{self.trade_order['lev']}\n\
+💸{pnl_t} : {self.trade_order['pnl']}$\n"
+            self.coin_pnl_reply_text = (
+                f"ท่านได้เลือกเหรียญ : {self.trade_order['symbol']}" + text
             )
-            msgs = await query.edit_message_text(text=msg, reply_markup=coins_key)
+            self.update_inline_keyboard()
+            msgs = await query.edit_message_text(
+                text=self.coin_pnl_reply_text,
+                reply_markup=self.dynamic_reply_markup["position"],
+            )
+
         self.uniq_msg_id.append(msgs.message_id)
+
+    async def position_get_tp_price_handler(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+    ):
+        """Handler to asks for trade TP Price"""
+        query = update.callback_query
+        await query.answer()
+        msg = await query.edit_message_text(
+            text=f"ราคา TP {self.trade_order['type']}\
+{self.trade_order['symbol']} เดิมของท่านคือ : {self.trade_order['tp_price']}\n\
+โปรดใส่ราคา Take Profit หากต้องการแก้ไข \n\n กด /cancel เพื่อยกเลิก"
+        )
+        self.ask_msg_id.append(msg.message_id)
+        return P_TP
+
+    async def position_update_trade_tp_price(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ):
+        """Handler that received trade TP Price (STEP1)"""
+        respon = update.message.text
+        self.msg_id.append(update.message.message_id)
+        try:
+            self.trade_order["new_tp_price"] = float(respon)
+            self.trade_order["tp"] = True
+            text = f"ท่านต้องการแก้ไขราคา Take Profit จาก {self.trade_order['tp_price']}\
+ไปเป็น {self.trade_order['new_tp_price']}\n\
+\nหากถูกต้องกด \"ยืนยัน\" เพื่อส่งคำสั่ง"
+            msg = await update.message.reply_text(
+                text,
+                reply_markup=self.reply_markup["position_confirm_tp"],
+            )
+        except Exception as e:
+            text = f"เกิดข้อผิดพลาด {e}\nโปรดตรวจสอบเลขทศนิยม หรือราคาเหรียญให้ถูกต้องแล้วทำรายการใหม่ค่ะ"
+            msg = await update.message.reply_text(
+                self.coin_pnl_reply_text + text,
+                reply_markup=self.dynamic_reply_markup["position"],
+            )
+        self.uniq_msg_id.append(msg.message_id)
+        if len(self.ask_msg_id) > 0:
+            for id in self.ask_msg_id:
+                try:
+                    await context.bot.delete_message(
+                        chat_id=self.chat_id, message_id=id
+                    )
+                except Exception:
+                    continue
+        return ConversationHandler.END
+
+    async def position_confirm_tp(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+    ):
+        async def open_tp(side: str = "buy", position_side: str = "BOTH"):
+            orderid = get_order_id()
+            try:
+                orderTP = await exchange.create_order(
+                    self.trade_order["symbol"],
+                    "TAKE_PROFIT_MARKET",
+                    side,
+                    self.trade_order["amt"],
+                    self.trade_order["new_tp_price"],
+                    params={
+                        "stopPrice": self.trade_order["new_tp_price"],
+                        "triggerPrice": self.trade_order["new_tp_price"],
+                        "positionSide": position_side,
+                        "newClientOrderId": orderid,
+                    },
+                )
+                return f"\n{orderTP['status']} -> ส่งคำสั่ง Take Profit ที่ {self.trade_order['new_tp_price']} เรียบร้อยแล้ว"
+
+            except Exception as e:
+                return f"\nเกิดข้อผิดพลาดตอนส่งคำสั่ง Take Profit :{e}"
+
+        query = update.callback_query
+        await query.answer()
+        callback = eval(query.data)
+        if callback["Method"] == "BACK":
+            msgs = await query.edit_message_text(
+                text=self.coin_pnl_reply_text,
+                reply_markup=self.dynamic_reply_markup["position"],
+            )
+        elif callback["Method"] == "OK":
+            exchange = await self.binance_.get_exchange()
+            self.binance_.cancel_order(
+                self.trade_order["symbol"], self.trade_order["id_tp"]
+            )
+            if self.trade_order["type"] == "long":
+                text = await open_tp("sell", self.bot_trade.currentMode.Lside)
+            elif self.trade_order["type"] == "short":
+                text = await open_tp("buy", self.bot_trade.currentMode.Sside)
+            await self.binance_.disconnect()
+            self.trade_order["tp_price"] = self.trade_order["new_tp_price"]
+
+            self.update_inline_keyboard()
+            msgs = await query.edit_message_text(
+                text=self.coin_pnl_reply_text + text,
+                reply_markup=self.dynamic_reply_markup["position"],
+            )
+
+        self.uniq_msg_id.append(msgs.message_id)
+
+    async def position_get_sl_price_handler(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+    ):
+        """Handler to asks for trade SL Price"""
+        query = update.callback_query
+        await query.answer()
+        msg = await query.edit_message_text(
+            text="โปรดใส่ราคา Stop-Loss หากต้องการแก้ไข \n\n กด /cancel เพื่อยกเลิก"
+        )
+        self.ask_msg_id.append(msg.message_id)
+        return P_SL
+
+    async def position_update_trade_sl_price(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ):
+        """Handler that received trade SL Price (STEP1)"""
+        respon = update.message.text
+        self.msg_id.append(update.message.message_id)
+        try:
+            self.trade_order["new_sl_price"] = float(respon)
+            self.trade_order["sl"] = True
+            text = f"\n\nท่านต้องการแก้ไขราคา Stop-Loss \
+จาก {self.trade_order['sl_price']}\
+ไปเป็น {self.trade_order['new_sl_price']}\n\
+\nหากถูกต้องกด \"ยืนยัน\" เพื่อส่งคำสั่ง"
+
+            msg = await update.message.reply_text(
+                text,
+                reply_markup=self.reply_markup["position_confirm_sl"],
+            )
+        except Exception as e:
+            text = f"\nเกิดข้อผิดพลาด {e}\nโปรดตรวจสอบเลขทศนิยม หรือราคาเหรียญให้ถูกต้องแล้วทำรายการใหม่ค่ะ"
+
+            msg = await update.message.reply_text(
+                self.coin_pnl_reply_text + text,
+                reply_markup=self.dynamic_reply_markup["position"],
+            )
+        self.uniq_msg_id.append(msg.message_id)
+        if len(self.ask_msg_id) > 0:
+            for id in self.ask_msg_id:
+                try:
+                    await context.bot.delete_message(
+                        chat_id=self.chat_id, message_id=id
+                    )
+                except Exception:
+                    continue
+        return ConversationHandler.END
+
+    async def position_confirm_sl(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+    ):
+        async def open_sl(side: str = "buy", position_side: str = "BOTH"):
+            orderid = get_order_id()
+            try:
+                orderTP = await exchange.create_order(
+                    self.trade_order["symbol"],
+                    "stop_market",
+                    side,
+                    self.trade_order["amt"],
+                    params={
+                        "stopPrice": self.trade_order["new_sl_price"],
+                        "positionSide": position_side,
+                        "newClientOrderId": orderid,
+                    },
+                )
+                return f"\n{orderTP['status']} -> ส่งคำสั่ง Stop-Loss ที่ {self.trade_order['new_sl_price']} เรียบร้อยแล้ว"
+
+            except Exception as e:
+                return f"\nเกิดข้อผิดพลาดตอนส่งคำสั่ง Stop-Loss :{e}"
+
+        query = update.callback_query
+        await query.answer()
+        callback = eval(query.data)
+        if callback["Method"] == "BACK":
+            msgs = await query.edit_message_text(
+                text=self.coin_pnl_reply_text,
+                reply_markup=self.dynamic_reply_markup["position"],
+            )
+        elif callback["Method"] == "OK":
+            exchange = await self.binance_.get_exchange()
+            self.binance_.cancel_order(
+                self.trade_order["symbol"], self.trade_order["id_sl"]
+            )
+            if self.trade_order["type"] == "long":
+                text = await open_sl("sell", self.bot_trade.currentMode.Lside)
+            elif self.trade_order["type"] == "short":
+                text = await open_sl("buy", self.bot_trade.currentMode.Sside)
+            await self.binance_.disconnect()
+            self.trade_order["sl_price"] = self.trade_order["new_sl_price"]
+
+            self.update_inline_keyboard()
+            msgs = await query.edit_message_text(
+                text=self.coin_pnl_reply_text + text,
+                reply_markup=self.dynamic_reply_markup["position"],
+            )
+
+        self.uniq_msg_id.append(msgs.message_id)
+
+    async def position_close_handler(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+    ):
+        async def close_order(side: str = "buy", position_side: str = "BOTH"):
+            orderid = get_order_id()
+            try:
+                order = await exchange.create_market_order(
+                    self.trade_order["symbol"],
+                    side,
+                    abs(self.trade_order["amt"]),
+                    params={
+                        "positionSide": position_side,
+                        "newClientOrderId": orderid,
+                    },
+                )
+                await account_balance.update_balance(force=True)
+                pnl = "\nกำไร" if self.trade_order["pnl"] > 0.0 else "ขาดทุน"
+                return f"{order['status']} - ธุรกรรมที่ถูกปิดไป{pnl} : {self.trade_order['pnl']}$"
+            except Exception as e:
+                return f"\nเกิดข้อผิดพลาดในการปิด Order เดิม :{e}"
+
+        query = update.callback_query
+        await query.answer()
+        exchange = await self.binance_.get_exchange()
+        if self.trade_order["type"] == "long":
+            text = await close_order("sell", self.bot_trade.currentMode.Lside)
+        elif self.trade_order["type"] == "short":
+            text = await close_order("buy", self.bot_trade.currentMode.Sside)
+        await account_balance.update_balance(True)
+        await self.binance_.disconnect()
+        msgs = await query.edit_message_text(
+            text=self.coin_pnl_reply_text + text,
+            reply_markup=self.reply_markup["menu"],
+        )
+
+        self.uniq_msg_id.append(msgs.message_id)
+
+    async def back_to_info_pnl_per_coin(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        """This Handler can Handle both command and inline button respons"""
+        query = update.callback_query
+        if query is not None:
+            # For Back Buttons
+            await query.answer()
+            msgs = await update.message.reply_text(
+                self.coin_pnl_reply_text, reply_markup=self.dynamic_reply_markup["risk"]
+            )
+            self.uniq_msg_id.append(msgs.message_id)
+        else:
+            # For Commands cancel
+            self.msg_id.append(update.message.message_id)
+            for id in self.uniq_msg_id:
+                try:
+                    await context.bot.delete_message(
+                        chat_id=self.chat_id, message_id=id
+                    )
+                except Exception:
+                    continue
+            msgs = await update.message.reply_text(
+                self.coin_pnl_reply_text, reply_markup=self.dynamic_reply_markup["risk"]
+            )
+            self.uniq_msg_id.append(msgs.message_id)
+            return ConversationHandler.END
 
     async def show_info_pnl_per_coin(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
@@ -1306,6 +1600,75 @@ Leverage : X{self.trade_order['lev']}\n\
 
         self.uniq_msg_id.append(msgs.message_id)
 
+    ## Settings menu
+    async def setting_handler(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+    ) -> None:
+        query = update.callback_query
+        await query.answer()
+        callback = eval(query.data)
+        if callback["Method"] == "BOT":
+            if self.status_bot:
+                self.status_bot = False
+                text = "\n\n🔴ปิดบอทสำเร็จ"
+                self.bot_trade.stop_bot()
+            elif not self.status_bot:
+                self.status_bot = True
+                text = "\n\n🟢เปิดบอทสำเร็จ"
+                self.bot_trade.start_bot()
+            self.update_inline_keyboard()
+            msg = f"{self.watchlist_reply_text}" + text
+            msgs = await query.edit_message_text(
+                text=msg, reply_markup=self.dynamic_reply_markup["setting"]
+            )
+        elif callback["Method"] == "SCAN":
+            if self.status_scan:
+                self.status_scan = False
+                text = "\n\n🔴ปิดบอทแสกนตลาดสำเร็จ"
+                self.bot_trade.disable_scan()
+            elif not self.status_scan:
+                self.status_scan = True
+                text = "\n\n🟢เปิดบอทแสกนตลาดสำเร็จ"
+                self.bot_trade.enable_scan()
+            self.update_inline_keyboard()
+            msg = f"{self.watchlist_reply_text}" + text
+            msgs = await query.edit_message_text(
+                text=msg, reply_markup=self.dynamic_reply_markup["setting"]
+            )
+        elif callback["Method"] == "RISK":
+            msg = "อย่าเสี่ยงมากนะคะนายท่าน :"
+            msgs = await query.edit_message_text(
+                text=msg, reply_markup=self.dynamic_reply_markup["risk"]
+            )
+        elif callback["Method"] == "COINS":
+            msg = "โปรดเลือกเหรียญดังนี้:"
+            coins = [
+                [
+                    InlineKeyboardButton(
+                        f"{symbol[:-5]} {tf}".replace("/", ""),
+                        callback_data=json.dumps(
+                            {"Mode": "COINS", "Method": symbol, "tf": tf}
+                        ),
+                    )
+                    for symbol, tf in symbol_list
+                ]
+                for symbol_list in split_list(self.bot_trade.watchlist, 3)
+            ]
+            coins_key = InlineKeyboardMarkup(
+                coins
+                + [
+                    [
+                        InlineKeyboardButton(
+                            "❌ กลับ",
+                            callback_data="{'Mode': 'COINS', 'Method': 'BACK_TO_MENU'}",
+                        )
+                    ]
+                ]
+            )
+            msgs = await query.edit_message_text(text=msg, reply_markup=coins_key)
+        self.uniq_msg_id.append(msgs.message_id)
+
+    ## Risk Settings
     async def get_max_risk_handler(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
     ):
@@ -1847,365 +2210,6 @@ Leverage: {self.trade_order['lev']}\n"
             self.trade_reply_text + text,
             reply_markup=self.reply_markup["menu"],
         )
-
-    async def position_get_lev_handler(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
-    ):
-        """Handler to asks for trade Leverage"""
-        query = update.callback_query
-        await query.answer()
-        msg = await query.edit_message_text(
-            text=f"Leverage ที่ใช้อยู่คือ {self.trade_order['lev']}\n\
-หากต้องการแก้ไขโปรดใส่จำนวนตัวคูณ เช่น 1 , 5 , 10 , 20 , 25 , 50 , 100 , 125\
-\n\n กด /cancel เพื่อยกเลิก"
-        )
-        self.ask_msg_id.append(msg.message_id)
-        return P_LEV
-
-    async def position_update_trade_lev(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE
-    ):
-        """Handler that received trade amount (STEP1)"""
-        respon = update.message.text
-        self.msg_id.append(update.message.message_id)
-        try:
-            self.trade_order["new_lev"] = int(respon)
-            margin = (
-                self.trade_order["price"]
-                * self.trade_order["amt"]
-                / self.trade_order["new_lev"]
-            )
-
-            text = f"ท่านต้องการแก้ไข Leverage จาก {self.trade_order['lev']}\
-ไปเป็น {self.trade_order['new_lev']}\n\
-Order นี้จะใช้ Margin จะปรับเป็น: {round(margin, 3)}$\n\
-\nหากถูกต้องกด \"ยืนยัน\" เพื่อส่งคำสั่ง"
-            msg = await update.message.reply_text(
-                text,
-                reply_markup=self.reply_markup["position_confirm_lev"],
-            )
-        except Exception as e:
-            text = f"\n\nเกิดข้อผิดพลาด {e}\nLeverage ต้องเป็นตัวเลขเท่านั้น โปรดทำรายการใหม่อีกครั้งค่ะ"
-            msg = await update.message.reply_text(
-                self.coin_pnl_reply_text + text,
-                reply_markup=self.dynamic_reply_markup["position"],
-            )
-        self.uniq_msg_id.append(msg.message_id)
-        if len(self.ask_msg_id) > 0:
-            for id in self.ask_msg_id:
-                try:
-                    await context.bot.delete_message(
-                        chat_id=self.chat_id, message_id=id
-                    )
-                except Exception:
-                    continue
-        return ConversationHandler.END
-
-    async def position_confirm_lev(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
-    ):
-        query = update.callback_query
-        await query.answer()
-        callback = eval(query.data)
-        if callback["Method"] == "BACK":
-            msgs = await query.edit_message_text(
-                text=self.coin_pnl_reply_text,
-                reply_markup=self.dynamic_reply_markup["position"],
-            )
-        elif callback["Method"] == "OK":
-            await self.binance_.setleverage(
-                self.trade_order["symbol"], self.trade_order["new_lev"]
-            )
-            await account_balance.update_balance(True)
-            await self.binance_.disconnect()
-            position_data = await self.bot_trade.check_current_position(
-                self.trade_order["symbol"], account_balance.position_data.copy()
-            )
-            self.trade_order["lev"] = self.trade_order["new_lev"]
-            self.trade_order["pnl"] = position_data[self.trade_order["type"]]["pnl"]
-            self.trade_order["margin"] = position_data[self.trade_order["type"]][
-                "margin"
-            ]
-            pnl_t = "กำไร" if self.trade_order["pnl"] > 0.0 else "ขาดทุน"
-            text = f"\n{self.trade_order['type'].upper()} Postion\
-จำนวน {self.trade_order['amt']}🪙\n\
-💶ราคาเข้า : {self.trade_order['e_price']}\n\
-💵ราคาปัจจุบัน : {self.trade_order['price']}\n\
-💰Margin ที่ใช้ : {self.trade_order['margin']}$\n\
-Leverage : X{self.trade_order['lev']}\n\
-💸{pnl_t} : {self.trade_order['pnl']}$\n"
-            self.coin_pnl_reply_text = (
-                f"ท่านได้เลือกเหรียญ : {self.trade_order['symbol']}" + text
-            )
-            self.update_inline_keyboard()
-            msgs = await query.edit_message_text(
-                text=self.coin_pnl_reply_text,
-                reply_markup=self.dynamic_reply_markup["position"],
-            )
-
-        self.uniq_msg_id.append(msgs.message_id)
-
-    async def position_get_tp_price_handler(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
-    ):
-        """Handler to asks for trade TP Price"""
-        query = update.callback_query
-        await query.answer()
-        msg = await query.edit_message_text(
-            text=f"ราคา TP {self.trade_order['type']}\
-{self.trade_order['symbol']} เดิมของท่านคือ : {self.trade_order['tp_price']}\n\
-โปรดใส่ราคา Take Profit หากต้องการแก้ไข \n\n กด /cancel เพื่อยกเลิก"
-        )
-        self.ask_msg_id.append(msg.message_id)
-        return P_TP
-
-    async def position_update_trade_tp_price(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE
-    ):
-        """Handler that received trade TP Price (STEP1)"""
-        respon = update.message.text
-        self.msg_id.append(update.message.message_id)
-        try:
-            self.trade_order["new_tp_price"] = float(respon)
-            self.trade_order["tp"] = True
-            text = f"ท่านต้องการแก้ไขราคา Take Profit จาก {self.trade_order['tp_price']}\
-ไปเป็น {self.trade_order['new_tp_price']}\n\
-\nหากถูกต้องกด \"ยืนยัน\" เพื่อส่งคำสั่ง"
-            msg = await update.message.reply_text(
-                text,
-                reply_markup=self.reply_markup["position_confirm_tp"],
-            )
-        except Exception as e:
-            text = f"เกิดข้อผิดพลาด {e}\nโปรดตรวจสอบเลขทศนิยม หรือราคาเหรียญให้ถูกต้องแล้วทำรายการใหม่ค่ะ"
-            msg = await update.message.reply_text(
-                self.coin_pnl_reply_text + text,
-                reply_markup=self.dynamic_reply_markup["position"],
-            )
-        self.uniq_msg_id.append(msg.message_id)
-        if len(self.ask_msg_id) > 0:
-            for id in self.ask_msg_id:
-                try:
-                    await context.bot.delete_message(
-                        chat_id=self.chat_id, message_id=id
-                    )
-                except Exception:
-                    continue
-        return ConversationHandler.END
-
-    async def position_confirm_tp(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
-    ):
-        async def open_tp(side: str = "buy", position_side: str = "BOTH"):
-            orderid = get_order_id()
-            try:
-                orderTP = await exchange.create_order(
-                    self.trade_order["symbol"],
-                    "TAKE_PROFIT_MARKET",
-                    side,
-                    self.trade_order["amt"],
-                    self.trade_order["new_tp_price"],
-                    params={
-                        "stopPrice": self.trade_order["new_tp_price"],
-                        "triggerPrice": self.trade_order["new_tp_price"],
-                        "positionSide": position_side,
-                        "newClientOrderId": orderid,
-                    },
-                )
-                return f"\n{orderTP['status']} -> ส่งคำสั่ง Take Profit ที่ {self.trade_order['new_tp_price']} เรียบร้อยแล้ว"
-
-            except Exception as e:
-                return f"\nเกิดข้อผิดพลาดตอนส่งคำสั่ง Take Profit :{e}"
-
-        query = update.callback_query
-        await query.answer()
-        callback = eval(query.data)
-        if callback["Method"] == "BACK":
-            msgs = await query.edit_message_text(
-                text=self.coin_pnl_reply_text,
-                reply_markup=self.dynamic_reply_markup["position"],
-            )
-        elif callback["Method"] == "OK":
-            exchange = await self.binance_.get_exchange()
-            self.binance_.cancel_order(
-                self.trade_order["symbol"], self.trade_order["id_tp"]
-            )
-            if self.trade_order["type"] == "long":
-                text = await open_tp("sell", self.bot_trade.currentMode.Lside)
-            elif self.trade_order["type"] == "short":
-                text = await open_tp("buy", self.bot_trade.currentMode.Sside)
-            await self.binance_.disconnect()
-            self.trade_order["tp_price"] = self.trade_order["new_tp_price"]
-
-            self.update_inline_keyboard()
-            msgs = await query.edit_message_text(
-                text=self.coin_pnl_reply_text + text,
-                reply_markup=self.dynamic_reply_markup["position"],
-            )
-
-        self.uniq_msg_id.append(msgs.message_id)
-
-    async def position_get_sl_price_handler(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
-    ):
-        """Handler to asks for trade SL Price"""
-        query = update.callback_query
-        await query.answer()
-        msg = await query.edit_message_text(
-            text="โปรดใส่ราคา Stop-Loss หากต้องการแก้ไข \n\n กด /cancel เพื่อยกเลิก"
-        )
-        self.ask_msg_id.append(msg.message_id)
-        return P_SL
-
-    async def position_update_trade_sl_price(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE
-    ):
-        """Handler that received trade SL Price (STEP1)"""
-        respon = update.message.text
-        self.msg_id.append(update.message.message_id)
-        try:
-            self.trade_order["new_sl_price"] = float(respon)
-            self.trade_order["sl"] = True
-            text = f"\n\nท่านต้องการแก้ไขราคา Stop-Loss \
-จาก {self.trade_order['sl_price']}\
-ไปเป็น {self.trade_order['new_sl_price']}\n\
-\nหากถูกต้องกด \"ยืนยัน\" เพื่อส่งคำสั่ง"
-
-            msg = await update.message.reply_text(
-                text,
-                reply_markup=self.reply_markup["position_confirm_sl"],
-            )
-        except Exception as e:
-            text = f"\nเกิดข้อผิดพลาด {e}\nโปรดตรวจสอบเลขทศนิยม หรือราคาเหรียญให้ถูกต้องแล้วทำรายการใหม่ค่ะ"
-
-            msg = await update.message.reply_text(
-                self.coin_pnl_reply_text + text,
-                reply_markup=self.dynamic_reply_markup["position"],
-            )
-        self.uniq_msg_id.append(msg.message_id)
-        if len(self.ask_msg_id) > 0:
-            for id in self.ask_msg_id:
-                try:
-                    await context.bot.delete_message(
-                        chat_id=self.chat_id, message_id=id
-                    )
-                except Exception:
-                    continue
-        return ConversationHandler.END
-
-    async def position_confirm_sl(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
-    ):
-        async def open_sl(side: str = "buy", position_side: str = "BOTH"):
-            orderid = get_order_id()
-            try:
-                orderTP = await exchange.create_order(
-                    self.trade_order["symbol"],
-                    "stop_market",
-                    side,
-                    self.trade_order["amt"],
-                    params={
-                        "stopPrice": self.trade_order["new_sl_price"],
-                        "positionSide": position_side,
-                        "newClientOrderId": orderid,
-                    },
-                )
-                return f"\n{orderTP['status']} -> ส่งคำสั่ง Stop-Loss ที่ {self.trade_order['new_sl_price']} เรียบร้อยแล้ว"
-
-            except Exception as e:
-                return f"\nเกิดข้อผิดพลาดตอนส่งคำสั่ง Stop-Loss :{e}"
-
-        query = update.callback_query
-        await query.answer()
-        callback = eval(query.data)
-        if callback["Method"] == "BACK":
-            msgs = await query.edit_message_text(
-                text=self.coin_pnl_reply_text,
-                reply_markup=self.dynamic_reply_markup["position"],
-            )
-        elif callback["Method"] == "OK":
-            exchange = await self.binance_.get_exchange()
-            self.binance_.cancel_order(
-                self.trade_order["symbol"], self.trade_order["id_sl"]
-            )
-            if self.trade_order["type"] == "long":
-                text = await open_sl("sell", self.bot_trade.currentMode.Lside)
-            elif self.trade_order["type"] == "short":
-                text = await open_sl("buy", self.bot_trade.currentMode.Sside)
-            await self.binance_.disconnect()
-            self.trade_order["sl_price"] = self.trade_order["new_sl_price"]
-
-            self.update_inline_keyboard()
-            msgs = await query.edit_message_text(
-                text=self.coin_pnl_reply_text + text,
-                reply_markup=self.dynamic_reply_markup["position"],
-            )
-
-        self.uniq_msg_id.append(msgs.message_id)
-
-    async def position_close_handler(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
-    ):
-        async def close_order(side: str = "buy", position_side: str = "BOTH"):
-            orderid = get_order_id()
-            try:
-                order = await exchange.create_market_order(
-                    self.trade_order["symbol"],
-                    side,
-                    abs(self.trade_order["amt"]),
-                    params={
-                        "positionSide": position_side,
-                        "newClientOrderId": orderid,
-                    },
-                )
-                await account_balance.update_balance(force=True)
-                pnl = "\nกำไร" if self.trade_order["pnl"] > 0.0 else "ขาดทุน"
-                return f"{order['status']} - ธุรกรรมที่ถูกปิดไป{pnl} : {self.trade_order['pnl']}$"
-            except Exception as e:
-                return f"\nเกิดข้อผิดพลาดในการปิด Order เดิม :{e}"
-
-        query = update.callback_query
-        await query.answer()
-        exchange = await self.binance_.get_exchange()
-        if self.trade_order["type"] == "long":
-            text = await close_order("sell", self.bot_trade.currentMode.Lside)
-        elif self.trade_order["type"] == "short":
-            text = await close_order("buy", self.bot_trade.currentMode.Sside)
-        await account_balance.update_balance(True)
-        await self.binance_.disconnect()
-        msgs = await query.edit_message_text(
-            text=self.coin_pnl_reply_text + text,
-            reply_markup=self.reply_markup["menu"],
-        )
-
-        self.uniq_msg_id.append(msgs.message_id)
-
-    async def back_to_info_pnl_per_coin(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE
-    ) -> None:
-        """This Handler can Handle both command and inline button respons"""
-        query = update.callback_query
-        if query is not None:
-            # For Back Buttons
-            await query.answer()
-            msgs = await update.message.reply_text(
-                self.coin_pnl_reply_text, reply_markup=self.dynamic_reply_markup["risk"]
-            )
-            self.uniq_msg_id.append(msgs.message_id)
-        else:
-            # For Commands cancel
-            self.msg_id.append(update.message.message_id)
-            for id in self.uniq_msg_id:
-                try:
-                    await context.bot.delete_message(
-                        chat_id=self.chat_id, message_id=id
-                    )
-                except Exception:
-                    continue
-            msgs = await update.message.reply_text(
-                self.coin_pnl_reply_text, reply_markup=self.dynamic_reply_markup["risk"]
-            )
-            self.uniq_msg_id.append(msgs.message_id)
-            return ConversationHandler.END
 
 
 def main():
