@@ -32,7 +32,6 @@ from .AppData.Appdata import (
     read_one_open_trade_record,
 )
 from .CCXT_Binance import (
-    account_balance,
     binance_i,
     callbackRate,
     get_order_id,
@@ -186,7 +185,7 @@ class BotTrade:
             try:
                 if not self.status_bot:
                     return
-                await account_balance.update_balance()
+                await binance_i.update_balance()
                 await self.get_currentmode()
                 await self.get_waiting_time()
                 await self.waiting()
@@ -350,7 +349,7 @@ class BotTrade:
                 pass
 
     async def write_daily_balance(self):
-        fiat_balance = account_balance.fiat_balance
+        fiat_balance = binance_i.fiat_balance
         total_balance = fiat_balance["BUSD"]["total"] + fiat_balance["USDT"]["total"]
         local_time = time.ctime(time.time())
         df = pd.DataFrame(
@@ -365,7 +364,7 @@ class BotTrade:
         df.to_csv("balance.csv", mode="a", index=False, header=False)
 
     async def hourly_report(self):
-        balance = account_balance.balance
+        balance = binance_i.balance
         lastUpdate.status = "Hourly report"
         positions = balance["info"]["positions"]
         status = pd.DataFrame(
@@ -377,7 +376,7 @@ class BotTrade:
             if not status.empty
             else 0.0
         )
-        fiat_balance = account_balance.fiat_balance
+        fiat_balance = binance_i.fiat_balance
         lastUpdate.balance = fiat_balance
         msg = (
             "Balance Report\n USDT"
@@ -401,7 +400,7 @@ class BotTrade:
             async for line in self.get_dailytasks():
                 msg1 = remove_last_line_from_string(str(line))
                 await self.context.bot.send_message(chat_id=self.chat_id, text=msg1)
-            balance = account_balance.balance
+            balance = binance_i.balance
             positions = balance["info"]["positions"]
             status = pd.DataFrame(
                 [
@@ -443,7 +442,7 @@ class BotTrade:
         config = AppConfig()
         max_margin = config.max_margin
         min_balance = config.min_balance
-        fiat_balance = account_balance.fiat_balance
+        fiat_balance = binance_i.fiat_balance
         free = fiat_balance[quote]["free"]
         risk = float(
             (
@@ -467,7 +466,7 @@ class BotTrade:
         try:
             ta_table_data = TATable()
 
-            balance = account_balance.balance
+            balance = binance_i.balance
             risk_manage_data = DefaultRiskTable(symbol, balance)
             lastUpdate.status = f"Scaning {risk_manage_data.symbol}"
 
@@ -553,7 +552,7 @@ class BotTrade:
                 pivot=symbolist["Pivot"],
             )
 
-            balance = account_balance.balance
+            balance = binance_i.balance
             risk_manage_data = RiskManageTable(symbolist, balance)
             lastUpdate.status = f"Scaning {risk_manage_data.symbol}"
 
@@ -628,7 +627,7 @@ class BotTrade:
 
     async def waiting(self):
         time_now = lastUpdate.candle
-        balance = account_balance.balance
+        balance = binance_i.balance
         positions = balance["info"]["positions"]
         status = pd.DataFrame(
             [position for position in positions if float(position["positionAmt"]) != 0],
@@ -642,7 +641,7 @@ class BotTrade:
         netunpl = float((status["unrealizedProfit"]).astype("float64").sum())
         status.rename(columns=common_names, errors="ignore", inplace=True)
         print(tabulate(status, showindex=False, headers="keys"))
-        fiat_balance = account_balance.fiat_balance
+        fiat_balance = binance_i.fiat_balance
         lastUpdate.balance = fiat_balance
         print(
             "\n BUSD"
@@ -744,7 +743,7 @@ class BotTrade:
 
                 if time.time() >= timer.next_candle:
                     lastUpdate.candle = datetime.now()
-                    await account_balance.update_balance()
+                    await binance_i.update_balance()
                     await self.update_candle()
                     async for task in split_list(tasks, 10):
                         await asyncio.gather(*task)
@@ -1850,7 +1849,7 @@ class BotTrade:
                     risk_manage["timeframe"],
                     closeall=True,
                 )
-                await account_balance.update_balance(force=True)
+                await binance_i.update_balance(force=True)
                 if risk_manage["use_long"]:
                     if mm_permission["can_trade"]:
                         await self.OpenLong(
@@ -1861,7 +1860,7 @@ class BotTrade:
                             mm_permission["min_balance"],
                             risk_manage["timeframe"],
                         )
-                        await account_balance.update_balance(force=True)
+                        await binance_i.update_balance(force=True)
                     else:
                         await self.notify_signal(df, risk_manage, mm_permission, "Long")
                 else:
@@ -1878,7 +1877,7 @@ class BotTrade:
                             mm_permission["min_balance"],
                             risk_manage["timeframe"],
                         )
-                        await account_balance.update_balance(force=True)
+                        await binance_i.update_balance(force=True)
                     else:
                         await self.notify_signal(df, risk_manage, mm_permission, "Long")
                 else:
@@ -1898,7 +1897,7 @@ class BotTrade:
                     risk_manage["timeframe"],
                     closeall=True,
                 )
-                await account_balance.update_balance(force=True)
+                await binance_i.update_balance(force=True)
                 if risk_manage["use_short"]:
                     if mm_permission["can_trade"]:
                         await self.OpenShort(
@@ -1909,7 +1908,7 @@ class BotTrade:
                             mm_permission["min_balance"],
                             risk_manage["timeframe"],
                         )
-                        await account_balance.update_balance(force=True)
+                        await binance_i.update_balance(force=True)
                     else:
                         await self.notify_signal(
                             df, risk_manage, mm_permission, "Short"
@@ -1927,7 +1926,7 @@ class BotTrade:
                             mm_permission["min_balance"],
                             risk_manage["timeframe"],
                         )
-                        await account_balance.update_balance(force=True)
+                        await binance_i.update_balance(force=True)
                     else:
                         await self.notify_signal(
                             df, risk_manage, mm_permission, "Short"
@@ -1985,7 +1984,7 @@ class BotTrade:
                     risk_manage["hedge_timeframe"],
                     False,
                 )
-                await account_balance.update_balance(force=True)
+                await binance_i.update_balance(force=True)
             else:
                 print("No permission for excute order : Do nothing")
 
@@ -2007,7 +2006,7 @@ class BotTrade:
                 self.currentMode.Sside,
                 risk_manage["hedge_timeframe"],
             )
-            await account_balance.update_balance(force=True)
+            await binance_i.update_balance(force=True)
 
         # Open Short if the higher trend are bullish
         # but got Sell signal form lower timeframe
@@ -2028,7 +2027,7 @@ class BotTrade:
                     risk_manage["hedge_timeframe"],
                     False,
                 )
-                await account_balance.update_balance(force=True)
+                await binance_i.update_balance(force=True)
             else:
                 print("No permission for excute order : Do nothing")
 
@@ -2050,4 +2049,4 @@ class BotTrade:
                 self.currentMode.Lside,
                 risk_manage["hedge_timeframe"],
             )
-            await account_balance.update_balance(force=True)
+            await binance_i.update_balance(force=True)

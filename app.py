@@ -32,7 +32,6 @@ from src.AppData.Appdata import (
 from src.Bot import BotTrade
 from src.CCXT_Binance import (
     Binance,
-    account_balance,
     get_order_id,
 )
 import warnings
@@ -611,7 +610,7 @@ class Telegram:
         self.application.add_handlers(bot_setting_handlers)
         self.application.add_handlers(api_setting_handlers)
         # Handler for unknown commands at the last handler
-        self.application.add_handlers(MessageHandler(filters.COMMAND, self.unknown))
+        self.application.add_handler(MessageHandler(filters.COMMAND, self.unknown))
 
         # Running Background job.
         self.application.job_queue.run_once(self.make_bot_task, when=1)
@@ -691,7 +690,7 @@ class Telegram:
                 text="โปรดเลือกกระเป๋าเงินเฟียต",
                 reply_markup=self.reply_markup["fiat"],
             )
-            await account_balance.update_balance()
+            await self.binance_.update_balance()
             await self.binance_.disconnect()
             # Trade use different callback
         # elif callback["Method"] == "Trade":
@@ -705,9 +704,9 @@ class Telegram:
                 reply_markup=self.reply_markup["analyse"],
             )
         elif callback["Method"] == "PositionData":
-            await account_balance.update_balance()
+            await self.binance_.update_balance()
             await self.binance_.disconnect()
-            status = account_balance.position_data
+            status = self.binance_.position_data
             if len(status.index) > 0:
                 text = [
                     f"{status['symbol'][i]} จำนวน {status['positionAmt'][i]} P/L {round(status['unrealizedProfit'][i], 3)}$\n"
@@ -787,7 +786,7 @@ class Telegram:
         query = update.callback_query
         await query.answer()
         callback = eval(query.data)
-        fiat_balance = account_balance.fiat_balance
+        fiat_balance = self.binance_.fiat_balance
 
         if callback["Method"] == "ALL":
             msg = (
@@ -863,9 +862,9 @@ class Telegram:
             self.trade_order["price"] = await self.binance_.get_bidask(
                 self.trade_order["symbol"], "bid"
             )
-            await account_balance.update_balance()
+            await self.binance_.update_balance()
             currnet_position = await self.bot_trade.check_current_position(
-                self.trade_order["symbol"], account_balance.position_data.copy()
+                self.trade_order["symbol"], self.binance_.position_data.copy()
             )
             await self.binance_.disconnect()
             if currnet_position["leverage"] > 0:
@@ -1197,10 +1196,10 @@ Order นี้จะใช้ Margin จะปรับเป็น: {round(mar
             await self.binance_.setleverage(
                 self.trade_order["symbol"], self.trade_order["new_lev"]
             )
-            await account_balance.update_balance(True)
+            await self.binance_.update_balance(True)
             await self.binance_.disconnect()
             position_data = await self.bot_trade.check_current_position(
-                self.trade_order["symbol"], account_balance.position_data.copy()
+                self.trade_order["symbol"], self.binance_.position_data.copy()
             )
             self.trade_order["lev"] = self.trade_order["new_lev"]
             self.trade_order["pnl"] = position_data[self.trade_order["type"]]["pnl"]
@@ -1438,7 +1437,7 @@ Leverage : X{self.trade_order['lev']}\n\
                         "newClientOrderId": orderid,
                     },
                 )
-                await account_balance.update_balance(force=True)
+                await self.binance_.update_balance(force=True)
                 pnl = "\nกำไร" if self.trade_order["pnl"] > 0.0 else "ขาดทุน"
                 return f"{order['status']} - ธุรกรรมที่ถูกปิดไป{pnl} : {self.trade_order['pnl']}$"
             except Exception as e:
@@ -1451,7 +1450,7 @@ Leverage : X{self.trade_order['lev']}\n\
             text = await close_order("sell", self.bot_trade.currentMode.Lside)
         elif self.trade_order["type"] == "short":
             text = await close_order("buy", self.bot_trade.currentMode.Sside)
-        await account_balance.update_balance(True)
+        await self.binance_.update_balance(True)
         await self.binance_.disconnect()
         msgs = await query.edit_message_text(
             text=self.coin_pnl_reply_text + text,
@@ -1493,7 +1492,7 @@ Leverage : X{self.trade_order['lev']}\n\
     ):
         query = update.callback_query
         await query.answer()
-        await account_balance.update_balance()
+        await self.binance_.update_balance()
         await self.binance_.disconnect()
         pnl_back_button = [
             [
@@ -1504,7 +1503,7 @@ Leverage : X{self.trade_order['lev']}\n\
                 )
             ]
         ]
-        status = account_balance.position_data
+        status = self.binance_.position_data
         if len(status.index) > 0:
             positiondata = [
                 (
@@ -1556,7 +1555,7 @@ Leverage : X{self.trade_order['lev']}\n\
                 self.trade_order["symbol"], "bid"
             )
             position_data = await self.bot_trade.check_current_position(
-                self.trade_order["symbol"], account_balance.position_data.copy()
+                self.trade_order["symbol"], self.binance_.position_data.copy()
             )
             self.trade_order["type"] = (
                 f"{callback['Side']}".lower()
@@ -1869,7 +1868,8 @@ Leverage : X{self.trade_order['lev']}\n\
                 api=self.sec_info["API_KEY"], sapi=self.sec_info["API_SEC"]
             )
             exchange = await binance_test.get_exchange()
-            balance = exchange.fetch_balance()
+            balance = await exchange.fetch_balance()
+            await exchange.close()
             fiat_balance = {x: y for x, y in balance.items() if "USD" in x[-4:]}
             with sqlite3.connect("vxma.db", check_same_thread=False) as con:
                 # Read
@@ -1993,7 +1993,7 @@ Leverage : X{self.trade_order['lev']}\n\
                         "newClientOrderId": orderid,
                     },
                 )
-                await account_balance.update_balance(force=True)
+                await self.binance_.update_balance(force=True)
                 return f"\n\nรายงานการทำธุรกรรม :\n\
 ได้ออกคำสั่งเปิด Long สำหรับ : {self.trade_order['symbol']}\n\
 จำนวน : {self.trade_order['amt']}\n\
@@ -2055,7 +2055,7 @@ Leverage: {self.trade_order['lev']}\n"
                         "newClientOrderId": orderid,
                     },
                 )
-                await account_balance.update_balance(force=True)
+                await self.binance_.update_balance(force=True)
                 pnl = "\nกำไร" if position_data["short"]["pnl"] > 0.0 else "ขาดทุน"
                 return f"{order['status']} - ธุรกรรมที่ถูกปิดไป{pnl} : {position_data['short']['pnl']}$"
             except Exception as e:
@@ -2069,7 +2069,7 @@ Leverage: {self.trade_order['lev']}\n"
         try:
             await self.bot_trade.get_currentmode()
             position_data = await self.bot_trade.check_current_position(
-                self.trade_order["symbol"], account_balance.position_data.copy()
+                self.trade_order["symbol"], self.binance_.position_data.copy()
             )
             if position_data["short"]["position"]:
                 text1 = await close_short()
@@ -2090,6 +2090,7 @@ Leverage: {self.trade_order['lev']}\n"
                 text3 = await open_sl_long()
                 text_repons[3] = text3
             text = "".join(text_repons)
+            await self.binance_.disconnect()
             write_trade_record(
                 datetime.now(),
                 self.trade_order["symbol"],
@@ -2127,7 +2128,7 @@ Leverage: {self.trade_order['lev']}\n"
                         "newClientOrderId": orderid,
                     },
                 )
-                await account_balance.update_balance(force=True)
+                await self.binance_.update_balance(force=True)
                 return f"\n\nรายงานการทำธุรกรรม :\n\
 ได้ออกคำสั่งเปิด Short สำหรับ : {self.trade_order['symbol']}\n\
 จำนวน : {self.trade_order['amt']}\n\
@@ -2189,7 +2190,7 @@ Leverage: {self.trade_order['lev']}\n"
                         "newClientOrderId": orderid,
                     },
                 )
-                await account_balance.update_balance(force=True)
+                await self.binance_.update_balance(force=True)
                 pnl = "\nกำไร" if position_data["long"]["pnl"] > 0.0 else "ขาดทุน"
                 return f"{order['status']} - ธุรกรรมที่ถูกปิดไป{pnl} : {position_data['long']['pnl']}$"
             except Exception as e:
@@ -2203,7 +2204,7 @@ Leverage: {self.trade_order['lev']}\n"
         try:
             await self.bot_trade.get_currentmode()
             position_data = await self.bot_trade.check_current_position(
-                self.trade_order["symbol"], account_balance.position_data.copy()
+                self.trade_order["symbol"], self.binance_.position_data.copy()
             )
             if position_data["long"]["position"]:
                 text1 = await close_long()
@@ -2223,6 +2224,7 @@ Leverage: {self.trade_order['lev']}\n"
             if self.trade_order["sl"]:
                 text3 = await open_sl_short()
                 text_repons[3] = text3
+            await self.binance_.disconnect()
             text = "".join(text_repons)
             write_trade_record(
                 datetime.now(),

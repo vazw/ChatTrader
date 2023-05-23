@@ -10,44 +10,6 @@ from .AppData.Appdata import AppConfig, bot_setting
 barsC = 1502
 
 
-class AccountBalance:
-    """docstring for AccountBalance."""
-
-    def __init__(self):
-        self.balance = ""
-        self.fiat_balance = ""
-        self.update_time = 0
-
-    @retry(5, lambda e: print(f"ERROR in update_balance: {e}"))
-    async def update_balance(self, force: bool = False):
-        if time() - self.update_time > 600 or force:
-            exchange = await binance_i.get_exchange()
-            balance = await exchange.fetch_balance()
-            self.update_time = time()
-            self.balance = balance
-            self.fiat_balance = {x: y for x, y in balance.items() if "USD" in x[-4:]}
-            positions = self.balance["info"]["positions"]
-            status = pd.DataFrame(
-                [
-                    position
-                    for position in positions
-                    if float(position["positionAmt"]) != 0
-                ],
-                columns=POSITION_COLLUMN,
-            )
-            status["unrealizedProfit"] = (
-                (status["unrealizedProfit"]).astype("float64").round(3)
-            )
-
-            status["initialMargin"] = (
-                (status["initialMargin"]).astype("float64").round(3)
-            )
-            self.position_data = status
-
-
-account_balance = AccountBalance()
-
-
 def callbackRate(data, direction):
     m = len(data.index)
     close = data["close"][m - 1]
@@ -99,6 +61,10 @@ class Binance:
         self.exchange = None
         self.test_api = api
         self.test_sapi = sapi
+        self.balance = ""
+        self.fiat_balance = ""
+        self.update_time = 0
+        self.position_data = pd.DataFrame()
 
     async def connect(self) -> None:
         if self.test_api is not None:
@@ -130,6 +96,32 @@ class Binance:
         if self.exchange is not None:
             await self.exchange.close()
             self.exchange = None
+
+    @retry(5, lambda e: print(f"ERROR in update_balance: {e}"))
+    async def update_balance(self, force: bool = False):
+        if time() - self.update_time > 600 or force:
+            exchange = await self.get_exchange()
+            balance = await exchange.fetch_balance()
+            self.update_time = time()
+            self.balance = balance
+            self.fiat_balance = {x: y for x, y in balance.items() if "USD" in x[-4:]}
+            positions = self.balance["info"]["positions"]
+            status = pd.DataFrame(
+                [
+                    position
+                    for position in positions
+                    if float(position["positionAmt"]) != 0
+                ],
+                columns=POSITION_COLLUMN,
+            )
+            status["unrealizedProfit"] = (
+                (status["unrealizedProfit"]).astype("float64").round(3)
+            )
+
+            status["initialMargin"] = (
+                (status["initialMargin"]).astype("float64").round(3)
+            )
+            self.position_data = status
 
     @retry(10, lambda e: print(f"ERROR in update_balance: {e}"))
     async def get_bidask(self, symbol, bidask="ask"):
