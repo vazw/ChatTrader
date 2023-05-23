@@ -21,7 +21,7 @@ class AccountBalance:
     @retry(5, lambda e: print(f"ERROR in update_balance: {e}"))
     async def update_balance(self, force: bool = False):
         if time() - self.update_time > 600 or force:
-            exchange = await self.get_exchange()
+            exchange = await binance_i.get_exchange()
             balance = await exchange.fetch_balance()
             self.update_time = time()
             self.balance = balance
