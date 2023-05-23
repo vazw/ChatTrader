@@ -383,7 +383,7 @@ def write_trade_record(
     price: float,
     direction: str,
     tp: any = None,
-    sl: float = None,
+    sl: any = None,
 ) -> None:
     # Create a dataframe from the input data
     df = pd.DataFrame(

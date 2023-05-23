@@ -2,29 +2,26 @@ from collections import deque
 from src.AppData.Appdata import (
     ColorCS,
     Last_update,
-    PositionMode,
     Timer,
 )
 
 colorCS = ColorCS()
 lastUpdate = Last_update()
-currentMode = PositionMode()
 candle_ohlc = {}
 timer = Timer()
 notify_history = {}
 
 HELP_MESSAGE = "\
-Use /start to test this bot.\n\
-Use /help for help menu\n\
-Use /menu for App menu\n\
-Use /clear to clear message\n\
-after Started use inline menu to perfrom task"
+กด /start ในครั้งแรก เพื่อให้บอทจำแชท\n\
+กด /clear เพื่อล้างข้อความสนทนา(ไม่ลบแจ้งเตือน)\n\
+กด /help หากเกิดข้อสงสัย\n\
+กด /menu เพื่อแสดงเมนูบริหารความเสี่ยง"
 
 WELCOME_MESSAGE = "\
-Welcome to the AssistancBot\n\
-Use /help for help menu\n\
-Use /clear to clear message\n\
-after Started Use /menu for App menu's inline menu to perfrom task"
+สวัสดีค่ะนายท่าน ดิฉันคือผู้ช่วย จัดการ/บริหาร ความเสี่ยงของนายท่าน\n\
+กด /clear เพื่อล้างข้อความสนทนา(ไม่ลบแจ้งเตือน)\n\
+กด /help หากเกิดข้อสงสัย\n\
+มาเริ่มกันเลย! กด /menu เพื่อแสดงเมนูบริหารความเสี่ยง"
 
 POSITION_COLLUMN = [
     "symbol",

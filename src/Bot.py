@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime
 import time
 from uuid import uuid4
 import warnings
@@ -9,7 +10,6 @@ from telegram.ext import ContextTypes
 import ccxt.async_support as ccxt
 
 from .AppData import (
-    currentMode,
     notify_history,
     colorCS,
     lastUpdate,
@@ -20,6 +20,7 @@ from .AppData.Appdata import (
     AppConfig,
     DefaultRiskTable,
     RiskManageTable,
+    PositionMode,
     TATable,
     bot_setting,
     candle,
@@ -155,8 +156,6 @@ async def split_list(input_list, chunk_size):
 
 
 class BotTrade:
-    """docstring for BotTrade."""
-
     def __init__(
         self,
         context: ContextTypes.DEFAULT_TYPE,
@@ -169,6 +168,7 @@ class BotTrade:
         self.context = context
         self.chat_id = chat_id
         self.watchlist = []
+        self.currentMode = PositionMode()
 
     def start_bot(self):
         self.status_bot = True
@@ -688,7 +688,7 @@ class BotTrade:
                 i for i in all_timeframes if TIMEFRAME_SECONDS[i] == timer.min_timewait
             )
             timer.get_time = True
-            lastUpdate.candle = time.ctime(time.time())
+            lastUpdate.candle = datetime.now()
             await fetchbars("BTCUSDT", timer.min_timeframe)
             timer.next_candle = timer.last_closed + timer.min_timewait
         except Exception as e:
@@ -733,7 +733,10 @@ class BotTrade:
 
                 all_symbols = await getAllsymbol()
                 configed_symbol = symbolist["symbol"].tolist()
-                self.watchlist = configed_symbol
+                self.watchlist = [
+                    (symbolist["symbol"][i], symbolist["timeframe"][i])
+                    for i in symbolist.index
+                ]
                 if self.status_scan:
                     tasks2 = [
                         asyncio.create_task(self.main_bot_no_setting(symbol))
@@ -746,7 +749,7 @@ class BotTrade:
                 sub_tasks = []
 
                 if time.time() >= timer.next_candle:
-                    lastUpdate.candle = time.ctime(time.time())
+                    lastUpdate.candle = datetime.now()
                     await account_balance.update_balance()
                     await self.update_candle()
                     async for task in split_list(tasks, 10):
@@ -795,7 +798,7 @@ class BotTrade:
             if triggerPrice is None:
                 return
             callbackrate = callbackRate(df, True)
-            if currentMode.dualSidePosition:
+            if self.currentMode.dualSidePosition:
                 ordertailingSL = await exchange.create_order(
                     symbol,
                     "TRAILING_STOP_MARKET",
@@ -844,7 +847,7 @@ class BotTrade:
             if triggerPrice is None:
                 return
             callbackrate = callbackRate(df, False)
-            if currentMode.dualSidePosition:
+            if self.currentMode.dualSidePosition:
                 ordertailingSL = await exchange.create_order(
                     symbol,
                     "TRAILING_STOP_MARKET",
@@ -890,7 +893,7 @@ class BotTrade:
     async def USESLSHORT(self, symbol, exchange, amount, high, Sside):
         try:
             orderid = get_order_id()
-            if currentMode.dualSidePosition:
+            if self.currentMode.dualSidePosition:
                 orderSL = await exchange.create_order(
                     symbol,
                     "stop_market",
@@ -930,7 +933,7 @@ class BotTrade:
     async def USESLLONG(self, symbol, exchange: ccxt.binance, amount, low, side):
         try:
             orderid = get_order_id()
-            if currentMode.dualSidePosition:
+            if self.currentMode.dualSidePosition:
                 orderSL = await exchange.create_order(
                     symbol,
                     "stop_market",
@@ -1519,10 +1522,10 @@ class BotTrade:
             await binance_i.connect_loads()
             data = await exchange.fetch_account_positions(["BTCUSDT"])
         await binance_i.disconnect()
-        currentMode.dualSidePosition = data[0]["hedged"]
-        if currentMode.dualSidePosition:
-            currentMode.Sside = "SHORT"
-            currentMode.Lside = "LONG"
+        self.currentMode.dualSidePosition = data[0]["hedged"]
+        if self.currentMode.dualSidePosition:
+            self.currentMode.Sside = "SHORT"
+            self.currentMode.Lside = "LONG"
 
     async def check_current_position(self, symbol: str, status: pd.DataFrame) -> dict:
         if "/" in symbol:
@@ -1534,10 +1537,14 @@ class BotTrade:
         status = status[status["symbol"] == posim]
 
         if status.empty:
+            price_long = 0.0
+            price_short = 0.0
             amt_short = 0.0
             amt_long = 0.0
             upnl_short = 0.0
             upnl_long = 0.0
+            margin_long = 0, 0
+            margin_short = 0, 0
         elif len(status.index) > 1:
             amt_long = float(
                 (
@@ -1571,6 +1578,38 @@ class BotTrade:
                     and status["positionSide"][i] == "SHORT"
                 ).__next__()
             )
+            margin_long = float(
+                (
+                    status["initialMargin"][i]
+                    for i in status.index
+                    if status["symbol"][i] == posim
+                    and status["positionSide"][i] == "LONG"
+                ).__next__()
+            )
+            margin_short = float(
+                (
+                    status["initialMargin"][i]
+                    for i in status.index
+                    if status["symbol"][i] == posim
+                    and status["positionSide"][i] == "SHORT"
+                ).__next__()
+            )
+            price_long = float(
+                (
+                    status["entryPrice"][i]
+                    for i in status.index
+                    if status["symbol"][i] == posim
+                    and status["positionSide"][i] == "LONG"
+                ).__next__()
+            )
+            price_short = float(
+                (
+                    status["entryPrice"][i]
+                    for i in status.index
+                    if status["symbol"][i] == posim
+                    and status["positionSide"][i] == "SHORT"
+                ).__next__()
+            )
         else:
             amt = float(
                 (
@@ -1579,8 +1618,6 @@ class BotTrade:
                     if status["symbol"][i] == posim
                 ).__next__()
             )
-            amt_long = amt if amt > 0 else 0.0
-            amt_short = amt if amt < 0 else 0.0
             upnl = float(
                 (
                     status["unrealizedProfit"][i]
@@ -1588,23 +1625,55 @@ class BotTrade:
                     if status["symbol"][i] == posim
                 ).__next__()
             )
+            price_ = float(
+                (
+                    status["entryPrice"][i]
+                    for i in status.index
+                    if status["symbol"][i] == posim
+                ).__next__()
+            )
+            margin_ = float(
+                (
+                    status["initialMargin"][i]
+                    for i in status.index
+                    if status["symbol"][i] == posim
+                ).__next__()
+            )
+            amt_long = amt if amt > 0 else 0.0
+            amt_short = amt if amt < 0 else 0.0
+            margin_long = margin_ if amt > 0 else 0.0
+            margin_short = margin_ if amt < 0 else 0.0
             upnl_long = upnl if amt != 0 else 0.0
             upnl_short = upnl if amt != 0 else 0.0
+            price_long = price_ if amt > 0 else 0.0
+            price_short = price_ if amt < 0 else 0.0
 
+        leverage = int(
+            (
+                status["leverage"][i]
+                for i in status.index
+                if status["symbol"][i] == posim
+            ).__next__()
+        )
         is_in_Long = True if amt_long != 0 else False
         is_in_Short = True if amt_short != 0 else False
         del status
         return {
             "symbol": posim,
+            "leverage": leverage,
             "long": {
+                "price": price_long,
                 "amount": amt_long,
                 "pnl": upnl_long,
                 "position": is_in_Long,
+                "margin": margin_long,
             },
             "short": {
+                "price": price_short,
                 "amount": amt_short,
                 "pnl": upnl_short,
                 "position": is_in_Short,
+                "margin": margin_short,
             },
         }
 
@@ -1776,7 +1845,7 @@ class BotTrade:
                     risk_manage["symbol"],
                     current_position["short"]["amount"],
                     current_position["short"]["pnl"],
-                    currentMode.Sside,
+                    self.currentMode.Sside,
                     risk_manage["timeframe"],
                     closeall=True,
                 )
@@ -1787,7 +1856,7 @@ class BotTrade:
                             df,
                             balance,
                             risk_manage,
-                            currentMode.Lside,
+                            self.currentMode.Lside,
                             mm_permission["min_balance"],
                             risk_manage["timeframe"],
                         )
@@ -1804,7 +1873,7 @@ class BotTrade:
                             df,
                             balance,
                             risk_manage,
-                            currentMode.Lside,
+                            self.currentMode.Lside,
                             mm_permission["min_balance"],
                             risk_manage["timeframe"],
                         )
@@ -1824,7 +1893,7 @@ class BotTrade:
                     risk_manage["symbol"],
                     current_position["long"]["amount"],
                     current_position["long"]["pnl"],
-                    currentMode.Lside,
+                    self.currentMode.Lside,
                     risk_manage["timeframe"],
                     closeall=True,
                 )
@@ -1835,7 +1904,7 @@ class BotTrade:
                             df,
                             balance,
                             risk_manage,
-                            currentMode.Sside,
+                            self.currentMode.Sside,
                             mm_permission["min_balance"],
                             risk_manage["timeframe"],
                         )
@@ -1853,7 +1922,7 @@ class BotTrade:
                             df,
                             balance,
                             risk_manage,
-                            currentMode.Sside,
+                            self.currentMode.Sside,
                             mm_permission["min_balance"],
                             risk_manage["timeframe"],
                         )
@@ -1910,7 +1979,7 @@ class BotTrade:
                     df,
                     balance,
                     risk_manage,
-                    currentMode.Lside,
+                    self.currentMode.Lside,
                     mm_permission["min_balance"],
                     risk_manage["hedge_timeframe"],
                     False,
@@ -1934,7 +2003,7 @@ class BotTrade:
                 risk_manage["symbol"],
                 current_position["short"]["amount"],
                 current_position["short"]["pnl"],
-                currentMode.Sside,
+                self.currentMode.Sside,
                 risk_manage["hedge_timeframe"],
             )
             await account_balance.update_balance(force=True)
@@ -1953,7 +2022,7 @@ class BotTrade:
                     df,
                     balance,
                     risk_manage,
-                    currentMode.Sside,
+                    self.currentMode.Sside,
                     mm_permission["min_balance"],
                     risk_manage["hedge_timeframe"],
                     False,
@@ -1977,7 +2046,7 @@ class BotTrade:
                 risk_manage["symbol"],
                 current_position["long"]["amount"],
                 current_position["long"]["pnl"],
-                currentMode.Lside,
+                self.currentMode.Lside,
                 risk_manage["hedge_timeframe"],
             )
             await account_balance.update_balance(force=True)

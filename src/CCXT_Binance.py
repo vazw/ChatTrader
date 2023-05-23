@@ -4,16 +4,8 @@ from time import time
 import ccxt.async_support as ccxt
 import pandas as pd
 
-from .AppData import (
-    lastUpdate,
-    candle_ohlc,
-    timer,
-    retry,
-)
-from .AppData.Appdata import (
-    AppConfig,
-    bot_setting,
-)
+from .AppData import lastUpdate, candle_ohlc, timer, retry, POSITION_COLLUMN
+from .AppData.Appdata import AppConfig, bot_setting
 
 barsC = 1502
 
@@ -34,6 +26,23 @@ class AccountBalance:
             self.update_time = time()
             self.balance = balance
             self.fiat_balance = {x: y for x, y in balance.items() if "USD" in x[-4:]}
+            positions = self.balance["info"]["positions"]
+            status = pd.DataFrame(
+                [
+                    position
+                    for position in positions
+                    if float(position["positionAmt"]) != 0
+                ],
+                columns=POSITION_COLLUMN,
+            )
+            status["unrealizedProfit"] = (
+                (status["unrealizedProfit"]).astype("float64").round(3)
+            )
+
+            status["initialMargin"] = (
+                (status["initialMargin"]).astype("float64").round(3)
+            )
+            self.position_data = status
 
 
 account_balance = AccountBalance()
@@ -273,3 +282,39 @@ def RR1(stop, side, price, symbol, exchange):
         return exchange.price_to_precision(symbol, target)
     else:
         return None
+
+
+async def get_tp_sl_price(symbol: str = "BTCUSDT", side: str = "BOTH"):
+    slPrice = 0.0
+    tpPrice = 0.0
+    exchange = await binance_i.get_exchange()
+    order_list = await exchange.fetch_orders(symbol, limit=10)
+    await binance_i.disconnect()
+    symbol_order = pd.DataFrame(
+        [
+            order["info"]
+            for order in order_list
+            if order["info"]["status"] == "NEW"
+            and order["info"]["positionSide"] == side
+        ]
+    )
+    sl_price = (
+        symbol_order.loc[symbol_order["origType"] == "STOP_MARKET", ["stopPrice"]]
+        .copy()
+        .reset_index()
+    )
+    tp_price = (
+        symbol_order.loc[
+            symbol_order["origType"] == "TAKE_PROFIT_MARKET", ["stopPrice"]
+        ]
+        .copy()
+        .reset_index()
+    )
+    if len(sl_price.index) > 0:
+        slPrice = float(sl_price["stopPrice"][0])
+    if len(tp_price.index) > 0:
+        tpPrice = float(tp_price["stopPrice"][0])
+    return {
+        "sl_price": slPrice,
+        "tp_price": tpPrice,
+    }
