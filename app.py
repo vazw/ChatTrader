@@ -248,12 +248,12 @@ class Telegram:
                 [
                     [
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "symbol"}',
-                            text=f"symbol : {self.vxma_settings['symbol']}",
-                        ),
-                        InlineKeyboardButton(
                             callback_data='{"Mode": "vxma_settings" , "Method": "timeframe"}',
                             text=f"timeframe : {self.vxma_settings['timeframe']}",
+                        ),
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "hedgeTF"}',
+                            text=f"hedgeTF : {self.vxma_settings['hedgeTF']}",
                         ),
                     ],
                     [
@@ -368,31 +368,23 @@ class Telegram:
                     ],
                     [
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "hedgeTF"}',
-                            text=f"hedgeTF : {self.vxma_settings['hedgeTF']}",
-                        )
+                            "กราฟ📈",
+                            callback_data='{"Mode": "vxma_settings", "Method": "CHART"}',
+                        ),
+                        InlineKeyboardButton(
+                            "💾บันทึก",
+                            callback_data='{"Mode": "vxma_settings", "Method": "SAVE"}',
+                        ),
                     ],
                     [
-                        [
-                            InlineKeyboardButton(
-                                "กราฟ📈",
-                                callback_data='{"Mode": "vxma_settings", "Method": "CHART"}',
-                            ),
-                            InlineKeyboardButton(
-                                "💾บันทึก",
-                                callback_data='{"Mode": "vxma_settings", "Method": "SAVE"}',
-                            ),
-                        ],
-                        [
-                            InlineKeyboardButton(
-                                "ลบ🗑",
-                                callback_data='{"Mode": "vxma_settings", "Method": "DELETE"}',
-                            ),
-                            InlineKeyboardButton(
-                                "❌ กลับ",
-                                callback_data='{"Mode": "vxma_settings", "Method": "BACK"}',
-                            ),
-                        ],
+                        InlineKeyboardButton(
+                            "ลบ🗑",
+                            callback_data='{"Mode": "vxma_settings", "Method": "DELETE"}',
+                        ),
+                        InlineKeyboardButton(
+                            "❌ กลับ",
+                            callback_data='{"Mode": "vxma_settings", "Method": "BACK"}',
+                        ),
                     ],
                 ]
             ),
