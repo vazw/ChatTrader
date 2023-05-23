@@ -32,17 +32,11 @@ from .AppData.Appdata import (
     read_one_open_trade_record,
 )
 from .CCXT_Binance import (
-    getAllsymbol,
-    get_symbol,
     account_balance,
-    fetchbars,
     binance_i,
     callbackRate,
     get_order_id,
     RRTP,
-    get_bidask,
-    setleverage,
-    RR1,
 )
 from .Strategy.Benchmarking import benchmarking as ta_score
 from .Strategy.vxma_talib import vxma as ta
@@ -214,7 +208,7 @@ class BotTrade:
         try:
             timenow = time.time()
             update_tasks = [
-                asyncio.create_task(fetchbars(symbol, tf))
+                asyncio.create_task(binance_i.fetchbars(symbol, tf))
                 for symbol, tf in [str(i).split("_") for i in candle_ohlc.keys()]
                 if timenow
                 > candle_ohlc[f"{symbol}_{tf}"]["cTime"] + TIMEFRAME_SECONDS[tf]
@@ -232,7 +226,7 @@ class BotTrade:
                 f"{symbol}_{tf}" not in candle_ohlc.keys()
                 or candle_ohlc[f"{symbol}_{tf}"]["candle"] is None
             ):
-                await fetchbars(symbol, tf)
+                await binance_i.fetchbars(symbol, tf)
             data1 = candle_ohlc[f"{symbol}_{tf}"]["candle"].copy()
             if data1 is None or len(data1.index) < 100:
                 return None
@@ -249,7 +243,7 @@ class BotTrade:
                 f"{symbol}_{tf}" not in candle_ohlc.keys()
                 or candle_ohlc[f"{symbol}_{tf}"]["candle"] is None
             ):
-                await fetchbars(symbol, tf)
+                await binance_i.fetchbars(symbol, tf)
             data2 = candle_ohlc[f"{symbol}_{tf}"]["candle"].copy()
             if data2 is None or len(data2.index) < 100:
                 return None
@@ -266,7 +260,7 @@ class BotTrade:
                 f"{symbol}_{tf}" not in candle_ohlc.keys()
                 or candle_ohlc[f"{symbol}_{tf}"]["candle"] is None
             ):
-                await fetchbars(symbol, tf)
+                await binance_i.fetchbars(symbol, tf)
             data3 = candle_ohlc[f"{symbol}_{tf}"]["candle"].copy()
             if data3 is None or len(data3.index) < 100:
                 return None
@@ -310,7 +304,7 @@ class BotTrade:
             pass
 
     async def scanSideway(self):
-        symbolist = await getAllsymbol()
+        symbolist = await binance_i.getAllsymbol()
         lastUpdate.status = f"Scanning {len(symbolist)} Symbols"
         ta_data = TATable()
         symbols = []
@@ -324,7 +318,7 @@ class BotTrade:
 
     async def get_dailytasks(self):
         daycollum = ["Symbol", "LastPirce", "Long-Term", "Mid-Term", "Short-Term"]
-        symbolist = await get_symbol()
+        symbolist = await binance_i.get_symbol()
         ta_data = TATable()
         for symbol in symbolist:
             try:
@@ -689,7 +683,7 @@ class BotTrade:
             )
             timer.get_time = True
             lastUpdate.candle = datetime.now()
-            await fetchbars("BTCUSDT", timer.min_timeframe)
+            await binance_i.fetchbars("BTCUSDT", timer.min_timeframe)
             timer.next_candle = timer.last_closed + timer.min_timewait
         except Exception as e:
             print(f"fail to set min time :{e}")
@@ -731,7 +725,7 @@ class BotTrade:
                     for i in symbolist.index
                 ]
 
-                all_symbols = await getAllsymbol()
+                all_symbols = await binance_i.getAllsymbol()
                 configed_symbol = symbolist["symbol"].tolist()
                 self.watchlist = [
                     (symbolist["symbol"][i], symbolist["timeframe"][i])
@@ -794,7 +788,7 @@ class BotTrade:
     async def TailingLongOrder(self, df, symbol, exchange, ask, amount, low, side):
         try:
             orderid = get_order_id()
-            triggerPrice = RR1(low, True, ask, symbol, exchange)
+            triggerPrice = binance_i.RR1(low, True, ask, symbol, exchange)
             if triggerPrice is None:
                 return
             callbackrate = callbackRate(df, True)
@@ -843,7 +837,7 @@ class BotTrade:
     async def TailingShortOrder(self, df, symbol, exchange, bid, amount, high, Sside):
         try:
             orderid = get_order_id()
-            triggerPrice = RR1(high, False, bid, symbol, exchange)
+            triggerPrice = binance_i.RR1(high, False, bid, symbol, exchange)
             if triggerPrice is None:
                 return
             callbackrate = callbackRate(df, False)
@@ -1081,7 +1075,7 @@ class BotTrade:
                     if data["symbol"] == risk_manage["symbol"]
                 ).__next__()
             )
-            ask = await get_bidask(risk_manage["symbol"], exchange, "ask")
+            ask = await binance_i.get_bidask(risk_manage["symbol"], "ask")
             if min_amount * ask < 5.0:
                 min_amount = 6.0 / ask
             amount = await self.buysize(
@@ -1092,8 +1086,8 @@ class BotTrade:
                 risk_manage["risk_size"],
                 min_amount,
             )
-            leve = await setleverage(
-                risk_manage["symbol"], risk_manage["leverage"], exchange
+            leve = await binance_i.setleverage(
+                risk_manage["symbol"], risk_manage["leverage"]
             )
             if amount * ask > risk_manage["max_size"] * int(leve):
                 new_lots = risk_manage["max_size"] * int(leve) / ask
@@ -1270,7 +1264,7 @@ class BotTrade:
                     if data["symbol"] == risk_manage["symbol"]
                 ).__next__()
             )
-            bid = await get_bidask(risk_manage["symbol"], exchange, "bid")
+            bid = await binance_i.get_bidask(risk_manage["symbol"], "bid")
             if min_amount * bid < 5.0:
                 min_amount = 6.0 / bid
             amount = await self.sellsize(
@@ -1281,8 +1275,8 @@ class BotTrade:
                 risk_manage["risk_size"],
                 min_amount,
             )
-            leve = await setleverage(
-                risk_manage["symbol"], risk_manage["leverage"], exchange
+            leve = await binance_i.setleverage(
+                risk_manage["symbol"], risk_manage["leverage"]
             )
             if amount * bid > risk_manage["max_size"] * int(leve):
                 new_lots = risk_manage["max_size"] * int(leve) / bid
@@ -1402,7 +1396,7 @@ class BotTrade:
             amount = abs(amt)
             upnl = pnl
             quote = symbol[-4:]
-            bid = await get_bidask(symbol, exchange, "bid")
+            bid = await binance_i.get_bidask(symbol, "bid")
             orderid = get_order_id()
             try:
                 order = await exchange.create_market_order(
@@ -1464,7 +1458,7 @@ class BotTrade:
             quote = symbol[-4:]
             orderid = get_order_id()
             upnl = pnl
-            ask = await get_bidask(symbol, exchange, "ask")
+            ask = await binance_i.get_bidask(symbol, "ask")
             try:
                 order = await exchange.create_market_order(
                     symbol,
@@ -1545,7 +1539,7 @@ class BotTrade:
             upnl_long = 0.0
             margin_long = 0.0
             margin_short = 0.0
-            leverage = 1
+            leverage = 0
         elif len(status.index) > 1:
             amt_long = float(
                 (

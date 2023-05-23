@@ -21,7 +21,7 @@ class AccountBalance:
     @retry(5, lambda e: print(f"ERROR in update_balance: {e}"))
     async def update_balance(self, force: bool = False):
         if time() - self.update_time > 600 or force:
-            exchange = await binance_i.get_exchange()
+            exchange = await self.get_exchange()
             balance = await exchange.fetch_balance()
             self.update_time = time()
             self.balance = balance
@@ -131,190 +131,191 @@ class Binance:
             await self.exchange.close()
             self.exchange = None
 
-
-binance_i = Binance()
-
-
-async def get_bidask(symbol, exchange, bidask="ask"):
-    try:
+    @retry(10, lambda e: print(f"ERROR in update_balance: {e}"))
+    async def get_bidask(self, symbol, bidask="ask"):
+        exchange = await self.get_exchange()
         info = await exchange.fetch_bids_asks([symbol])
         return float(next(y[bidask] for x, y in info.items()))  # pyright: ignore
-    except Exception as e:
-        print(e)
-        return await get_bidask(symbol, exchange, bidask)
 
+    async def get_symbol(self):
+        """
+        get top 10 volume symbol of the day
+        """
+        symbolist = bot_setting()
+        lastUpdate.status = "fecthing Symbol of Top 10 Volume..."
+        exchange = await self.get_exchange()
+        try:
+            market = await exchange.fetch_tickers(params={"type": "future"})
+        except Exception as e:
+            print(f"{lastUpdate.status}\n{e}")
+            market = await exchange.fetch_tickers(params={"type": "future"})
+        symbols = pd.DataFrame([y for x, y in market.items() if "USD" in x[-4:]])
+        symbols = symbols.sort_values(by=["quoteVolume"], ascending=False)
+        symbols = symbols.head(10)
+        newsym = [symbol for symbol in symbols["symbol"]]
+        if symbolist is not None and len(symbolist.index) > 0:
+            for i in range(len(symbolist.index)):
+                newsym.append(symbolist["symbol"][i])
+        newsym = list(dict.fromkeys(newsym))
+        print(f"Interested : {newsym}")
+        return newsym
 
-async def get_symbol():
-    """
-    get top 10 volume symbol of the day
-    """
-    symbolist = bot_setting()
-    lastUpdate.status = "fecthing Symbol of Top 10 Volume..."
-    exchange = await binance_i.get_exchange()
-    try:
-        market = await exchange.fetch_tickers(params={"type": "future"})
-    except Exception as e:
-        print(f"{lastUpdate.status}\n{e}")
-        market = await exchange.fetch_tickers(params={"type": "future"})
-    symbols = pd.DataFrame([y for x, y in market.items() if "USD" in x[-4:]])
-    symbols = symbols.sort_values(by=["quoteVolume"], ascending=False)
-    symbols = symbols.head(10)
-    newsym = [symbol for symbol in symbols["symbol"]]
-    if symbolist is not None and len(symbolist.index) > 0:
-        for i in range(len(symbolist.index)):
-            newsym.append(symbolist["symbol"][i])
-    newsym = list(dict.fromkeys(newsym))
-    print(f"Interested : {newsym}")
-    return newsym
+    async def getAllsymbol(self):
+        """
+        Get all symbols
+        """
+        exchange = await self.get_exchange()
+        try:
+            market = await exchange.fetch_tickers(params={"type": "future"})
+        except Exception as e:
+            print(f"{lastUpdate.status}\n{e}")
+            market = await exchange.fetch_tickers(params={"type": "future"})
+        symbols = pd.DataFrame([y for x, y in market.items() if "USD" in x[-4:]])
+        symbols = symbols.sort_values(by=["quoteVolume"], ascending=False)
+        return [symbol for symbol in symbols["symbol"]]
 
+    @retry(10, lambda e: print(f"ERROR in update_balance: {e}"))
+    async def fetching_candle_ohlc(self, symbol, timeframe, limits):
+        exchange = await self.get_exchange()
+        try:
+            bars = await exchange.fetch_ohlcv(
+                symbol, timeframe=timeframe, since=None, limit=limits
+            )
+            return bars
+        except ccxt.errors.BadSymbol as e:
+            print(f"No symbols skip : {e}")
+            return None
 
-async def getAllsymbol():
-    """
-    Get all symbols
-    """
-    exchange = await binance_i.get_exchange()
-    try:
-        market = await exchange.fetch_tickers(params={"type": "future"})
-    except Exception as e:
-        print(f"{lastUpdate.status}\n{e}")
-        market = await exchange.fetch_tickers(params={"type": "future"})
-    symbols = pd.DataFrame([y for x, y in market.items() if "USD" in x[-4:]])
-    symbols = symbols.sort_values(by=["quoteVolume"], ascending=False)
-    return [symbol for symbol in symbols["symbol"]]
+    async def fetchbars(self, symbol, timeframe) -> None:
+        """
+        get candle from exchange and update them to ram
+        """
+        if (
+            f"{symbol}_{timeframe}" not in candle_ohlc.keys()
+            or candle_ohlc[f"{symbol}_{timeframe}"]["candle"] is None
+        ):
+            bars = await self.fetching_candle_ohlc(symbol, timeframe, barsC)
+            if bars is None:
+                return
+            df = pd.DataFrame(
+                bars[:-1],
+                columns=["timestamp", "open", "high", "low", "close", "volume"],
+            )
+            if timer.get_time and timeframe == timer.min_timeframe:
+                timer.last_closed = int(df["timestamp"][len(df.index) - 1] / 1000)
+                timer.get_time = False
 
-
-@retry(10, lambda e: print(f"ERROR in update_balance: {e}"))
-async def fetching_candle_ohlc(symbol, timeframe, limits):
-    exchange = await binance_i.get_exchange()
-    try:
-        bars = await exchange.fetch_ohlcv(
-            symbol, timeframe=timeframe, since=None, limit=limits
-        )
-        return bars
-    except ccxt.errors.BadSymbol as e:
-        print(f"No symbols skip : {e}")
-        return None
-
-
-async def fetchbars(symbol, timeframe) -> None:
-    """
-    get candle from exchange and update them to ram
-    """
-    if (
-        f"{symbol}_{timeframe}" not in candle_ohlc.keys()
-        or candle_ohlc[f"{symbol}_{timeframe}"]["candle"] is None
-    ):
-        bars = await fetching_candle_ohlc(symbol, timeframe, barsC)
-        if bars is None:
-            return
-        df = pd.DataFrame(
-            bars[:-1],
-            columns=["timestamp", "open", "high", "low", "close", "volume"],
-        )
-        if timer.get_time and timeframe == timer.min_timeframe:
-            timer.last_closed = int(df["timestamp"][len(df.index) - 1] / 1000)
-            timer.get_time = False
-
-        closed_time = int(df["timestamp"][len(df.index) - 1] / 1000)
-        df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms", utc=True).map(
-            lambda x: x.tz_convert("Asia/Bangkok")
-        )
-        df = df.set_index("timestamp")
-        candle_ohlc.update(
-            {
-                f"{symbol}_{timeframe}": {
-                    "candle": df,
-                    "cTime": closed_time,
+            closed_time = int(df["timestamp"][len(df.index) - 1] / 1000)
+            df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms", utc=True).map(
+                lambda x: x.tz_convert("Asia/Bangkok")
+            )
+            df = df.set_index("timestamp")
+            candle_ohlc.update(
+                {
+                    f"{symbol}_{timeframe}": {
+                        "candle": df,
+                        "cTime": closed_time,
+                    }
                 }
-            }
-        )
-    else:
-        bars = await fetching_candle_ohlc(symbol, timeframe, 5)
-        df = pd.DataFrame(
-            bars[:-1],
-            columns=["timestamp", "open", "high", "low", "close", "volume"],
-        )
-        if bars is None:
-            return
-        if timer.get_time and timeframe == timer.min_timeframe:
-            timer.last_closed = int(df["timestamp"][len(df.index) - 1] / 1000)
-            timer.get_time = False
+            )
+        else:
+            bars = await self.fetching_candle_ohlc(symbol, timeframe, 5)
+            df = pd.DataFrame(
+                bars[:-1],
+                columns=["timestamp", "open", "high", "low", "close", "volume"],
+            )
+            if bars is None:
+                return
+            if timer.get_time and timeframe == timer.min_timeframe:
+                timer.last_closed = int(df["timestamp"][len(df.index) - 1] / 1000)
+                timer.get_time = False
 
-        closed_time = int(df["timestamp"][len(df.index) - 1] / 1000)
-        df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms", utc=True).map(
-            lambda x: x.tz_convert("Asia/Bangkok")
-        )
-        df = df.set_index("timestamp")
-        df = pd.concat(
-            [candle_ohlc[f"{symbol}_{timeframe}"]["candle"], df],
-            ignore_index=False,
-        )
-        df = df[~df.index.duplicated(keep="last")].tail(barsC)
-        candle_ohlc[f"{symbol}_{timeframe}"]["candle"] = df
-        candle_ohlc[f"{symbol}_{timeframe}"]["cTime"] = closed_time
+            closed_time = int(df["timestamp"][len(df.index) - 1] / 1000)
+            df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms", utc=True).map(
+                lambda x: x.tz_convert("Asia/Bangkok")
+            )
+            df = df.set_index("timestamp")
+            df = pd.concat(
+                [candle_ohlc[f"{symbol}_{timeframe}"]["candle"], df],
+                ignore_index=False,
+            )
+            df = df[~df.index.duplicated(keep="last")].tail(barsC)
+            candle_ohlc[f"{symbol}_{timeframe}"]["candle"] = df
+            candle_ohlc[f"{symbol}_{timeframe}"]["cTime"] = closed_time
 
+    # set leverage pass
+    async def setleverage(self, symbol, lev):
+        exchange = await self.get_exchange()
+        try:
+            await exchange.set_leverage(lev, symbol)
+            return lev
+        except Exception as e:
+            print(f"{lastUpdate.status}\n{e}")
+            lever = await exchange.fetch_positions_risk([symbol])
+            lev = max(
+                [
+                    y["leverage"]
+                    for x, y in enumerate(lever)  # pyright: ignore
+                    if y["info"]["symbol"] == symbol or y["symbol"] == symbol
+                ]
+            )
+            await exchange.set_leverage(int(lev), symbol)
+            return round(int(lev), 0)
 
-# set leverage pass
-async def setleverage(symbol, lev, exchange):
-    try:
-        await exchange.set_leverage(lev, symbol)
-        return lev
-    except Exception as e:
-        print(f"{lastUpdate.status}\n{e}")
-        lever = await exchange.fetch_positions_risk([symbol])
-        lev = max(
+    def RR1(self, stop, side, price, symbol, exchange):
+        if side:
+            target = price * (1 + ((price - float(stop)) / price) * 1)
+            return exchange.price_to_precision(symbol, target)
+        elif not side:
+            target = price * (1 - ((float(stop) - price) / price) * 1)
+            return exchange.price_to_precision(symbol, target)
+        else:
+            return None
+
+    async def get_tp_sl_price(self, symbol: str = "BTCUSDT", side: str = "BOTH"):
+        slId = 0
+        tpId = 0
+        slPrice = 0.0
+        tpPrice = 0.0
+        exchange = await self.get_exchange()
+        order_list = await exchange.fetch_orders(symbol, limit=10)
+        symbol_order = pd.DataFrame(
             [
-                y["leverage"]
-                for x, y in enumerate(lever)  # pyright: ignore
-                if y["info"]["symbol"] == symbol or y["symbol"] == symbol
+                order["info"]
+                for order in order_list
+                if order["info"]["status"] == "NEW"
+                and order["info"]["positionSide"] == side
             ]
         )
-        await exchange.set_leverage(int(lev), symbol)
-        return round(int(lev), 0)
+        sl_price = (
+            symbol_order.loc[symbol_order["origType"] == "STOP_MARKET"]
+            .copy()
+            .reset_index()
+        )
+        tp_price = (
+            symbol_order.loc[symbol_order["origType"] == "TAKE_PROFIT_MARKET"]
+            .copy()
+            .reset_index()
+        )
+        if len(sl_price.index) > 0:
+            slId = sl_price["orderId"][0]
+            slPrice = float(sl_price["stopPrice"][0])
+        if len(tp_price.index) > 0:
+            tpId = tp_price["orderId"][0]
+            tpPrice = float(tp_price["stopPrice"][0])
+        return {
+            "sl_id": slId,
+            "sl_price": slPrice,
+            "tp_id": tpId,
+            "tp_price": tpPrice,
+        }
+
+    async def cancel_order(self, symbol: str = "BTCUSDT", order_id: str = "0"):
+        exchange = await self.get_exchange()
+        await exchange.cancel_order(
+            order_id,
+            symbol,
+        )
 
 
-def RR1(stop, side, price, symbol, exchange):
-    if side:
-        target = price * (1 + ((price - float(stop)) / price) * 1)
-        return exchange.price_to_precision(symbol, target)
-    elif not side:
-        target = price * (1 - ((float(stop) - price) / price) * 1)
-        return exchange.price_to_precision(symbol, target)
-    else:
-        return None
-
-
-async def get_tp_sl_price(symbol: str = "BTCUSDT", side: str = "BOTH"):
-    slPrice = 0.0
-    tpPrice = 0.0
-    exchange = await binance_i.get_exchange()
-    order_list = await exchange.fetch_orders(symbol, limit=10)
-    await binance_i.disconnect()
-    symbol_order = pd.DataFrame(
-        [
-            order["info"]
-            for order in order_list
-            if order["info"]["status"] == "NEW"
-            and order["info"]["positionSide"] == side
-        ]
-    )
-    sl_price = (
-        symbol_order.loc[symbol_order["origType"] == "STOP_MARKET", ["stopPrice"]]
-        .copy()
-        .reset_index()
-    )
-    tp_price = (
-        symbol_order.loc[
-            symbol_order["origType"] == "TAKE_PROFIT_MARKET", ["stopPrice"]
-        ]
-        .copy()
-        .reset_index()
-    )
-    if len(sl_price.index) > 0:
-        slPrice = float(sl_price["stopPrice"][0])
-    if len(tp_price.index) > 0:
-        tpPrice = float(tp_price["stopPrice"][0])
-    return {
-        "sl_price": slPrice,
-        "tp_price": tpPrice,
-    }
+binance_i = Binance()

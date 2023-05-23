@@ -15,6 +15,7 @@ from dataclasses import dataclass
 
 import mplfinance as mplf
 import pandas as pd
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 barsC = 1502
 
@@ -539,3 +540,182 @@ def edit_all_trade_record(
                 )
     # rewrite the whole dataframe to the CSV file
     order_history.to_csv("trades.csv", index=False, header=True)
+
+
+REPLY_MARKUP = {
+    "menu": InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    "💰เช็คกระเป๋าเงิน",
+                    callback_data='{"Mode": "menu", "Method": "CheckBalance"}',
+                ),
+                InlineKeyboardButton(
+                    "💹เทรดมือ",
+                    callback_data='{"Mode": "menuex", "Method": "Trade"}',
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    "📈📉วิเคราะห์กราฟ",
+                    callback_data='{"Mode": "menu", "Method": "Analyser"}',
+                ),
+                InlineKeyboardButton(
+                    "📊กำไร/ขาดทุน",
+                    callback_data='{"Mode": "menu", "Method": "PositionData"}',
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    "🤖ตั้งค่าบอท",
+                    callback_data='{"Mode": "menu", "Method": "BotSetting"}',
+                ),
+                InlineKeyboardButton(
+                    "⚙️ตั้งค่า API",
+                    callback_data='{"Mode": "menu", "Method": "apiSetting"}',
+                ),
+                InlineKeyboardButton(
+                    "❌ปิด",
+                    callback_data='{"Mode": "menu", "Method": "X"}',
+                ),
+            ],
+        ]
+    ),
+    "fiat": InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    "USDT", callback_data='{"Mode": "fiat", "Method": "USDT"}'
+                ),
+                InlineKeyboardButton(
+                    "BUSD", callback_data='{"Mode": "fiat", "Method": "BUSD"}'
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    "ทั้งหมด", callback_data='{"Mode": "fiat", "Method": "ALL"}'
+                ),
+                InlineKeyboardButton(
+                    "❌ กลับ", callback_data='{"Mode": "fiat", "Method": "BACK"}'
+                ),
+            ],
+        ]
+    ),
+    "secure": InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    "⚙️ตั้งค่า API",
+                    callback_data='{"Mode": "secure", "Method": "API"}',
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    "⚙️ตั้งค่ารหัสผ่าน",
+                    callback_data='{"Mode": "secure", "Method": "PASS"}',
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    "❌ กลับ",
+                    callback_data='{"Mode": "secure", "Method": "BACK"}',
+                ),
+            ],
+        ]
+    ),
+    "analyse": InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    "VXMA",
+                    callback_data='{"Mode": "analyse", "Method": "VXMA"}',
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    "❌ กลับ",
+                    callback_data='{"Mode": "analyse", "Method": "BACK"}',
+                )
+            ],
+        ]
+    ),
+    "order_type": InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    "MARKET",
+                    callback_data='{"Mode": "order_type", "Method": "MARKET"}',
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    "❌ กลับ",
+                    callback_data='{"Mode": "order_type", "Method": "BACK"}',
+                )
+            ],
+        ]
+    ),
+    "pnl": InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    "ℹ️ดูรายละเอียด",
+                    callback_data='{"Mode": "pnl", "Method": "COINS"}',
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    "❌ กลับ", callback_data='{"Mode": "pnl", "Method": "BACK"}'
+                ),
+            ],
+        ]
+    ),
+    "position_confirm_sl": InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    "ยืนยัน✅",
+                    callback_data='{"Mode": "position_confirm_sl", "Method": "OK"}',
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    "❌ กลับ",
+                    callback_data='{"Mode": "position_confirm_sl", "Method": "BACK"}',
+                ),
+            ],
+        ]
+    ),
+    "position_confirm_tp": InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    "ยืนยัน✅",
+                    callback_data='{"Mode": "position_confirm_tp", "Method": "OK"}',
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    "❌ กลับ",
+                    callback_data='{"Mode": "position_confirm_tp", "Method": "BACK"}',
+                ),
+            ],
+        ]
+    ),
+    "position_confirm_lev": InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    "ยืนยัน✅",
+                    callback_data='{"Mode": "position_confirm_lev", "Method": "OK"}',
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    "❌ กลับ",
+                    callback_data='{"Mode": "position_confirm_lev", "Method": "BACK"}',
+                ),
+            ],
+        ]
+    ),
+}
