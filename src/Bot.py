@@ -665,7 +665,7 @@ class BotTrade:
             + colorCS.CRED
             + colorCS.CBOLD
             + f"Update : {colorCS.CGREEN}"
-            + time_now
+            + f"{time_now}"
             + colorCS.CRED
             + f"{colorCS.CRED} Status : "
             + colorCS.CEND
