@@ -15,6 +15,7 @@ COPY --from=builder . ./
 
 ENV PATH="/env/bin:$PATH"
 ENV TZ="Asia/Bangkok"
+ENV TERM=xterm
 EXPOSE 8050
 # run app
 CMD ["python", "app.py"]
