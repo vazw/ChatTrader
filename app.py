@@ -1660,7 +1660,7 @@ Order นี้จะใช้ Margin จะปรับเป็น: {round(mar
                 "margin"
             ]
             pnl_t = "ขาดทุน" if self.trade_order["pnl"] < 0.0 else "กำไร"
-            text = f"{self.trade_order['type'].upper()} Postion\n\
+            text = f" {self.trade_order['type'].upper()} Postion\n\
 🪙จำนวน {self.trade_order['amt']}\n\
 💶ราคาเข้า : {self.trade_order['e_price']}\n\
 💵ราคาปัจจุบัน : {self.trade_order['price']}\n\
@@ -2064,7 +2064,7 @@ Leverage : X{self.trade_order['lev']}\n\
             self.trade_order["tp_price"] = symbol_order["tp_price"]
             self.trade_order["sl_price"] = symbol_order["sl_price"]
             self.trade_order["lev"] = position_data["leverage"]
-            text = f"{self.trade_order['type'].upper()} Postion\n\
+            text = f" {self.trade_order['type'].upper()} Postion\n\
 🪙จำนวน {self.trade_order['amt']}\n\
 💶ราคาเข้า : {self.trade_order['e_price']}\n\
 💵ราคาปัจจุบัน : {self.trade_order['price']}\n\
