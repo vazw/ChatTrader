@@ -877,7 +877,8 @@ class Telegram:
             )
         elif callback["Method"] == "BotSetting":
             text = [
-                f"{symbol[:-5]} {tf}\n" for id, symbol, tf in self.bot_trade.watchlist
+                f"{symbol[:-5]} {tf}\n"
+                for id, symbol, tf in self.bot_trade.watchlist  # pyright: ignore
             ]
             self.watchlist_reply_text = (
                 "เหรียญที่ดูอยู่ :\n" + "".join(text) + "\n\nโปรดเลือกการตั้งค่า"
@@ -2081,9 +2082,7 @@ Leverage : X{self.trade_order['lev']}\n\
                 [
                     InlineKeyboardButton(
                         f"{symbol[:-5]} {tf}".replace("/", ""),
-                        callback_data=json.dumps(
-                            {"Mode": "COINS", "id": cid, "Method": symbol, "tf": tf}
-                        ),
+                        callback_data=json.dumps({"Mode": "COINS", "Method": cid}),
                     )
                     for cid, symbol, tf in symbol_list
                 ]
@@ -2260,8 +2259,6 @@ Leverage : X{self.trade_order['lev']}\n\
         else:
             configs = bot_setting()
             self.vxma_settings["id"] = callback["id"]
-            symbol = callback["Method"]
-            timeframe = callback["tf"]
             config = configs.loc[id,]
             ta_data = TATable(
                 atr_p=config["ATR"],
@@ -2277,6 +2274,8 @@ Leverage : X{self.trade_order['lev']}\n\
             for config_ in split_list(config.items(), 2):
                 for x, y in config_:
                     self.vxma_settings[x] = y
+            symbol = self.vxma_settings["symbol"]
+            timeframe = self.vxma_settings["timeframe"]
             self.update_inline_keyboard()
             df = await self.bot_trade.bot_3(
                 self.vxma_settings["symbol"], ta_data.__dict__, timeframe
