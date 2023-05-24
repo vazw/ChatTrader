@@ -253,6 +253,10 @@ class Telegram:
                             text=f"timeframe : {self.vxma_settings['timeframe']}",
                         ),
                         InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "hedge"}',
+                            text=f"hedge : {'ON' if self.vxma_settings['hedge'] else 'OFF'}",
+                        ),
+                        InlineKeyboardButton(
                             callback_data='{"Mode": "vxma_settings", "Method": "hedgeTF"}',
                             text=f"hedgeTF : {self.vxma_settings['hedgeTF']}",
                         ),
@@ -266,6 +270,10 @@ class Telegram:
                             callback_data='{"Mode": "vxma_settings", "Method": "ATR_m"}',
                             text=f"ATR_m : {self.vxma_settings['ATR_m']}",
                         ),
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "Pivot"}',
+                            text=f"Pivot : {self.vxma_settings['Pivot']}",
+                        ),
                     ],
                     [
                         InlineKeyboardButton(
@@ -276,18 +284,16 @@ class Telegram:
                             callback_data='{"Mode": "vxma_settings", "Method": "subhag"}',
                             text=f"subhag : {self.vxma_settings['subhag']}",
                         ),
-                    ],
-                    [
                         InlineKeyboardButton(
                             callback_data='{"Mode": "vxma_settings", "Method" : "smooth"}',
                             text=f"smooth : {self.vxma_settings['smooth']}",
                         ),
+                    ],
+                    [
                         InlineKeyboardButton(
                             callback_data='{"Mode": "vxma_settings", "Method": "RSI"}',
                             text=f"RSI : {self.vxma_settings['RSI']}",
                         ),
-                    ],
-                    [
                         InlineKeyboardButton(
                             callback_data='{"Mode": "vxma_settings", "Method": "Andean"}',
                             text=f"Andean : {self.vxma_settings['Andean']}",
@@ -306,18 +312,16 @@ class Telegram:
                             callback_data='{"Mode": "vxma_settings", "Method":"UseTP"}',
                             text=f"UseTP : {'ON' if self.vxma_settings['UseTP'] else 'OFF'}",
                         ),
-                    ],
-                    [
                         InlineKeyboardButton(
                             callback_data='{"Mode": "vxma_settings", "Method": "UseTP2"}',
                             text=f"UseTP2 : {'ON' if self.vxma_settings['UseTP2'] else 'OFF'}",
                         ),
+                    ],
+                    [
                         InlineKeyboardButton(
                             callback_data='{"Mode": "vxma_settings", "Method": "UseSL"}',
                             text=f"UseSL : {'ON' if self.vxma_settings['UseSL'] else 'OFF'}",
                         ),
-                    ],
-                    [
                         InlineKeyboardButton(
                             callback_data='{"Mode": "vxma_settings", "Method": "Tail_SL"}',
                             text=f"Tail_SL : {'ON' if self.vxma_settings['Tail_SL'] else 'OFF'}",
@@ -329,15 +333,9 @@ class Telegram:
                     ],
                     [
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "Pivot"}',
-                            text=f"Pivot : {self.vxma_settings['Pivot']}",
-                        ),
-                        InlineKeyboardButton(
                             callback_data='{"Mode": "vxma_settings", "Method": "RR1"}',
                             text=f"RR1 : {self.vxma_settings['RR1']}",
                         ),
-                    ],
-                    [
                         InlineKeyboardButton(
                             callback_data='{"Mode": "vxma_settings", "Method": "RR2"}',
                             text=f"RR2 : {self.vxma_settings['RR2']}",
@@ -356,15 +354,9 @@ class Telegram:
                             callback_data='{"Mode": "vxma_settings", "Method": "Risk"}',
                             text=f"Risk : {self.vxma_settings['Risk']}",
                         ),
-                    ],
-                    [
                         InlineKeyboardButton(
                             callback_data='{"Mode": "vxma_settings", "Method": "maxMargin"}',
                             text=f"maxMargin : {self.vxma_settings['maxMargin']}",
-                        ),
-                        InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "hedge"}',
-                            text=f"hedge : {'ON' if self.vxma_settings['hedge'] else 'OFF'}",
                         ),
                     ],
                     [
@@ -1642,16 +1634,14 @@ Order นี้จะใช้ Margin จะปรับเป็น: {round(mar
                 "margin"
             ]
             pnl_t = "ขาดทุน" if self.trade_order["pnl"] < 0.0 else "กำไร"
-            text = f"\n{self.trade_order['type'].upper()} Postion\
-จำนวน {self.trade_order['amt']}🪙\n\
+            text = f"{self.trade_order['type'].upper()} Postion\n\
+🪙จำนวน {self.trade_order['amt']}\n\
 💶ราคาเข้า : {self.trade_order['e_price']}\n\
 💵ราคาปัจจุบัน : {self.trade_order['price']}\n\
 💰Margin ที่ใช้ : {self.trade_order['margin']}$\n\
 Leverage : X{self.trade_order['lev']}\n\
 💸{pnl_t} : {self.trade_order['pnl']}$\n"
-            self.coin_pnl_reply_text = (
-                f"ท่านได้เลือกเหรียญ : {self.trade_order['symbol']}" + text
-            )
+            self.coin_pnl_reply_text = f"{self.trade_order['symbol']}" + text
             self.update_inline_keyboard()
             msgs = await query.edit_message_text(
                 text=self.coin_pnl_reply_text,
@@ -1666,9 +1656,15 @@ Leverage : X{self.trade_order['lev']}\n\
         """Handler to asks for trade TP Price"""
         query = update.callback_query
         await query.answer()
+        text = (
+            f"เดิมของท่านคือ : {self.trade_order['tp_price']}"
+            if self.trade_order["tp_price"] != 0.0
+            else ""
+        )
         msg = await query.edit_message_text(
-            text=f"ราคา TP {self.trade_order['type']}\
-{self.trade_order['symbol']} เดิมของท่านคือ : {self.trade_order['tp_price']}\n\
+            text=f"ราคา Take Profit {self.trade_order['type']} ของ\
+{self.trade_order['symbol']} {text}\n\
+ราคาเปิด Position นี้คือ : {self.trade_order['price']}\n\
 โปรดใส่ราคา Take Profit หากต้องการแก้ไข \n\n กด /cancel เพื่อยกเลิก"
         )
         self.ask_msg_id.append(msg.message_id)
@@ -1685,7 +1681,7 @@ Leverage : X{self.trade_order['lev']}\n\
             self.trade_order["tp"] = True
             text_ = (
                 f" จาก {self.trade_order['tp_price']} "
-                if self.trade_order["tp_price"] > 0.0
+                if self.trade_order["tp_price"] != 0.0
                 else ""
             )
 
@@ -1772,8 +1768,16 @@ Leverage : X{self.trade_order['lev']}\n\
         """Handler to asks for trade SL Price"""
         query = update.callback_query
         await query.answer()
+        text = (
+            f"เดิมของท่านคือ : {self.trade_order['sl_price']}"
+            if self.trade_order["sl_price"] != 0.0
+            else ""
+        )
         msg = await query.edit_message_text(
-            text="โปรดใส่ราคา Stop-Loss หากต้องการแก้ไข \n\n กด /cancel เพื่อยกเลิก"
+            text=f"ราคา Stop-Loss {self.trade_order['type']} ของ\
+{self.trade_order['symbol']} {text}\n\
+ราคาเปิด Position นี้คือ : {self.trade_order['price']}\n\
+โปรดใส่ราคา Stop-Loss ใหม่หากต้องการแก้ไข \n\n กด /cancel เพื่อยกเลิก"
         )
         self.ask_msg_id.append(msg.message_id)
         return P_SL
@@ -1789,7 +1793,7 @@ Leverage : X{self.trade_order['lev']}\n\
             self.trade_order["sl"] = True
             text_ = (
                 f" จาก {self.trade_order['sl_price']} "
-                if self.trade_order["sl_price"] > 0.0
+                if self.trade_order["sl_price"] != 0.0
                 else ""
             )
             text = f"\n\nท่านต้องการแก้ไขราคา Stop-Loss \
@@ -2034,16 +2038,14 @@ Leverage : X{self.trade_order['lev']}\n\
             self.trade_order["tp_price"] = symbol_order["tp_price"]
             self.trade_order["sl_price"] = symbol_order["sl_price"]
             self.trade_order["lev"] = position_data["leverage"]
-            text = f"\n{self.trade_order['type'].upper()} Postion\
-จำนวน {self.trade_order['amt']}🪙\n\
+            text = f"{self.trade_order['type'].upper()} Postion\n\
+🪙จำนวน {self.trade_order['amt']}\n\
 💶ราคาเข้า : {self.trade_order['e_price']}\n\
 💵ราคาปัจจุบัน : {self.trade_order['price']}\n\
 💰Margin ที่ใช้ : {self.trade_order['margin']}$\n\
 Leverage : X{self.trade_order['lev']}\n\
 💸{pnl_t} : {self.trade_order['pnl']}$\n"
-            self.coin_pnl_reply_text = (
-                f"ท่านได้เลือกเหรียญ : {self.trade_order['symbol']}" + text
-            )
+            self.coin_pnl_reply_text = f"{self.trade_order['symbol']}" + text
             self.update_inline_keyboard()
             msgs = await query.edit_message_text(
                 text=self.coin_pnl_reply_text,
@@ -2125,8 +2127,9 @@ Leverage : X{self.trade_order['lev']}\n\
         query = update.callback_query
         await query.answer()
         msg = await query.edit_message_text(
-            text="โปรดกรอกจำนวนความเสี่ยงที่ท่านรับได้\n\
-จำนวนนี้ จะนำไปคำนวนระหว่างความเสี่ยงทั้งหมด และ Postion ในมือ\n\n กด /cancel เพื่อยกเลิก"
+            text=f"โปรดกรอกจำนวนความเสี่ยงที่ท่านรับได้\n\
+จำนวนนี้ จะนำไปคำนวนระหว่างความเสี่ยงทั้งหมด และ Postion ในมือ\
+ค่าปัจจุบันคือ {self.risk['max_risk']}\n\n กด /cancel เพื่อยกเลิก"
         )
         self.ask_msg_id.append(msg.message_id)
         return B_RISK
@@ -2165,7 +2168,8 @@ Leverage : X{self.trade_order['lev']}\n\
         query = update.callback_query
         await query.answer()
         msg = await query.edit_message_text(
-            text="โปรดกรอกจำนวน กระเ๋าเงินขั้นต่ำที่จะทำการหยุดบอท\n\n กด /cancel เพื่อยกเลิก"
+            text=f"โปรดกรอกจำนวน กระเป๋าเงินขั้นต่ำที่จะทำการหยุดบอท\n\
+ปัจจุบันกำหนดไว้ที่ {self.risk['min_balance']}\n\n กด /cancel เพื่อยกเลิก"
         )
         self.ask_msg_id.append(msg.message_id)
         return B_MIN_BL
@@ -2300,7 +2304,8 @@ Leverage : X{self.trade_order['lev']}\n\
             msgs0 = await query.message.reply_photo(path)
             self.uniq_msg_id.append(msgs0.message_id)
             self.text_reply_bot_setting = "รายการตั้งค่า สำหรับกลยุทธ์"
-            msgs = await query.edit_message_text(
+            await query.delete_message()
+            msgs = await query.message.reply_text(
                 text=self.text_reply_bot_setting,
                 reply_markup=self.dynamic_reply_markup["vxma_settings"],
             )
@@ -2335,7 +2340,7 @@ Leverage : X{self.trade_order['lev']}\n\
             path = candle(
                 df, self.vxma_settings["symbol"], self.vxma_settings["timeframe"]
             )
-            msgs0 = await update.message.reply_photo(path)
+            msgs0 = await query.message.reply_photo(path)
             self.uniq_msg_id.append(msgs0.message_id)
             await query.delete_message()
             msgs = await query.message.reply_text(
