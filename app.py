@@ -2423,7 +2423,7 @@ Leverage : X{self.trade_order['lev']}\n\
         respon = update.message.text
         self.msg_id.append(update.message.message_id)
         try:
-            print(self.vxma_settings.__str__)
+            print(self.vxma_settings)
             msg0 = await update.message.reply_text(f"{self.vxma_settings.__str__}")
             self.uniq_msg_id.append(msg0.message_id)
             if isinstance(self.vxma_settings[self.vxma_selected_state], int):
