@@ -203,6 +203,17 @@ class BotTrade:
     async def notify_send_pic(self, path: str):
         return await self.context.bot.send_photo(chat_id=self.chat_id, photo=path)
 
+    async def update_watchlist(self) -> None:
+        symbolist = bot_setting()
+        self.watchlist = [
+            (
+                symbolist.index[i],
+                symbolist["symbol"][i],
+                symbolist["timeframe"][i],
+            )
+            for i in range(len(symbolist.index))
+        ]
+
     async def update_candle(self) -> None:
         try:
             timenow = time.time()

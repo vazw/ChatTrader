@@ -2379,9 +2379,9 @@ Leverage : X{self.trade_order['lev']}\n\
             )
         elif callback["Method"] in self.vxma_settings.keys():
             self.vxma_selected_state = callback["Method"]
-            if isinstance(self.vxma_settings[f"{callback['Method']}"], bool):
-                self.vxma_settings[f"{callback['Method']}"] = (
-                    False if self.vxma_settings[f"{callback['Method']}"] else True
+            if isinstance(self.vxma_settings[self.vxma_selected_state], bool):
+                self.vxma_settings[self.vxma_selected_state] = (
+                    False if self.vxma_settings[self.vxma_selected_state] else True
                 )
                 self.update_inline_keyboard()
                 msgs = await query.edit_message_text(
