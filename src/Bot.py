@@ -203,7 +203,7 @@ class BotTrade:
     async def notify_send_pic(self, path: str):
         return await self.context.bot.send_photo(chat_id=self.chat_id, photo=path)
 
-    async def update_watchlist(self) -> None:
+    def update_watchlist(self) -> None:
         symbolist = bot_setting()
         self.watchlist = [
             (

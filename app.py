@@ -256,7 +256,7 @@ class Telegram:
                         ),
                         InlineKeyboardButton(
                             callback_data='{"Mode": "vxma_settings", "Method": "hedge", "Type": "bool"}',
-                            text=f"hedge : {'ON' if self.vxma_settings['hedge'] else 'OFF'}",
+                            text=f"hedge : {'ON 🟢' if self.vxma_settings['hedge'] else 'OFF 🔴'}",
                         ),
                         InlineKeyboardButton(
                             callback_data='{"Mode": "vxma_settings", "Method": "hedgeTF", "Type": "str"}',
@@ -308,29 +308,29 @@ class Telegram:
                     [
                         InlineKeyboardButton(
                             callback_data='{"Mode": "vxma_settings", "Method": "Useshort", "Type": "bool"}',
-                            text=f"Useshort : {'ON' if self.vxma_settings['Useshort'] else 'OFF'}",
+                            text=f"Useshort : {'ON 🟢' if self.vxma_settings['Useshort'] else 'OFF 🔴'}",
                         ),
                         InlineKeyboardButton(
                             callback_data='{"Mode": "vxma_settings", "Method":"UseTP", "Type": "bool"}',
-                            text=f"UseTP : {'ON' if self.vxma_settings['UseTP'] else 'OFF'}",
+                            text=f"UseTP : {'ON 🟢' if self.vxma_settings['UseTP'] else 'OFF 🔴'}",
                         ),
                         InlineKeyboardButton(
                             callback_data='{"Mode": "vxma_settings", "Method": "UseTP2", "Type": "bool"}',
-                            text=f"UseTP2 : {'ON' if self.vxma_settings['UseTP2'] else 'OFF'}",
+                            text=f"UseTP2 : {'ON 🟢' if self.vxma_settings['UseTP2'] else 'OFF 🔴'}",
                         ),
                     ],
                     [
                         InlineKeyboardButton(
                             callback_data='{"Mode": "vxma_settings", "Method": "Uselong", "Type": "bool"}',
-                            text=f"Uselong : {'ON' if self.vxma_settings['Uselong'] else 'OFF'}",
+                            text=f"Uselong : {'ON 🟢' if self.vxma_settings['Uselong'] else 'OFF 🔴'}",
                         ),
                         InlineKeyboardButton(
                             callback_data='{"Mode": "vxma_settings", "Method": "UseSL", "Type": "bool"}',
-                            text=f"UseSL : {'ON' if self.vxma_settings['UseSL'] else 'OFF'}",
+                            text=f"UseSL : {'ON 🟢' if self.vxma_settings['UseSL'] else 'OFF 🔴'}",
                         ),
                         InlineKeyboardButton(
                             callback_data='{"Mode": "vxma_settings", "Method": "Tail_SL", "Type": "bool"}',
-                            text=f"Tail_SL : {'ON' if self.vxma_settings['Tail_SL'] else 'OFF'}",
+                            text=f"Tail_SL : {'ON 🟢' if self.vxma_settings['Tail_SL'] else 'OFF 🔴'}",
                         ),
                     ],
                     [
@@ -723,6 +723,14 @@ class Telegram:
             CallbackQueryHandler(
                 self.vxma_settings_handler,
                 lambda x: (eval(x))["Mode"] == "vxma_settings",
+            ),
+            CallbackQueryHandler(
+                self.vxma_save_settings_confirm,
+                lambda x: (eval(x))["Mode"] == "vxma_settings_confirm_save",
+            ),
+            CallbackQueryHandler(
+                self.vxma_del_settings_confirm,
+                lambda x: (eval(x))["Mode"] == "vxma_settings_confirm_del",
             ),
             ConversationHandler(
                 entry_points=[
@@ -2479,6 +2487,69 @@ Leverage : X{self.trade_order['lev']}\n\
             )
             self.uniq_msg_id.append(msgs.message_id)
             return ConversationHandler.END
+
+    async def vxma_save_settings_confirm(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+    ):
+        query = update.callback_query
+        await query.answer()
+        callback = eval(query.data)
+        if callback["Method"] == "BACK":
+            msgs = await query.edit_message_text(
+                text=self.text_reply_bot_setting,
+                reply_markup=self.dynamic_reply_markup["vxma_settings"],
+            )
+        else:
+            try:
+                configs = bot_setting()
+                config = configs.loc[self.vxma_settings["id"]]
+                for key in config.keys():
+                    config[key] = self.vxma_settings[key]
+                configs.loc[self.vxma_settings["id"]] = config
+                configs.to_csv("bot_config.csv", index=True)
+                text = f"\n\nได้บันทึกข้อมูลเหรียญ {self.vxma_settings['symbol']} สำหรับบอทเรียบร้อยแล้วค่ะ"
+                self.bot_trade.update_watchlist()
+                msg = f"{self.watchlist_reply_text}" + text
+                msgs = await query.edit_message_text(
+                    text=msg, reply_markup=self.dynamic_reply_markup["setting"]
+                )
+            except Exception as e:
+                text = f"เกิดข้อผิดพลาด {e}\n\nโปรดทำรายการใหม่อีกครั้งค่ะ"
+                msgs = await query.edit_message_text(
+                    text=self.text_reply_bot_setting + text,
+                    reply_markup=self.dynamic_reply_markup["vxma_settings"],
+                )
+        self.uniq_msg_id.append(msgs.message_id)
+
+    async def vxma_del_settings_confirm(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+    ):
+        query = update.callback_query
+        await query.answer()
+        callback = eval(query.data)
+        if callback["Method"] == "BACK":
+            msgs = await query.edit_message_text(
+                text=self.text_reply_bot_setting,
+                reply_markup=self.dynamic_reply_markup["vxma_settings"],
+            )
+        else:
+            try:
+                configs = bot_setting()
+                configs = configs.drop(self.vxma_settings["id"])
+                configs.to_csv("bot_config.csv", index=True)
+                text = f"\n\nได้ลบข้อมูลเหรียญ {self.vxma_settings['symbol']} สำหรับบอทเรียบร้อยแล้วค่ะ"
+                self.bot_trade.update_watchlist()
+                msg = f"{self.watchlist_reply_text}" + text
+                msgs = await query.edit_message_text(
+                    text=msg, reply_markup=self.dynamic_reply_markup["setting"]
+                )
+            except Exception as e:
+                text = f"เกิดข้อผิดพลาด {e}\n\nโปรดทำรายการใหม่อีกครั้งค่ะ"
+                msgs = await query.edit_message_text(
+                    text=self.text_reply_bot_setting + text,
+                    reply_markup=self.dynamic_reply_markup["vxma_settings"],
+                )
+        self.uniq_msg_id.append(msgs.message_id)
 
     ## Secure menu
     ## API
