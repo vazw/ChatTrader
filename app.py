@@ -251,113 +251,113 @@ class Telegram:
                 [
                     [
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings" , "Method": "timeframe"}',
+                            callback_data='{"Mode": "vxma_settings" , "Method": "timeframe", "Type": "str"}',
                             text=f"timeframe : {self.vxma_settings['timeframe']}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "hedge"}',
+                            callback_data='{"Mode": "vxma_settings", "Method": "hedge", "Type": "bool"}',
                             text=f"hedge : {'ON' if self.vxma_settings['hedge'] else 'OFF'}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "hedgeTF"}',
+                            callback_data='{"Mode": "vxma_settings", "Method": "hedgeTF", "Type": "str"}',
                             text=f"hedgeTF : {self.vxma_settings['hedgeTF']}",
                         ),
                     ],
                     [
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "ATR"}',
+                            callback_data='{"Mode": "vxma_settings", "Method": "ATR", "Type": "int"}',
                             text=f"ATR : {self.vxma_settings['ATR']}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "ATR_m"}',
+                            callback_data='{"Mode": "vxma_settings", "Method": "ATR_m", "Type": "float"}',
                             text=f"ATR_m : {self.vxma_settings['ATR_m']}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "Pivot"}',
+                            callback_data='{"Mode": "vxma_settings", "Method": "Pivot", "Type": "int"}',
                             text=f"Pivot : {self.vxma_settings['Pivot']}",
                         ),
                     ],
                     [
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "EMA"}',
+                            callback_data='{"Mode": "vxma_settings", "Method": "EMA", "Type": "int"}',
                             text=f"EMA : {self.vxma_settings['EMA']}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "subhag"}',
+                            callback_data='{"Mode": "vxma_settings", "Method": "subhag", "Type": "int"}',
                             text=f"subhag : {self.vxma_settings['subhag']}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method" : "smooth"}',
+                            callback_data='{"Mode": "vxma_settings", "Method" : "smooth", "Type": "int"}',
                             text=f"smooth : {self.vxma_settings['smooth']}",
                         ),
                     ],
                     [
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "RSI"}',
+                            callback_data='{"Mode": "vxma_settings", "Method": "RSI", "Type": "int"}',
                             text=f"RSI : {self.vxma_settings['RSI']}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "Andean"}',
+                            callback_data='{"Mode": "vxma_settings", "Method": "Andean", "Type": "int"}',
                             text=f"Andean : {self.vxma_settings['Andean']}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "leverage"}',
+                            callback_data='{"Mode": "vxma_settings", "Method": "leverage", "Type": "int"}',
                             text=f"leverage : {self.vxma_settings['leverage']}",
                         ),
                     ],
                     [
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "Useshort"}',
+                            callback_data='{"Mode": "vxma_settings", "Method": "Useshort", "Type": "bool"}',
                             text=f"Useshort : {'ON' if self.vxma_settings['Useshort'] else 'OFF'}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method":"UseTP"}',
+                            callback_data='{"Mode": "vxma_settings", "Method":"UseTP", "Type": "bool"}',
                             text=f"UseTP : {'ON' if self.vxma_settings['UseTP'] else 'OFF'}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "UseTP2"}',
+                            callback_data='{"Mode": "vxma_settings", "Method": "UseTP2", "Type": "bool"}',
                             text=f"UseTP2 : {'ON' if self.vxma_settings['UseTP2'] else 'OFF'}",
                         ),
                     ],
                     [
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "Uselong"}',
+                            callback_data='{"Mode": "vxma_settings", "Method": "Uselong", "Type": "bool"}',
                             text=f"Uselong : {'ON' if self.vxma_settings['Uselong'] else 'OFF'}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "UseSL"}',
+                            callback_data='{"Mode": "vxma_settings", "Method": "UseSL", "Type": "bool"}',
                             text=f"UseSL : {'ON' if self.vxma_settings['UseSL'] else 'OFF'}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "Tail_SL"}',
+                            callback_data='{"Mode": "vxma_settings", "Method": "Tail_SL", "Type": "bool"}',
                             text=f"Tail_SL : {'ON' if self.vxma_settings['Tail_SL'] else 'OFF'}",
                         ),
                     ],
                     [
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "TP1"}',
+                            callback_data='{"Mode": "vxma_settings", "Method": "TP1", "Type": "int"}',
                             text=f"TP1 : {self.vxma_settings['TP1']}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "RR1"}',
+                            callback_data='{"Mode": "vxma_settings", "Method": "RR1", "Type": "float"}',
                             text=f"RR1 : {self.vxma_settings['RR1']}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "RR2"}',
+                            callback_data='{"Mode": "vxma_settings", "Method": "RR2", "Type": "float"}',
                             text=f"RR2 : {self.vxma_settings['RR2']}",
                         ),
                     ],
                     [
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "TP2"}',
+                            callback_data='{"Mode": "vxma_settings", "Method": "TP2", "Type": "int"}',
                             text=f"TP2 : {self.vxma_settings['TP2']}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "Risk"}',
+                            callback_data='{"Mode": "vxma_settings", "Method": "Risk", "Type": "str"}',
                             text=f"Risk : {self.vxma_settings['Risk']}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "maxMargin"}',
+                            callback_data='{"Mode": "vxma_settings", "Method": "maxMargin, "Type": "str""}',
                             text=f"maxMargin : {self.vxma_settings['maxMargin']}",
                         ),
                     ],
@@ -2379,7 +2379,8 @@ Leverage : X{self.trade_order['lev']}\n\
             )
         elif callback["Method"] in self.vxma_settings.keys():
             self.vxma_selected_state = callback["Method"]
-            if isinstance(self.vxma_settings[self.vxma_selected_state], bool):
+            self.vxma_selected_state_type = callback["Type"]
+            if self.vxma_selected_state_type == "bool":
                 self.vxma_settings[self.vxma_selected_state] = (
                     False if self.vxma_settings[self.vxma_selected_state] else True
                 )
@@ -2423,17 +2424,14 @@ Leverage : X{self.trade_order['lev']}\n\
         respon = update.message.text
         self.msg_id.append(update.message.message_id)
         try:
-            test_text = [f"{x} {y}" for x, y in self.vxma_settings.items()]
-            msg0 = await update.message.reply_text("".join(test_text))
-            self.uniq_msg_id.append(msg0.message_id)
-            if isinstance(self.vxma_settings[self.vxma_selected_state], int):
-                self.vxma_settings[self.vxma_selected_state] = int(respon)
-            elif isinstance(self.vxma_settings[self.vxma_selected_state], float):
-                self.vxma_settings[self.vxma_selected_state] = float(respon)
-            elif isinstance(self.vxma_settings[self.vxma_selected_state], str):
-                self.vxma_settings[self.vxma_selected_state] = str(respon)
             text = f"\nได้ทำการเปลี่ยน {vxma_settings_info[self.vxma_selected_state]}\
 จากเดิม : {self.vxma_settings[self.vxma_selected_state]} ไปเป็น {respon} เรียบร้อย"
+            if self.vxma_selected_state_type == "int":
+                self.vxma_settings[self.vxma_selected_state] = int(respon)
+            elif self.vxma_selected_state_type == "float":
+                self.vxma_settings[self.vxma_selected_state] = float(respon)
+            elif self.vxma_selected_state_type == "str":
+                self.vxma_settings[self.vxma_selected_state] = str(respon)
 
         except Exception as e:
             text = f"\n\nเกิดข้อผิดพลาด :{e}\n\nโปรดทำรายการใหม่อีกครั้ง"
