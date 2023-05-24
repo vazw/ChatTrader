@@ -583,31 +583,18 @@ class Telegram:
         ]
 
         position_pnl_handlers = [
-            CallbackQueryHandler(
-                self.back_to_info_pnl_per_coin,
-                lambda x: (eval(x))["Mode"]
-                in [
-                    "position_confirm_tp",
-                    "position_confirm_sl",
-                    "position_confirm_lev",
-                ]
-                and (eval(x))["Method"] == "BACK",
-            ),
             # confirm buttons
             CallbackQueryHandler(
                 self.position_confirm_lev,
-                lambda x: (eval(x))["Mode"] == "position_confirm_lev"
-                and (eval(x))["Method"] == "OK",
+                lambda x: (eval(x))["Mode"] == "position_confirm_lev",
             ),
             CallbackQueryHandler(
                 self.position_confirm_sl,
-                lambda x: (eval(x))["Mode"] == "position_confirm_sl"
-                and (eval(x))["Method"] == "OK",
+                lambda x: (eval(x))["Mode"] == "position_confirm_sl",
             ),
             CallbackQueryHandler(
                 self.position_confirm_tp,
-                lambda x: (eval(x))["Mode"] == "position_confirm_tp"
-                and (eval(x))["Method"] == "OK",
+                lambda x: (eval(x))["Mode"] == "position_confirm_tp",
             ),
             # Symbols
             CallbackQueryHandler(
