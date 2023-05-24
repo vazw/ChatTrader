@@ -2420,12 +2420,12 @@ Leverage : X{self.trade_order['lev']}\n\
     async def vxma_get_settings(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
     ):
-        """Handler that received API SECRET STEP2"""
         respon = update.message.text
         self.msg_id.append(update.message.message_id)
-        """TODO"""
         try:
-            print(self.vxma_settings)
+            print(self.vxma_settings.__str__)
+            msg0 = await update.message.reply_text(f"{self.vxma_settings.__str__}")
+            self.uniq_msg_id.append(msg0.message_id)
             if isinstance(self.vxma_settings[self.vxma_selected_state], int):
                 self.vxma_settings[self.vxma_selected_state] = int(respon)
             elif isinstance(self.vxma_settings[self.vxma_selected_state], float):
