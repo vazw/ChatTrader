@@ -779,15 +779,11 @@ class Telegram:
         """Sends a message with three Keyboard buttons attached."""
         self.chat_id = update.effective_chat.id
         self.bot_trade.update_chat_id(self.chat_id)
-        print("App Started")
         await context.bot.delete_message(
             chat_id=self.chat_id, message_id=update.message.message_id
         )
 
-        msg = await update.message.reply_text(
-            WELCOME_MESSAGE, reply_markup=self.reply_key
-        )
-        self.uniq_msg_id.append(msg.message_id)
+        await update.message.reply_text(WELCOME_MESSAGE, reply_markup=self.reply_key)
 
     async def clear_command(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
@@ -2341,7 +2337,8 @@ Leverage : X{self.trade_order['lev']}\n\
             )
             msgs0 = await update.message.reply_photo(path)
             self.uniq_msg_id.append(msgs0.message_id)
-            msgs = await query.edit_message_text(
+            await query.delete_message()
+            msgs = await query.message.reply_text(
                 text=self.text_reply_bot_setting,
                 reply_markup=self.dynamic_reply_markup["vxma_settings"],
             )
