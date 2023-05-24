@@ -2425,13 +2425,14 @@ Leverage : X{self.trade_order['lev']}\n\
         self.msg_id.append(update.message.message_id)
         """TODO"""
         try:
+            print(self.vxma_settings)
             if isinstance(self.vxma_settings[self.vxma_selected_state], int):
                 self.vxma_settings[self.vxma_selected_state] = int(respon)
             elif isinstance(self.vxma_settings[self.vxma_selected_state], float):
                 self.vxma_settings[self.vxma_selected_state] = float(respon)
             elif isinstance(self.vxma_settings[self.vxma_selected_state], str):
                 self.vxma_settings[self.vxma_selected_state] = str(respon)
-            text = f"ได้ทำการเปลี่ยน {vxma_settings_info[self.vxma_selected_state]}\
+            text = f"\nได้ทำการเปลี่ยน {vxma_settings_info[self.vxma_selected_state]}\
 จากเดิม : {self.vxma_settings[self.vxma_selected_state]} ไปเป็น {respon} เรียบร้อย"
 
         except Exception as e:
