@@ -2088,18 +2088,16 @@ Leverage : X{self.trade_order['lev']}\n\
                     for cid, symbol, tf in symbol_list
                 ]
                 for symbol_list in split_list(self.bot_trade.watchlist, 3)
-            ]
-            self.coins_settings_key = InlineKeyboardMarkup(
-                coins
-                + [
-                    [
-                        InlineKeyboardButton(
-                            "❌ กลับ",
-                            callback_data="{'Mode': 'COINS', 'Method': 'BACK_TO_MENU'}",
-                        )
-                    ]
+            ] + [
+                [
+                    InlineKeyboardButton(
+                        "❌ กลับ",
+                        callback_data="{'Mode': 'COINS', 'Method': 'BACK_TO_MENU'}",
+                    )
                 ]
-            )
+            ]
+            self.coins_settings_key = InlineKeyboardMarkup(coins)
+            print(coins)
             msgs = await query.edit_message_text(
                 text=msg, reply_markup=self.coins_settings_key
             )

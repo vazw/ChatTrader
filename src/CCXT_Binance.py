@@ -279,22 +279,23 @@ class Binance:
                 and order["info"]["positionSide"] == side
             ]
         )
-        sl_price = (
-            symbol_order.loc[symbol_order["origType"] == "STOP_MARKET"]
-            .copy()
-            .reset_index()
-        )
-        tp_price = (
-            symbol_order.loc[symbol_order["origType"] == "TAKE_PROFIT_MARKET"]
-            .copy()
-            .reset_index()
-        )
-        if len(sl_price.index) > 0:
-            slId = sl_price["orderId"][0]
-            slPrice = float(sl_price["stopPrice"][0])
-        if len(tp_price.index) > 0:
-            tpId = tp_price["orderId"][0]
-            tpPrice = float(tp_price["stopPrice"][0])
+        if len(symbol_order.index) > 0:
+            sl_price = (
+                symbol_order.loc[symbol_order["origType"] == "STOP_MARKET"]
+                .copy()
+                .reset_index()
+            )
+            tp_price = (
+                symbol_order.loc[symbol_order["origType"] == "TAKE_PROFIT_MARKET"]
+                .copy()
+                .reset_index()
+            )
+            if len(sl_price.index) > 0:
+                slId = sl_price["orderId"][0]
+                slPrice = float(sl_price["stopPrice"][0])
+            if len(tp_price.index) > 0:
+                tpId = tp_price["orderId"][0]
+                tpPrice = float(tp_price["stopPrice"][0])
         return {
             "sl_id": slId,
             "sl_price": slPrice,
