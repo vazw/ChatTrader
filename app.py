@@ -2301,7 +2301,7 @@ Leverage : X{self.trade_order['lev']}\n\
                 self.vxma_settings["symbol"], ta_data.__dict__, timeframe
             )
             path = candle(df, symbol, timeframe)
-            msgs0 = await update.message.reply_photo(path)
+            msgs0 = await query.message.reply_photo(path)
             self.uniq_msg_id.append(msgs0.message_id)
             self.text_reply_bot_setting = "รายการตั้งค่า สำหรับกลยุทธ์"
             msgs = await query.edit_message_text(
