@@ -2402,7 +2402,7 @@ Leverage : X{self.trade_order['lev']}\n\
     ):
         query = update.callback_query
         await query.answer()
-        callback = query.data
+        callback = eval(query.data)
         if callback["Method"] == "BACK":
             msgs = await query.edit_message_text(
                 text=self.text_reply_bot_setting,
