@@ -827,14 +827,17 @@ class Telegram:
     ) -> None:
         """Displays info on how to use the bot."""
         msg = await update.message.reply_text(HELP_MESSAGE)
-        self.msg_id.append(msg.message_id)
+        self.uniq_msg_id.append(msg.message_id)
+        await context.bot.delete_message(
+            chat_id=self.chat_id, message_id=update.message.message_id
+        )
 
     async def unknown(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         msg = await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text="Sorry, I didn't understand that command.",
+            text="ขออภัยค่ะนายท่าน ดิฉันไม่เข้าใจคำสั่งที่ท่านสื่อ",
         )
-        self.msg_id.append(msg.message_id)
+        self.uniq_msg_id.append(msg.message_id)
 
     ## Main Menu Nesting
     async def menu_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -2687,7 +2690,7 @@ Leverage : X{self.trade_order['lev']}\n\
                         self.msg_id.remove(id)
                     except Exception:
                         continue
-            await asyncio.sleep(1)
+            await asyncio.sleep(5)
 
     async def make_bot_task(self, context: ContextTypes.DEFAULT_TYPE):
         self.bot_trade = BotTrade(
