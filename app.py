@@ -1139,7 +1139,7 @@ class Telegram:
         respon = update.message.text
         self.msg_id.append(update.message.message_id)
         try:
-            self.trade_order["amt"] = float(respon)
+            self.trade_order["amt"] = abs(float(respon))
             self.update_inline_keyboard()
             margin = (
                 self.trade_order["price"]
@@ -1295,7 +1295,7 @@ class Telegram:
                 await exchange.create_market_order(
                     self.trade_order["symbol"],
                     "buy",
-                    self.trade_order["amt"],
+                    abs(self.trade_order["amt"]),
                     params={
                         "positionSide": self.bot_trade.currentMode.Lside,
                         "newClientOrderId": orderid,
@@ -1430,7 +1430,7 @@ Leverage: {self.trade_order['lev']}\n"
                 await exchange.create_market_order(
                     self.trade_order["symbol"],
                     "sell",
-                    self.trade_order["amt"],
+                    abs(self.trade_order["amt"]),
                     params={
                         "positionSide": self.bot_trade.currentMode.Sside,
                         "newClientOrderId": orderid,
@@ -1727,7 +1727,7 @@ Leverage : X{self.trade_order['lev']}\n\
                     self.trade_order["symbol"],
                     "TAKE_PROFIT_MARKET",
                     side,
-                    self.trade_order["amt"],
+                    abs(self.trade_order["amt"]),
                     self.trade_order["new_tp_price"],
                     params={
                         "stopPrice": self.trade_order["new_tp_price"],
@@ -1833,7 +1833,7 @@ Leverage : X{self.trade_order['lev']}\n\
                     self.trade_order["symbol"],
                     "stop_market",
                     side,
-                    self.trade_order["amt"],
+                    abs(self.trade_order["amt"]),
                     params={
                         "stopPrice": self.trade_order["new_sl_price"],
                         "positionSide": position_side,
@@ -2022,7 +2022,9 @@ Leverage : X{self.trade_order['lev']}\n\
                 self.trade_order["symbol"], f"{callback['Side']}".upper()
             )
             await self.binance_.disconnect()
-            self.trade_order["amt"] = position_data[self.trade_order["type"]]["amount"]
+            self.trade_order["amt"] = abs(
+                position_data[self.trade_order["type"]]["amount"]
+            )
             self.trade_order["e_price"] = position_data[self.trade_order["type"]][
                 "price"
             ]
