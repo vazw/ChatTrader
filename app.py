@@ -1758,9 +1758,10 @@ Leverage : X{self.trade_order['lev']}\n\
             )
         elif callback["Method"] == "OK":
             exchange = await self.binance_.get_exchange()
-            self.binance_.cancel_order(
-                self.trade_order["symbol"], self.trade_order["id_tp"]
-            )
+            if self.trade_order["id_tp"] != 0:
+                self.binance_.cancel_order(
+                    self.trade_order["symbol"], self.trade_order["id_tp"]
+                )
             if self.trade_order["type"] == "long":
                 text = await open_tp("sell", self.bot_trade.currentMode.Lside)
             elif self.trade_order["type"] == "short":
@@ -1856,9 +1857,10 @@ Leverage : X{self.trade_order['lev']}\n\
             )
         elif callback["Method"] == "OK":
             exchange = await self.binance_.get_exchange()
-            self.binance_.cancel_order(
-                self.trade_order["symbol"], self.trade_order["id_sl"]
-            )
+            if self.trade_order["id_sl"] != 0:
+                self.binance_.cancel_order(
+                    self.trade_order["symbol"], self.trade_order["id_sl"]
+                )
             if self.trade_order["type"] == "long":
                 text = await open_sl("sell", self.bot_trade.currentMode.Lside)
             elif self.trade_order["type"] == "short":
