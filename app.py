@@ -1687,7 +1687,13 @@ Leverage : X{self.trade_order['lev']}\n\
         try:
             self.trade_order["new_tp_price"] = float(respon)
             self.trade_order["tp"] = True
-            text = f"ท่านต้องการแก้ไขราคา Take Profit จาก {self.trade_order['tp_price']}\
+            text_ = (
+                f" จาก {self.trade_order['tp_price']} "
+                if self.trade_order["tp_price"] > 0.0
+                else ""
+            )
+
+            text = f"ท่านต้องการแก้ไขราคา Take Profit {text_}\
 ไปเป็น {self.trade_order['new_tp_price']}\n\
 \nหากถูกต้องกด \"ยืนยัน\" เพื่อส่งคำสั่ง"
             msg = await update.message.reply_text(
@@ -1745,9 +1751,9 @@ Leverage : X{self.trade_order['lev']}\n\
             )
         elif callback["Method"] == "OK":
             exchange = await self.binance_.get_exchange()
-            if self.trade_order["id_tp"] != 0:
+            if self.trade_order["tp_id"] != 0:
                 self.binance_.cancel_order(
-                    self.trade_order["symbol"], self.trade_order["id_tp"]
+                    self.trade_order["symbol"], self.trade_order["tp_id"]
                 )
             if self.trade_order["type"] == "long":
                 text = await open_tp("sell", self.bot_trade.currentMode.Lside)
@@ -1785,8 +1791,13 @@ Leverage : X{self.trade_order['lev']}\n\
         try:
             self.trade_order["new_sl_price"] = float(respon)
             self.trade_order["sl"] = True
+            text_ = (
+                f" จาก {self.trade_order['sl_price']} "
+                if self.trade_order["sl_price"] > 0.0
+                else ""
+            )
             text = f"\n\nท่านต้องการแก้ไขราคา Stop-Loss \
-จาก {self.trade_order['sl_price']}\
+{text_}\
 ไปเป็น {self.trade_order['new_sl_price']}\n\
 \nหากถูกต้องกด \"ยืนยัน\" เพื่อส่งคำสั่ง"
 
@@ -1844,9 +1855,9 @@ Leverage : X{self.trade_order['lev']}\n\
             )
         elif callback["Method"] == "OK":
             exchange = await self.binance_.get_exchange()
-            if self.trade_order["id_sl"] != 0:
+            if self.trade_order["sl_id"] != 0:
                 self.binance_.cancel_order(
-                    self.trade_order["symbol"], self.trade_order["id_sl"]
+                    self.trade_order["symbol"], self.trade_order["sl_id"]
                 )
             if self.trade_order["type"] == "long":
                 text = await open_sl("sell", self.bot_trade.currentMode.Lside)

@@ -77,6 +77,7 @@ BOTCOL = [
     "hedge",
     "hedgeTF",
 ]
+
 vxma_settings = {
     "id": "0",
     "symbol": "BTCUSDT",
