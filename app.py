@@ -2258,7 +2258,7 @@ Leverage : X{self.trade_order['lev']}\n\
             )
         else:
             configs = bot_setting()
-            self.vxma_settings["id"] = callback["id"]
+            self.vxma_settings["id"] = callback["Method"]
             config = configs.loc[id,]
             ta_data = TATable(
                 atr_p=config["ATR"],
