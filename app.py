@@ -73,6 +73,7 @@ class Telegram:
         self.trade_reply_margin = ""
         self.risk_reply_text = ":"
         self.watchlist_reply_text = ":"
+        self.coins_settings_key = InlineKeyboardMarkup()
         self.trade_order = {}
         self.sec_info = {
             "API_KEY": "",
