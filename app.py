@@ -2427,9 +2427,9 @@ Leverage : X{self.trade_order['lev']}\n\
         try:
             if isinstance(self.vxma_settings[self.vxma_selected_state], int):
                 self.vxma_settings[self.vxma_selected_state] = int(respon)
-            if isinstance(self.vxma_settings[self.vxma_selected_state], float):
+            elif isinstance(self.vxma_settings[self.vxma_selected_state], float):
                 self.vxma_settings[self.vxma_selected_state] = float(respon)
-            if isinstance(self.vxma_settings[self.vxma_selected_state], str):
+            elif isinstance(self.vxma_settings[self.vxma_selected_state], str):
                 self.vxma_settings[self.vxma_selected_state] = str(respon)
             text = f"ได้ทำการเปลี่ยน {vxma_settings_info[self.vxma_selected_state]}\
 จากเดิม : {self.vxma_settings[self.vxma_selected_state]} ไปเป็น {respon} เรียบร้อย"
