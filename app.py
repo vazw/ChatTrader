@@ -593,6 +593,22 @@ class Telegram:
                 ]
                 and (eval(x))["Method"] == "BACK",
             ),
+            # confirm buttons
+            CallbackQueryHandler(
+                self.position_confirm_lev,
+                lambda x: (eval(x))["Mode"] == "position_confirm_lev"
+                and (eval(x))["Method"] == "OK",
+            ),
+            CallbackQueryHandler(
+                self.position_confirm_sl,
+                lambda x: (eval(x))["Mode"] == "position_confirm_sl"
+                and (eval(x))["Method"] == "OK",
+            ),
+            CallbackQueryHandler(
+                self.position_confirm_tp,
+                lambda x: (eval(x))["Mode"] == "position_confirm_tp"
+                and (eval(x))["Method"] == "OK",
+            ),
             # Symbols
             CallbackQueryHandler(
                 self.info_pnl_per_coin,
@@ -1903,8 +1919,9 @@ Leverage : X{self.trade_order['lev']}\n\
         if query is not None:
             # For Back Buttons
             await query.answer()
-            msgs = await update.message.reply_text(
-                self.coin_pnl_reply_text, reply_markup=self.dynamic_reply_markup["risk"]
+            msgs = await query.message.edit_text(
+                self.coin_pnl_reply_text,
+                reply_markup=self.dynamic_reply_markup["position"],
             )
             self.uniq_msg_id.append(msgs.message_id)
         else:
@@ -1918,7 +1935,8 @@ Leverage : X{self.trade_order['lev']}\n\
                 except Exception:
                     continue
             msgs = await update.message.reply_text(
-                self.coin_pnl_reply_text, reply_markup=self.dynamic_reply_markup["risk"]
+                self.coin_pnl_reply_text,
+                reply_markup=self.dynamic_reply_markup["position"],
             )
             self.uniq_msg_id.append(msgs.message_id)
             return ConversationHandler.END
