@@ -883,13 +883,11 @@ class Telegram:
                     f"{status['symbol'][i]} จำนวน {status['positionAmt'][i]} P/L {round(status['unrealizedProfit'][i], 3)}$\n"
                     for i in range(len(status.index))
                 ]
-                text_reply = self.pnl_reply = "Postion ที่มีการเปิดอยู่\n" + "".join(
-                    text
-                )
+                self.pnl_reply = "Postion ที่มีการเปิดอยู่\n" + "".join(text)
             else:
-                text_reply = "ไม่มี Postion ที่มีการเปิดอยู่"
+                self.pnl_reply = "ไม่มี Postion ที่มีการเปิดอยู่"
             msgs = await query.edit_message_text(
-                text=text_reply,
+                text=self.pnl_reply,
                 reply_markup=self.reply_markup["pnl"],
             )
         elif callback["Method"] == "BotSetting":
@@ -1659,15 +1657,17 @@ Order นี้จะใช้ Margin จะปรับเป็น: {round(mar
             self.trade_order["margin"] = position_data[self.trade_order["type"]][
                 "margin"
             ]
+            emoji = "📈" if self.trade_order["type"].upper() == "LONG" else "📉"
             pnl_t = "ขาดทุน" if self.trade_order["pnl"] < 0.0 else "กำไร"
-            text = f" {self.trade_order['type'].upper()} Postion\n\
+
+            text = f"\n{emoji}Postion {self.trade_order['type'].upper()}\n\
 🪙จำนวน {self.trade_order['amt']}\n\
 💶ราคาเข้า : {self.trade_order['e_price']}\n\
 💵ราคาปัจจุบัน : {self.trade_order['price']}\n\
 💰Margin ที่ใช้ : {self.trade_order['margin']}$\n\
 Leverage : X{self.trade_order['lev']}\n\
 💸{pnl_t} : {self.trade_order['pnl']}$\n"
-            self.coin_pnl_reply_text = f"{self.trade_order['symbol']}" + text
+            self.coin_pnl_reply_text = f"เหรียญ {self.trade_order['symbol']}" + text
             self.update_inline_keyboard()
             msgs = await query.edit_message_text(
                 text=self.coin_pnl_reply_text,
@@ -2059,19 +2059,20 @@ Leverage : X{self.trade_order['lev']}\n\
                 "margin"
             ]
             pnl_t = "ขาดทุน" if self.trade_order["pnl"] < 0.0 else "กำไร"
+            emoji = "📈" if self.trade_order["type"].upper() == "LONG" else "📉"
             self.trade_order["tp_id"] = symbol_order["tp_id"]
             self.trade_order["sl_id"] = symbol_order["sl_id"]
             self.trade_order["tp_price"] = symbol_order["tp_price"]
             self.trade_order["sl_price"] = symbol_order["sl_price"]
             self.trade_order["lev"] = position_data["leverage"]
-            text = f" {self.trade_order['type'].upper()} Postion\n\
+            text = f"\n{emoji}Postion {self.trade_order['type'].upper()}\n\
 🪙จำนวน {self.trade_order['amt']}\n\
 💶ราคาเข้า : {self.trade_order['e_price']}\n\
 💵ราคาปัจจุบัน : {self.trade_order['price']}\n\
 💰Margin ที่ใช้ : {self.trade_order['margin']}$\n\
 Leverage : X{self.trade_order['lev']}\n\
 💸{pnl_t} : {self.trade_order['pnl']}$\n"
-            self.coin_pnl_reply_text = f"{self.trade_order['symbol']}" + text
+            self.coin_pnl_reply_text = f"เหรียญ {self.trade_order['symbol']}" + text
             self.update_inline_keyboard()
             msgs = await query.edit_message_text(
                 text=self.coin_pnl_reply_text,
