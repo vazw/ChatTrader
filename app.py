@@ -32,6 +32,7 @@ from src.AppData.Appdata import (
     write_trade_record,
     edit_all_trade_record,
     vxma_settings,
+    vxma_settings_info,
 )
 from src.Bot import BotTrade
 from src.CCXT_Binance import (
@@ -50,7 +51,7 @@ STEP1_API, STEP2_API_SEC = range(6, 8)
 ## BotSetting
 B_RISK, B_MIN_BL, B_SYMBOL = range(8, 11)
 ## Position Settings
-P_LEV, P_TP, P_SL = range(11, 14)
+P_LEV, P_TP, P_SL, SETTING_STATE = range(11, 15)
 
 
 class Telegram:
@@ -74,6 +75,7 @@ class Telegram:
         self.risk_reply_text = ":"
         self.watchlist_reply_text = ":"
         self.coins_settings_key = ""
+        self.vxma_selected_state = ""
         self.trade_order = {}
         self.sec_info = {
             "API_KEY": "",
@@ -299,8 +301,8 @@ class Telegram:
                             text=f"Andean : {self.vxma_settings['Andean']}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "Uselong"}',
-                            text=f"Uselong : {'ON' if self.vxma_settings['Uselong'] else 'OFF'}",
+                            callback_data='{"Mode": "vxma_settings", "Method": "leverage"}',
+                            text=f"leverage : {self.vxma_settings['leverage']}",
                         ),
                     ],
                     [
@@ -319,6 +321,10 @@ class Telegram:
                     ],
                     [
                         InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "Uselong"}',
+                            text=f"Uselong : {'ON' if self.vxma_settings['Uselong'] else 'OFF'}",
+                        ),
+                        InlineKeyboardButton(
                             callback_data='{"Mode": "vxma_settings", "Method": "UseSL"}',
                             text=f"UseSL : {'ON' if self.vxma_settings['UseSL'] else 'OFF'}",
                         ),
@@ -326,12 +332,12 @@ class Telegram:
                             callback_data='{"Mode": "vxma_settings", "Method": "Tail_SL"}',
                             text=f"Tail_SL : {'ON' if self.vxma_settings['Tail_SL'] else 'OFF'}",
                         ),
-                        InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "leverage"}',
-                            text=f"leverage : {self.vxma_settings['leverage']}",
-                        ),
                     ],
                     [
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "TP1"}',
+                            text=f"TP1 : {self.vxma_settings['TP1']}",
+                        ),
                         InlineKeyboardButton(
                             callback_data='{"Mode": "vxma_settings", "Method": "RR1"}',
                             text=f"RR1 : {self.vxma_settings['RR1']}",
@@ -339,10 +345,6 @@ class Telegram:
                         InlineKeyboardButton(
                             callback_data='{"Mode": "vxma_settings", "Method": "RR2"}',
                             text=f"RR2 : {self.vxma_settings['RR2']}",
-                        ),
-                        InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "TP1"}',
-                            text=f"TP1 : {self.vxma_settings['TP1']}",
                         ),
                     ],
                     [
@@ -721,6 +723,22 @@ class Telegram:
             CallbackQueryHandler(
                 self.vxma_settings_handler,
                 lambda x: (eval(x))["Mode"] == "vxma_settings",
+            ),
+            ConversationHandler(
+                entry_points=[
+                    CallbackQueryHandler(
+                        self.vxma_edit_settings_confirm,
+                        lambda x: (eval(x))["Mode"] == "vxma_settings_confirm",
+                    )
+                ],
+                states={
+                    SETTING_STATE: [
+                        MessageHandler(
+                            filters.TEXT & ~filters.COMMAND, self.vxma_get_settings
+                        )
+                    ],
+                },
+                fallbacks=[CommandHandler("cancel", self.back_to_vxma_settings)],
             ),
         ]
 
@@ -2303,7 +2321,9 @@ Leverage : X{self.trade_order['lev']}\n\
             path = candle(df, symbol, timeframe)
             msgs0 = await query.message.reply_photo(path)
             self.uniq_msg_id.append(msgs0.message_id)
-            self.text_reply_bot_setting = "รายการตั้งค่า สำหรับกลยุทธ์"
+            self.text_reply_bot_setting = (
+                f"รายการตั้งค่า สำหรับกลยุทธ์ สำหรับ {symbol[:-5].replace('/','')}"
+            )
             await query.delete_message()
             msgs = await query.message.reply_text(
                 text=self.text_reply_bot_setting,
@@ -2347,13 +2367,119 @@ Leverage : X{self.trade_order['lev']}\n\
                 text=self.text_reply_bot_setting,
                 reply_markup=self.dynamic_reply_markup["vxma_settings"],
             )
-        else:
+        elif callback["Method"] == "SAVE":
             msgs = await query.edit_message_text(
-                text=self.text_reply_bot_setting + f"{callback['Method']}",
+                text=f"โปรดยืนยัน หากต้องการบันทึกข้อมูลเหรียญ {self.vxma_settings['symbol']}",
+                reply_markup=self.reply_markup["vxma_settings_confirm_save"],
+            )
+        elif callback["Method"] == "DELETE":
+            msgs = await query.edit_message_text(
+                text=f"โปรดยืนยัน หากต้องการลบข้อมูลเหรียญ {self.vxma_settings['symbol']}",
+                reply_markup=self.reply_markup["vxma_settings_confirm_del"],
+            )
+        elif callback["Method"] in self.vxma_settings.keys():
+            self.vxma_selected_state = callback["Method"]
+            if isinstance(self.vxma_settings[f"{callback['Method']}"], bool):
+                self.vxma_settings[f"{callback['Method']}"] = (
+                    False if self.vxma_settings[f"{callback['Method']}"] else True
+                )
+                self.update_inline_keyboard()
+                msgs = await query.edit_message_text(
+                    text=self.text_reply_bot_setting
+                    + f"\n\n{vxma_settings_info[self.vxma_selected_state]} สำเร็จ",
+                    reply_markup=self.dynamic_reply_markup["vxma_settings"],
+                )
+            else:
+                text = f"ท่านได้เลือกเมนู {vxma_settings_info[self.vxma_selected_state]} \n\nท่านต้องการแก้ไขใช่หรือไม่?"
+                msgs = await query.edit_message_text(
+                    text=self.text_reply_bot_setting + f"\n\n{text}",
+                    reply_markup=self.reply_markup["vxma_settings_confirm"],
+                )
+        self.uniq_msg_id.append(msgs.message_id)
+
+    async def vxma_edit_settings_confirm(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+    ):
+        query = update.callback_query
+        await query.answer()
+        callback = query.data
+        if callback["Method"] == "BACK":
+            msgs = await query.edit_message_text(
+                text=self.text_reply_bot_setting,
                 reply_markup=self.dynamic_reply_markup["vxma_settings"],
             )
+            self.uniq_msg_id.append(msgs.message_id)
+            return ConversationHandler.END
+        else:
+            msg = await query.edit_message_text(
+                text=f"ท่านได้เลือกเมนู {vxma_settings_info[self.vxma_selected_state]} \n\n\nค่าปัจจุบันคือ {self.vxma_settings[self.vxma_selected_state]} โปรดกรอกข้อมูลเพื่อทำการแก้ไข\n\nกด /cancel เพื่อยกเลิก"
+            )
+            self.ask_msg_id.append(msg.message_id)
+            return SETTING_STATE
 
+    async def vxma_get_settings(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ):
+        """Handler that received API SECRET STEP2"""
+        respon = update.message.text
+        self.msg_id.append(update.message.message_id)
+        """TODO"""
+        try:
+            if isinstance(self.vxma_settings[self.vxma_selected_state], int):
+                self.vxma_settings[self.vxma_selected_state] = int(respon)
+            if isinstance(self.vxma_settings[self.vxma_selected_state], float):
+                self.vxma_settings[self.vxma_selected_state] = float(respon)
+            if isinstance(self.vxma_settings[self.vxma_selected_state], str):
+                self.vxma_settings[self.vxma_selected_state] = str(respon)
+            text = f"ได้ทำการเปลี่ยน {vxma_settings_info[self.vxma_selected_state]}\
+จากเดิม : {self.vxma_settings[self.vxma_selected_state]} ไปเป็น {respon} เรียบร้อย"
+
+        except Exception as e:
+            text = f"\n\nเกิดข้อผิดพลาด :{e}\n\nโปรดทำรายการใหม่อีกครั้ง"
+        self.update_inline_keyboard()
+        msgs = await update.message.reply_text(
+            text=self.text_reply_bot_setting + text,
+            reply_markup=self.dynamic_reply_markup["vxma_settings"],
+        )
         self.uniq_msg_id.append(msgs.message_id)
+        if len(self.ask_msg_id) > 0:
+            for id in self.ask_msg_id:
+                try:
+                    await context.bot.delete_message(
+                        chat_id=self.chat_id, message_id=id
+                    )
+                except Exception:
+                    continue
+        return ConversationHandler.END
+
+    async def back_to_vxma_settings(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        query = update.callback_query
+        if query is not None:
+            # For Back Buttons
+            await query.answer()
+            msgs = await query.edit_message_text(
+                text=self.text_reply_bot_setting,
+                reply_markup=self.dynamic_reply_markup["vxma_settings"],
+            )
+            self.uniq_msg_id.append(msgs.message_id)
+        else:
+            # For Commands cancel
+            self.msg_id.append(update.message.message_id)
+            for id in self.uniq_msg_id:
+                try:
+                    await context.bot.delete_message(
+                        chat_id=self.chat_id, message_id=id
+                    )
+                except Exception:
+                    continue
+            msgs = await update.message.reply_text(
+                text=self.text_reply_bot_setting,
+                reply_markup=self.dynamic_reply_markup["vxma_settings"],
+            )
+            self.uniq_msg_id.append(msgs.message_id)
+            return ConversationHandler.END
 
     ## Secure menu
     ## API
@@ -2471,7 +2597,7 @@ Leverage : X{self.trade_order['lev']}\n\
                     )
                 except Exception:
                     continue
-            msgs = await query.edit_message_text(
+            msgs = await update.message.reply_text(
                 text="โปรดเลือกการตั้งค่า",
                 reply_markup=self.reply_markup["secure"],
             )

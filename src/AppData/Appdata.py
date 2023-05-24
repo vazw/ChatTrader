@@ -106,6 +106,36 @@ vxma_settings = {
     "hedge": True,
     "hedgeTF": "30m",
 }
+vxma_settings_info = {
+    "id": "0",
+    "symbol": "คู่เทรด",
+    "timeframe": "Timeframe",
+    "ATR": "ATR Length",
+    "ATR_m": "ATR Mutiplier",
+    "EMA": "EMA Length",
+    "subhag": "Subhag Length",
+    "smooth": "Subhag Smoother Length",
+    "RSI": "RSI Length",
+    "Andean": "Andean Osscrilator",
+    "Uselong": "เปิด/ปิด Long",
+    "Useshort": "เปิด/ปิด Short",
+    "UseTP": "เปิด/ปิดใช้ TP",
+    "UseTP2": "เปิด/ปิดใช้ TP2",
+    "UseSL": "เปิด/ปิดใช้ SL",
+    "Tail_SL": "เปิด/ปิดใช้ Tailing_SL",
+    "leverage": "ตัวคูณ Leverage",
+    "Pivot": "จำนวนแท่งย้อนหลัง",
+    "RR1": "Risk:Reward สำหรับ TP",
+    "RR2": "Risk:Reward สำหรับ TP2",
+    "TP1": "%การปิด Position ของ TP",
+    "TP2": "%การปิด Position ของ TP",
+    "Risk": 'ความเสี่ยงที่รับได้เป็นดอลลาร์ USD หากนำหน้าด้วย "%" จะเป็นการใช้เปอร์เซ็นเงินในพอร์ต\
+เช่น %1 จะใช้เงินในพอร์ต 1%',
+    "maxMargin": 'ขนาด Position สูงสุด ต่อ 1 Position เป็นดอลลาร์ USD หากนำหน้าด้วย "%"\
+จะเป็นการใช้เปอร์เซ็นเงินในพอร์ตเช่น %1 จะใช้เงินในพอร์ต 1%',
+    "hedge": "เปิด/ปิดใช้งาน Hedge Strategy",
+    "hedgeTF": "Timeframe สำหรับ Hedge Strategy",
+}
 
 
 def bot_setting() -> pd.DataFrame:
@@ -743,6 +773,54 @@ REPLY_MARKUP = {
                 InlineKeyboardButton(
                     "❌ กลับ",
                     callback_data='{"Mode": "position_confirm_lev", "Method": "BACK"}',
+                ),
+            ],
+        ]
+    ),
+    "vxma_settings_confirm": InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    "ยืนยัน✅",
+                    callback_data='{"Mode": "vxma_settings_confirm", "Method": "OK"}',
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    "❌ กลับ",
+                    callback_data='{"Mode": "vxma_settings_confirm", "Method": "BACK"}',
+                ),
+            ],
+        ]
+    ),
+    "vxma_settings_confirm_del": InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    "ยืนยัน✅",
+                    callback_data='{"Mode": "vxma_settings_confirm_del", "Method": "OK"}',
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    "❌ กลับ",
+                    callback_data='{"Mode": "vxma_settings_confirm_del", "Method": "BACK"}',
+                ),
+            ],
+        ]
+    ),
+    "vxma_settings_confirm_save": InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    "ยืนยัน✅",
+                    callback_data='{"Mode": "vxma_settings_confirm_save", "Method": "OK"}',
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    "❌ กลับ",
+                    callback_data='{"Mode": "vxma_settings_confirm_save", "Method": "BACK"}',
                 ),
             ],
         ]
