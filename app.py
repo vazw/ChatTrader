@@ -875,7 +875,9 @@ class Telegram:
                 reply_markup=self.reply_markup["pnl"],
             )
         elif callback["Method"] == "BotSetting":
-            text = [f"{symbol[:-5]} {tf}\n" for symbol, tf in self.bot_trade.watchlist]
+            text = [
+                f"{symbol[:-5]} {tf}\n" for id, symbol, tf in self.bot_trade.watchlist
+            ]
             self.watchlist_reply_text = (
                 "เหรียญที่ดูอยู่ :\n" + "".join(text) + "\n\nโปรดเลือกการตั้งค่า"
             )
