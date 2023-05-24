@@ -2144,7 +2144,6 @@ Leverage : X{self.trade_order['lev']}\n\
                 ]
             ]
             self.coins_settings_key = InlineKeyboardMarkup(coins)
-            print(coins)
             msgs = await query.edit_message_text(
                 text=msg, reply_markup=self.coins_settings_key
             )
