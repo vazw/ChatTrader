@@ -722,8 +722,12 @@ class BotTrade:
                 all_symbols = await binance_i.getAllsymbol()
                 configed_symbol = symbolist["symbol"].tolist()
                 self.watchlist = [
-                    (i, symbolist["symbol"][i], symbolist["timeframe"][i])
-                    for i in symbolist.index
+                    (
+                        symbolist.index[i],
+                        symbolist["symbol"][i],
+                        symbolist["timeframe"][i],
+                    )
+                    for i in range(len(symbolist.index))
                 ]
                 if self.status_scan:
                     tasks2 = [
