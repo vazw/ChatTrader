@@ -966,6 +966,11 @@ class Telegram:
         self.application.add_handlers(trade_menu_handlers)
         self.application.add_handlers(bot_setting_handlers)
         self.application.add_handlers(api_setting_handlers)
+
+        # Talking bot.
+        self.application.add_handler(
+            MessageHandler(filters.TEXT & ~filters.COMMAND, self.echo)
+        )
         # Handler for unknown commands at the last handler
         self.application.add_handler(MessageHandler(filters.COMMAND, self.unknown))
 
@@ -2773,7 +2778,9 @@ Leverage : X{self.trade_order['lev']}\n\
             return ConversationHandler.END
         else:
             msg = await query.edit_message_text(
-                text=f"ท่านได้เลือกเมนู {vxma_settings_info[self.vxma_selected_state]} \n\n\nค่าปัจจุบันคือ {self.vxma_settings[self.vxma_selected_state]} โปรดกรอกข้อมูลเพื่อทำการแก้ไข\n\nกด /cancel เพื่อยกเลิก"
+                text=f"ท่านได้เลือกเมนู {vxma_settings_info[self.vxma_selected_state]}\
+\n\n\nค่าปัจจุบันคือ {self.vxma_settings[self.vxma_selected_state]}\
+ โปรดกรอกข้อมูลเพื่อทำการแก้ไข\n\nกด /cancel เพื่อยกเลิก"
             )
             self.ask_msg_id.append(msg.message_id)
             return SETTING_STATE
@@ -3084,6 +3091,15 @@ Leverage : X{self.trade_order['lev']}\n\
                     print(e)
                     continue
             await asyncio.sleep(1)
+
+    async def echo(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+    ) -> None:
+        """Echo the user message."""
+        self.msg_id.append(update.message.message_id)
+        question = update.message.text
+        text = question + choice(EGGS)
+        await update.message.reply_text(text)
 
 
 def main():
