@@ -1048,6 +1048,7 @@ class Telegram:
         elif callback["Method"] == "PositionData":
             await self.binance_.update_balance()
             await self.binance_.disconnect()
+            self.trade_menu_selected = "pnl"
             status = self.binance_.position_data
             if len(status.index) > 0:
                 text = [
@@ -1237,9 +1238,9 @@ class Telegram:
             await self.binance_.disconnect()
             if currnet_position["leverage"] > 0:
                 self.trade_order["lev"] = currnet_position["leverage"]
-            self.update_inline_keyboard()
             text = f"คู่เหรียญ  {self.trade_order['symbol']}\nราคาปัจจุบัน : {self.trade_order['price']}$"
             if currnet_position["long"]["position"]:
+                self.trade_order["pnl"] = currnet_position["long"]["pnl"]
                 text = (
                     text
                     + f"\n\n ท่านมี Position Long ของ เหรียญนี้อยู่ในมือ\n\
@@ -1247,6 +1248,7 @@ class Telegram:
                 กำไร/ขาดทุน {round(currnet_position['long']['pnl'], 3)}$"
                 )
             elif currnet_position["short"]["position"]:
+                self.trade_order["pnl"] = currnet_position["short"]["pnl"]
                 text = (
                     text
                     + f"\n\n ท่านมี Position Short ของ เหรียญนี้อยู่ในมือ\n\
@@ -1254,6 +1256,7 @@ class Telegram:
                 กำไร/ขาดทุน {round(currnet_position['short']['pnl'], 3)}$"
                 )
             self.trade_reply_text = text
+            self.update_inline_keyboard()
         except Exception as e:
             text = f"เกิดข้อผิดพลาด {e} ขึ้นกับเหรียญที่ท่านเลือก: {respon} โปรดลองเปลี่ยนเหรียญใหม่อีกครั้งค่ะ"
 
@@ -2027,6 +2030,7 @@ Leverage : X{self.trade_order['lev']}\n\
             )
         elif callback["Method"] == "OK":
             exchange = await self.binance_.get_exchange()
+            await self.binance_.connect_loads()
             if self.trade_order["tp_id"] != 0:
                 self.binance_.cancel_order(
                     self.trade_order["symbol"], self.trade_order["tp_id"]
@@ -2135,6 +2139,7 @@ Leverage : X{self.trade_order['lev']}\n\
             )
         elif callback["Method"] == "OK":
             exchange = await self.binance_.get_exchange()
+            await self.binance_.connect_loads()
             if self.trade_order["sl_id"] != 0:
                 self.binance_.cancel_order(
                     self.trade_order["symbol"], self.trade_order["sl_id"]
@@ -2181,6 +2186,7 @@ Leverage : X{self.trade_order['lev']}\n\
         query = update.callback_query
         await query.answer()
         exchange = await self.binance_.get_exchange()
+        await self.binance_.connect_loads()
         if self.trade_order["type"] == "long":
             text = await close_order("sell", self.bot_trade.currentMode.Lside)
         elif self.trade_order["type"] == "short":
@@ -2223,6 +2229,14 @@ Leverage : X{self.trade_order['lev']}\n\
     ):
         query = update.callback_query
         await query.answer()
+        if self.trade_menu_selected == "trade":
+            msgs = await query.edit_message_text(
+                self.trade_reply_text + self.trade_reply_margin,
+                reply_markup=self.dynamic_reply_markup["trade"],
+            )
+            self.uniq_msg_id.append(msgs.message_id)
+            return
+
         await self.binance_.update_balance()
         await self.binance_.disconnect()
         pnl_back_button = [
