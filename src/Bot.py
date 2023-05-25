@@ -1715,7 +1715,7 @@ class BotTrade:
         if df["isSL"][last] == 1 and saved_position is not None:
             closed_pnl = await self.get_closed_pnl(symbol)
             await self.notify_send(
-                f"{symbol} {timeframe} {direction} got Stop-Loss!\n"
+                f"‘เงินเราไปเที่ยว เดี๋ยวเดียวก็มา’\n{symbol} {timeframe} {direction} ถูก Stop-Loss!\n"
                 + f"at {closed_pnl['price']}\nP/L : {closed_pnl['info']['realizedPnl']}"
             )
             time_now = lastUpdate.candle
@@ -1747,7 +1747,7 @@ class BotTrade:
         if posim not in ex_position and saved_position is not None:
             closed_pnl = await self.get_closed_pnl(symbol)
             await self.notify_send(
-                f"{symbol} {timeframe} {direction} Being Closed!\n"
+                f"รู้อะไรไม่เท่า รู้งี้\n{symbol} {timeframe} {direction} ถูกปิดไปแล้ว!\n"
                 + f"at {closed_pnl['price']}\nP/L : {closed_pnl['info']['realizedPnl']}"
             )
             edit_trade_record(
@@ -1779,7 +1779,7 @@ class BotTrade:
         if saved_amount != abs(ex_amount):
             closed_pnl = await self.get_closed_pnl(symbol)
             await self.notify_send(
-                f"{symbol} {timeframe} {direction} Being TP!!\n"
+                f"ลบ 20% ให้อดทน ขึ้น 2% ให้รีบขาย\n{symbol} {timeframe} {direction} ได้รับการล็อคกำรแล้ว!!\n"
                 + f"at {closed_pnl['price']}\nP/L : {closed_pnl['info']['realizedPnl']}"
             )
             write_tp_record(

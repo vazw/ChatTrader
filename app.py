@@ -1009,7 +1009,8 @@ class Telegram:
             chat_id=self.chat_id, message_id=update.message.message_id
         )
         msg = await update.message.reply_text(
-            "Please choose:", reply_markup=self.reply_markup["menu"]
+            "🙏ยินดีต้อนรับค่ะนายท่าน นี่คือรายการทั้งหมด ที่น้องเลขาคนนี้สามารถช่วยนายท่านได้:",
+            reply_markup=self.reply_markup["menu"],
         )
         self.uniq_msg_id.append(msg.message_id)
 
@@ -1091,7 +1092,7 @@ class Telegram:
     ) -> None:
         """This Handler can Handle both command and inline button respons"""
         query = update.callback_query
-        msg = "Please choose:"
+        msg = '"หุ้นดีขายออก หุ้นกระจอกเก็บไว้"'
         if query is not None:
             # For Back Buttons
             await query.answer()
@@ -1791,7 +1792,7 @@ Leverage: {self.trade_order['lev']}\n"
             path = candle(df, symbol, self.vxma_settings["timeframe"])
             msgs0 = await update.message.reply_photo(path)
             self.uniq_msg_id.append(msgs0.message_id)
-            self.text_reply_bot_setting = f"รายการตั้งค่า สำหรับกลยุทธ์ สำหรับ {symbol}"
+            self.text_reply_bot_setting = f"รายการตั้งค่ากลยุทธ์สำหรับ {symbol}"
             msgs = await update.message.reply_text(
                 text=self.text_reply_bot_setting,
                 reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
@@ -2514,7 +2515,7 @@ Leverage : X{self.trade_order['lev']}\n\
             msgs0 = await query.message.reply_photo(path)
             self.uniq_msg_id.append(msgs0.message_id)
             self.text_reply_bot_setting = (
-                f"รายการตั้งค่า สำหรับกลยุทธ์ สำหรับ {symbol[:-5].replace('/','')}"
+                f"รายการตั้งค่ากลยุทธ์สำหรับ {symbol[:-5].replace('/','')}"
             )
             await query.delete_message()
             msgs = await query.message.reply_text(
@@ -2886,12 +2887,12 @@ Leverage : X{self.trade_order['lev']}\n\
                 + f"\nTotal  : {round(fiat_balance['USDT']['total'],2)}$"
             )
             msg = await update.message.reply_text(
-                f"ตั้งค่าสำหรับ API {self.sec_info['API_KEY'][:10]} สำเร็จ\n{text}",
+                f"ตั้งค่า API {self.sec_info['API_KEY'][:10]} สำเร็จ\n{text}",
                 reply_markup=self.reply_markup["secure"],
             )
         except Exception as e:
             msg = await update.message.reply_text(
-                f"ตั้งค่าสำหรับ API {self.sec_info['API_KEY'][:10]} เกิดข้อผิดพลาด\n{e}",
+                f"ตั้งค่า API {self.sec_info['API_KEY'][:10]} เกิดข้อผิดพลาด\n{e}",
                 reply_markup=self.reply_markup["secure"],
             )
         self.uniq_msg_id.append(msg.message_id)
