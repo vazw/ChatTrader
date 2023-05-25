@@ -78,6 +78,19 @@ BOTCOL = [
     "hedgeTF",
 ]
 
+TA_TYPE = [
+    "symbol",
+    "timeframe",
+    "ATR",
+    "ATR_m",
+    "EMA",
+    "subhag",
+    "smooth",
+    "RSI",
+    "Andean",
+    "Pivot",
+]
+
 vxma_settings = {
     "id": "0",
     "symbol": "BTCUSDT",

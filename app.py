@@ -25,6 +25,7 @@ from telegram.ext import (
 from src.AppData import HELP_MESSAGE, WELCOME_MESSAGE, split_list
 from src.AppData.Appdata import (
     REPLY_MARKUP,
+    TA_TYPE,
     AppConfig,
     TATable,
     bot_setting,
@@ -1778,10 +1779,30 @@ Leverage: {self.trade_order['lev']}\n"
             return ConversationHandler.END
         if callback["Method"] == "VXMA":
             msg = await query.edit_message_text(
-                text="โปรดกรอกชื่อคู่เทรดที่ท่านต้องการวิเคราะห์\n\nกด /cancel เพื่อยกเลิก"
+                text="โปรดกรอกชื่อคู่เทรดที่ท่านต้องการวิเคราะห์\n เช่น btc bnbbusd ethusdt\n\nกด /cancel เพื่อยกเลิก"
             )
             self.ask_msg_id.append(msg.message_id)
             return SETTING_STATE
+
+    async def vxma_send_candle_pic(self, update):
+        ta_data = TATable(
+            atr_p=self.vxma_settings["ATR"],
+            atr_m=self.vxma_settings["ATR_m"],
+            ema=self.vxma_settings["EMA"],
+            linear=self.vxma_settings["subhag"],
+            smooth=self.vxma_settings["smooth"],
+            rsi=self.vxma_settings["RSI"],
+            aol=self.vxma_settings["Andean"],
+            pivot=self.vxma_settings["Pivot"],
+        )
+        df = await self.bot_trade.bot_3(
+            self.vxma_settings["symbol"],
+            ta_data.__dict__,
+            self.vxma_settings["timeframe"],
+        )
+        path = candle(df, self.vxma_settings["symbol"], self.vxma_settings["timeframe"])
+        msgs0 = await update.message.reply_photo(path)
+        self.uniq_msg_id.append(msgs0.message_id)
 
     async def analyse_get_symbol(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
@@ -1801,25 +1822,8 @@ Leverage: {self.trade_order['lev']}\n"
                 "symbol"
             ] = f"{base}/{quote}:{quote}"
             self.vxma_menu_selected_state = "vxma_settings_2"
-            ta_data = TATable(
-                atr_p=self.vxma_settings["ATR"],
-                atr_m=self.vxma_settings["ATR_m"],
-                ema=self.vxma_settings["EMA"],
-                linear=self.vxma_settings["subhag"],
-                smooth=self.vxma_settings["smooth"],
-                rsi=self.vxma_settings["RSI"],
-                aol=self.vxma_settings["Andean"],
-                pivot=self.vxma_settings["Pivot"],
-            )
             self.update_inline_keyboard()
-            df = await self.bot_trade.bot_3(
-                self.vxma_settings["symbol"],
-                ta_data.__dict__,
-                self.vxma_settings["timeframe"],
-            )
-            path = candle(df, symbol, self.vxma_settings["timeframe"])
-            msgs0 = await update.message.reply_photo(path)
-            self.uniq_msg_id.append(msgs0.message_id)
+            await self.vxma_send_candle_pic(update)
             self.text_reply_bot_setting = f"รายการตั้งค่ากลยุทธ์สำหรับ {symbol}"
             msgs = await update.message.reply_text(
                 text=self.text_reply_bot_setting,
@@ -2535,29 +2539,13 @@ Leverage : X{self.trade_order['lev']}\n\
             configs = bot_setting()
             self.vxma_settings["id"] = callback["Method"]
             config = configs.loc[self.vxma_settings["id"],]
-            ta_data = TATable(
-                atr_p=config["ATR"],
-                atr_m=config["ATR_m"],
-                ema=config["EMA"],
-                linear=config["subhag"],
-                smooth=config["smooth"],
-                rsi=config["RSI"],
-                aol=config["Andean"],
-                pivot=config["Pivot"],
-            )
 
             for config_ in split_list(config.items(), 2):
                 for x, y in config_:
                     self.vxma_settings[x] = y
             symbol = self.vxma_settings["symbol"]
-            timeframe = self.vxma_settings["timeframe"]
             self.update_inline_keyboard()
-            df = await self.bot_trade.bot_3(
-                self.vxma_settings["symbol"], ta_data.__dict__, timeframe
-            )
-            path = candle(df, symbol, timeframe)
-            msgs0 = await query.message.reply_photo(path)
-            self.uniq_msg_id.append(msgs0.message_id)
+            await self.vxma_send_candle_pic(query)
             self.text_reply_bot_setting = (
                 f"รายการตั้งค่ากลยุทธ์สำหรับ {symbol[:-5].replace('/','')}"
             )
@@ -2585,26 +2573,7 @@ Leverage : X{self.trade_order['lev']}\n\
                     reply_markup=self.reply_markup["analyse"],
                 )
         elif callback["Method"] == "CHART":
-            ta_data = TATable(
-                atr_p=self.vxma_settings["ATR"],
-                atr_m=self.vxma_settings["ATR_m"],
-                ema=self.vxma_settings["EMA"],
-                linear=self.vxma_settings["subhag"],
-                smooth=self.vxma_settings["smooth"],
-                rsi=self.vxma_settings["RSI"],
-                aol=self.vxma_settings["Andean"],
-                pivot=self.vxma_settings["Pivot"],
-            )
-            df = await self.bot_trade.bot_3(
-                self.vxma_settings["symbol"],
-                ta_data.__dict__,
-                self.vxma_settings["timeframe"],
-            )
-            path = candle(
-                df, self.vxma_settings["symbol"], self.vxma_settings["timeframe"]
-            )
-            msgs0 = await query.message.reply_photo(path)
-            self.uniq_msg_id.append(msgs0.message_id)
+            await self.vxma_send_candle_pic(query)
             await query.delete_message()
             msgs = await query.message.reply_text(
                 text=self.text_reply_bot_setting,
@@ -2727,6 +2696,8 @@ Leverage : X{self.trade_order['lev']}\n\
                 self.vxma_settings[self.vxma_selected_state] = float(respon)
             elif self.vxma_selected_state_type == "str":
                 self.vxma_settings[self.vxma_selected_state] = str(respon)
+            if self.vxma_selected_state in TA_TYPE:
+                await self.vxma_send_candle_pic(update)
 
         except Exception as e:
             text = f"\n\nเกิดข้อผิดพลาด :{e}\n\nโปรดทำรายการใหม่อีกครั้ง"
