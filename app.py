@@ -105,65 +105,79 @@ class Telegram:
         self.load_database()
 
     def update_inline_keyboard(self):
-        self.dynamic_reply_markup = {
-            "trade": InlineKeyboardMarkup(
+        trade = [
+            [
+                InlineKeyboardButton(
+                    f"Order Type: {self.trade_order['type']}",
+                    callback_data='{"Mode": "trade", "Method": "Type"}',
+                ),
+                InlineKeyboardButton(
+                    f"Leverage: X{self.trade_order['lev']}",
+                    callback_data='{"Mode": "trade", "Method": "Lev"}',
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    f"ราคา : {self.trade_order['price']}",
+                    callback_data='{"Mode": "trade", "Method": "Price"}',
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    f"จำนวน : {self.trade_order['amt'] if self.trade_order['amt'] > 0.0 else '--.--'}",
+                    callback_data='{"Mode": "trade", "Method": "Amt"}',
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    f"TP : {self.trade_order['tp_price'] if self.trade_order['tp_price'] > 0.0 else '--.--'}",
+                    callback_data='{"Mode": "trade", "Method": "TP"}',
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    f"SL : {self.trade_order['sl_price'] if self.trade_order['sl_price'] > 0.0 else '--.--'}",
+                    callback_data='{"Mode": "trade", "Method": "SL"}',
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    "LONG 📈",
+                    callback_data='{"Mode": "trade", "Method": "LONG"}',
+                ),
+                InlineKeyboardButton(
+                    "📉 SHORT",
+                    callback_data='{"Mode": "trade", "Method": "SHORT"}',
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    "เปลี่ยนเหรียญ",
+                    callback_data='{"Mode": "trade", "Method": "Change"}',
+                ),
+                InlineKeyboardButton(
+                    "❌ กลับ",
+                    callback_data='{"Mode": "trade", "Method": "BACK"}',
+                ),
+            ],
+        ]
+        if self.trade_order["pnl"] != 0.0:
+            trade = [
                 [
-                    [
-                        InlineKeyboardButton(
-                            f"Order Type: {self.trade_order['type']}",
-                            callback_data='{"Mode": "trade", "Method": "Type"}',
+                    InlineKeyboardButton(
+                        "ℹ️ดูรายละเอียด",
+                        callback_data=json.dumps(
+                            {
+                                "Mode": "PNLC",
+                                "Method": self.trade_order["symbol"],
+                                "Side": self.trade_order["side"],
+                            }
                         ),
-                        InlineKeyboardButton(
-                            f"Leverage: X{self.trade_order['lev']}",
-                            callback_data='{"Mode": "trade", "Method": "Lev"}',
-                        ),
-                    ],
-                    [
-                        InlineKeyboardButton(
-                            f"ราคา : {self.trade_order['price']}",
-                            callback_data='{"Mode": "trade", "Method": "Price"}',
-                        ),
-                    ],
-                    [
-                        InlineKeyboardButton(
-                            f"จำนวน : {self.trade_order['amt'] if self.trade_order['amt'] > 0.0 else '--.--'}",
-                            callback_data='{"Mode": "trade", "Method": "Amt"}',
-                        ),
-                    ],
-                    [
-                        InlineKeyboardButton(
-                            f"TP : {self.trade_order['tp_price'] if self.trade_order['tp_price'] > 0.0 else '--.--'}",
-                            callback_data='{"Mode": "trade", "Method": "TP"}',
-                        ),
-                    ],
-                    [
-                        InlineKeyboardButton(
-                            f"SL : {self.trade_order['sl_price'] if self.trade_order['sl_price'] > 0.0 else '--.--'}",
-                            callback_data='{"Mode": "trade", "Method": "SL"}',
-                        ),
-                    ],
-                    [
-                        InlineKeyboardButton(
-                            "LONG 📈",
-                            callback_data='{"Mode": "trade", "Method": "LONG"}',
-                        ),
-                        InlineKeyboardButton(
-                            "📉 SHORT",
-                            callback_data='{"Mode": "trade", "Method": "SHORT"}',
-                        ),
-                    ],
-                    [
-                        InlineKeyboardButton(
-                            "เปลี่ยนเหรียญ",
-                            callback_data='{"Mode": "trade", "Method": "Change"}',
-                        ),
-                        InlineKeyboardButton(
-                            "❌ กลับ",
-                            callback_data='{"Mode": "trade", "Method": "BACK"}',
-                        ),
-                    ],
+                    ),
                 ]
-            ),
+            ] + trade
+        self.dynamic_reply_markup = {
+            "trade": InlineKeyboardMarkup(trade),
             "setting": InlineKeyboardMarkup(
                 [
                     [
@@ -539,6 +553,7 @@ class Telegram:
         self.trade_order = {
             "symbol": "",
             "type": "MARKET",
+            "side": "BOTH",
             "new_lev": 10,
             "lev": 10,
             "e_price": 0.0,
@@ -1241,6 +1256,7 @@ class Telegram:
             text = f"คู่เหรียญ  {self.trade_order['symbol']}\nราคาปัจจุบัน : {self.trade_order['price']}$"
             if currnet_position["long"]["position"]:
                 self.trade_order["pnl"] = currnet_position["long"]["pnl"]
+                self.trade_order["side"] = "LONG"
                 text = (
                     text
                     + f"\n\n ท่านมี Position Long ของ เหรียญนี้อยู่ในมือ\n\
@@ -1249,6 +1265,7 @@ class Telegram:
                 )
             elif currnet_position["short"]["position"]:
                 self.trade_order["pnl"] = currnet_position["short"]["pnl"]
+                self.trade_order["side"] = "SHORT"
                 text = (
                     text
                     + f"\n\n ท่านมี Position Short ของ เหรียญนี้อยู่ในมือ\n\
