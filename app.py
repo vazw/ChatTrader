@@ -77,6 +77,7 @@ class Telegram:
         self.coins_settings_key = ""
         self.vxma_selected_state = ""
         self.vxma_menu_selected_state = ""
+        self.trade_menu_selected = ""
         self.trade_order = {}
         self.sec_info = {
             "API_KEY": "",
@@ -504,6 +505,10 @@ class Telegram:
                             callback_data='{"Mode": "vxma_settings", "Method": "CHART"}',
                         ),
                         InlineKeyboardButton(
+                            "เทรด💹",
+                            callback_data='{"Mode": "vxma_settings", "Method": "TRADE"}',
+                        ),
+                        InlineKeyboardButton(
                             "เปลี่ยนเหรียญ",
                             callback_data='{"Mode": "vxma_settings", "Method": "symbol", "Type": "str"}',
                         ),
@@ -561,8 +566,7 @@ class Telegram:
             # Handler for Back to menu for all menu
             CallbackQueryHandler(
                 self.back_to_menu,
-                lambda x: (eval(x))["Mode"]
-                in ["fiat", "trade", "analyse", "pnl", "setting", "secure"]
+                lambda x: (eval(x))["Mode"] in ["fiat", "pnl", "setting", "secure"]
                 and (eval(x))["Method"] == "BACK",
             ),
         ]
@@ -726,6 +730,12 @@ class Telegram:
                 self.trade_short_button,
                 lambda x: (eval(x))["Mode"] == "trade"
                 and (eval(x))["Method"] == "SHORT",
+            ),
+            # BACK
+            CallbackQueryHandler(
+                self.back_from_trade_menu,
+                lambda x: (eval(x))["Mode"] == "trade"
+                and (eval(x))["Method"] == "BACK",
             ),
         ]
 
@@ -1193,9 +1203,17 @@ class Telegram:
         respon = update.message.text
         self.msg_id.append(update.message.message_id)
         self.reset_trade_order_data()
-        self.trade_order["symbol"] = respon.upper()
+        self.trade_menu_selected = "trade"
+        symbol = respon.upper()
         """TODO"""
         try:
+            if symbol.endswith("BUSD") or symbol.endswith("USDT"):
+                quote = "BUSD" if symbol.endswith("BUSD") else "USDT"
+                base = symbol[:-4]
+            else:
+                quote = "USDT"
+                base = symbol
+            self.trade_order["symbol"] = f"{base}/{quote}:{quote}"
             self.trade_order["price"] = await self.binance_.get_bidask(
                 self.trade_order["symbol"], "bid"
             )
@@ -1720,6 +1738,24 @@ Leverage: {self.trade_order['lev']}\n"
             reply_markup=self.reply_markup["menu"],
         )
 
+    async def back_from_trade_menu(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ):
+        query = update.callback_query
+        await query.answer()
+        if self.trade_menu_selected == "vxma_settings_2":
+            msgs = await update.message.reply_text(
+                text=self.text_reply_bot_setting,
+                reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
+            )
+        else:
+            msgs = await query.edit_message_text(
+                text="“ความล้มเหลว” ก็คือ “ความสำเร็จ” ถ้าหากเรา “เรียนรู้” จากมัน",
+                reply_markup=self.reply_markup["menu"],
+            )
+
+        self.uniq_msg_id.append(msgs.message_id)
+
     ## Analyser menu
     async def back_to_analyse_menu(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
@@ -1756,6 +1792,12 @@ Leverage: {self.trade_order['lev']}\n"
         query = update.callback_query
         await query.answer()
         callback = eval(query.data)
+        if callback["Method"] == "BACK":
+            msgs = await query.edit_message_text(
+                text="หาเวลาพักบ้างนะคะ", reply_markup=self.reply_markup["menu"]
+            )
+            self.uniq_msg_id.append(msgs.message_id)
+            return ConversationHandler.END
         if callback["Method"] == "VXMA":
             msg = await query.edit_message_text(
                 text="โปรดกรอกชื่อคู่เทรดที่ท่านต้องการวิเคราะห์\n\nกด /cancel เพื่อยกเลิก"
@@ -1770,9 +1812,16 @@ Leverage: {self.trade_order['lev']}\n"
         self.msg_id.append(update.message.message_id)
         try:
             symbol = str(respon).upper()
-            quote = "BUSD" if symbol.endswith("BUSD") else "USDT"
-            base = symbol[:-4]
-            self.vxma_settings["symbol"] = f"{base}/{quote}:{quote}"
+            if symbol.endswith("BUSD") or symbol.endswith("USDT"):
+                quote = "BUSD" if symbol.endswith("BUSD") else "USDT"
+                base = symbol[:-4]
+            else:
+                quote = "USDT"
+                base = symbol
+            self.reset_trade_order_data()
+            self.trade_order["symbol"] = self.vxma_settings[
+                "symbol"
+            ] = f"{base}/{quote}:{quote}"
             self.vxma_menu_selected_state = "vxma_settings_2"
             ta_data = TATable(
                 atr_p=self.vxma_settings["ATR"],
@@ -2584,9 +2633,15 @@ Leverage : X{self.trade_order['lev']}\n\
         await query.answer()
         callback = eval(query.data)
         if callback["Method"] == "BACK":
-            msgs = await query.edit_message_text(
-                text="โปรดเลือกเหรียญดังนี้:", reply_markup=self.coins_settings_key
-            )
+            if self.vxma_menu_selected_state == "vxma_settings":
+                msgs = await query.edit_message_text(
+                    text="โปรดเลือกเหรียญดังนี้:", reply_markup=self.coins_settings_key
+                )
+            elif self.vxma_menu_selected_state == "vxma_settings_2":
+                msgs = await query.edit_message_text(
+                    text="โปรดเลือกกลยุทธ์ของท่าน",
+                    reply_markup=self.reply_markup["analyse"],
+                )
         elif callback["Method"] == "CHART":
             ta_data = TATable(
                 atr_p=self.vxma_settings["ATR"],
@@ -2617,6 +2672,52 @@ Leverage : X{self.trade_order['lev']}\n\
             msgs = await query.edit_message_text(
                 text=f"โปรดยืนยัน หากต้องการบันทึกข้อมูลเหรียญ {self.vxma_settings['symbol']}",
                 reply_markup=self.reply_markup["vxma_settings_confirm_save"],
+            )
+        elif callback["Method"] == "SAVE_ADD":
+            text = [
+                f"{key} : {value}\n"
+                for key, value in self.vxma_settings.items()
+                if key != "id"
+            ]
+            text0 = "รายการ การตั้งค่าดังต่อไปนี้จะถูกเพิ่มไปยังฐานข้อมูล\n" + "".join(
+                text
+            )
+            msgs = await query.edit_message_text(
+                text=f"{text0}\n\nโปรดยืนยัน หากต้องการบันทึกข้อมูลเหรียญ {self.vxma_settings['symbol']}",
+                reply_markup=self.reply_markup["vxma_settings_confirm_save_2"],
+            )
+        elif callback["Method"] == "TRADE":
+            self.trade_menu_selected = "vxma_settings_2"
+            self.trade_order["price"] = await self.binance_.get_bidask(
+                self.trade_order["symbol"], "bid"
+            )
+            await self.binance_.update_balance()
+            currnet_position = await self.bot_trade.check_current_position(
+                self.trade_order["symbol"], self.binance_.position_data.copy()
+            )
+            await self.binance_.disconnect()
+            if currnet_position["leverage"] > 0:
+                self.trade_order["lev"] = currnet_position["leverage"]
+            self.update_inline_keyboard()
+            text = f"คู่เหรียญ  {self.trade_order['symbol']}\nราคาปัจจุบัน : {self.trade_order['price']}$"
+            if currnet_position["long"]["position"]:
+                text = (
+                    text
+                    + f"\n\n ท่านมี Position Long ของ เหรียญนี้อยู่ในมือ\n\
+                เป็นจำนวน  {round(currnet_position['long']['amount'], 3)} เหรียญ\n\
+                กำไร/ขาดทุน {round(currnet_position['long']['pnl'], 3)}$"
+                )
+            elif currnet_position["short"]["position"]:
+                text = (
+                    text
+                    + f"\n\n ท่านมี Position Short ของ เหรียญนี้อยู่ในมือ\n\
+                เป็นจำนวน  {round(currnet_position['short']['amount'], 3)} เหรียญ\n\
+                กำไร/ขาดทุน {round(currnet_position['short']['pnl'], 3)}$"
+                )
+            self.trade_reply_text = text
+            msgs = await query.edit_message_text(
+                text=self.trade_reply_text,
+                reply_markup=self.dynamic_reply_markup["trade"],
             )
         elif callback["Method"] == "DELETE":
             msgs = await query.edit_message_text(
@@ -2752,6 +2853,45 @@ Leverage : X{self.trade_order['lev']}\n\
                 msg = f"{self.watchlist_reply_text}" + text
                 msgs = await query.edit_message_text(
                     text=msg, reply_markup=self.dynamic_reply_markup["setting"]
+                )
+            except Exception as e:
+                text = f"เกิดข้อผิดพลาด {e}\n\nโปรดทำรายการใหม่อีกครั้งค่ะ"
+                msgs = await query.edit_message_text(
+                    text=self.text_reply_bot_setting + text,
+                    reply_markup=self.dynamic_reply_markup[
+                        self.vxma_menu_selected_state
+                    ],
+                )
+        self.uniq_msg_id.append(msgs.message_id)
+
+    async def vxma_save_settings_confirm_2(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+    ):
+        query = update.callback_query
+        await query.answer()
+        callback = eval(query.data)
+        if callback["Method"] == "BACK":
+            msgs = await query.edit_message_text(
+                text=self.text_reply_bot_setting,
+                reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
+            )
+        else:
+            try:
+                configs = bot_setting()
+                self.vxma_settings["id"] = f"A{len(configs.index)+1}"
+                config = pd.DataFrame(
+                    data=[vxma_settings.values()], columns=vxma_settings.keys()
+                )
+                config = config.set_index("id")
+                configs = pd.concat([configs, config], axis=0, ignore_index=False)
+                configs.to_csv("bot_config.csv", index=True)
+                text = f"\n\nได้บันทึกข้อมูลเหรียญ {self.vxma_settings['symbol']} สำหรับบอทเรียบร้อยแล้วค่ะ"
+                self.bot_trade.update_watchlist()
+                msgs = await query.edit_message_text(
+                    text=self.text_reply_bot_setting + text,
+                    reply_markup=self.dynamic_reply_markup[
+                        self.vxma_menu_selected_state
+                    ],
                 )
             except Exception as e:
                 text = f"เกิดข้อผิดพลาด {e}\n\nโปรดทำรายการใหม่อีกครั้งค่ะ"

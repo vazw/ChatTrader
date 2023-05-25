@@ -825,4 +825,20 @@ REPLY_MARKUP = {
             ],
         ]
     ),
+    "vxma_settings_confirm_save_2": InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    "ยืนยัน✅",
+                    callback_data='{"Mode": "vxma_settings_confirm_save", "Method": "OK"}',
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    "❌ กลับ",
+                    callback_data='{"Mode": "vxma_settings_confirm_save", "Method": "BACK"}',
+                ),
+            ],
+        ]
+    ),
 }
