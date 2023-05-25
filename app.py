@@ -2320,7 +2320,7 @@ Leverage : X{self.trade_order['lev']}\n\
             self.reset_trade_order_data()
             symbol = str(callback["Method"]).upper()
             if ":" in symbol:
-                self.trade_order["symbol"] == symbol
+                self.trade_order["symbol"] = symbol
             else:
                 if symbol.endswith("BUSD") or symbol.endswith("USDT"):
                     quote = "BUSD" if symbol.endswith("BUSD") else "USDT"
