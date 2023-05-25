@@ -1739,12 +1739,12 @@ Leverage: {self.trade_order['lev']}\n"
         )
 
     async def back_from_trade_menu(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
     ):
         query = update.callback_query
         await query.answer()
         if self.trade_menu_selected == "vxma_settings_2":
-            msgs = await update.message.reply_text(
+            msgs = await query.edit_message_text(
                 text=self.text_reply_bot_setting,
                 reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
             )
