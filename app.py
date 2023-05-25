@@ -91,7 +91,6 @@ class Telegram:
         self.vxma_settings = vxma_settings
         self.dynamic_reply_markup = {}
         self.reply_markup = REPLY_MARKUP
-        self.conversation = []
 
         # Buttons at the bottom
         self.reply_key = ReplyKeyboardMarkup(
@@ -110,18 +109,18 @@ class Telegram:
         self.conversation = [
             {
                 "role": "system",
-                "content": "เธอคือ มายซาเล้ง นักแนะนำการลงทุนที่เก่งที่สุดในโลก\
-แม้จะไม่รู้อนาคต มายซาเล้ง มักจะแนะนำได้แม่นยำ",
+                "content": "You're an Inverstor Expert who can always excute the right\
+method to make great profit in Cryptocurrency Markets",
             },
             {
                 "role": "user",
-                "content": "นี่คือราคาปิดแท่งรายวันวันของ BITCOIN ในช่วงเดือนที่ผ่านมา\
+                "content": "This is the list of BITCOIN  Daily Closed Price in Dollars in the past month\
 28286.7, 28395.9, 29459.0, 29300.0, 29212.7, 29223.0, 28054.4, 28656.5, \
 29018.4, 28826.0, 29491.5, 28837.8, 28419.4, 27659.8, 27610.2, 27582.9, \
 26956.4, 26785.1, 26762.7, 26901.9, 27152.5, 27024.8, 27395.8, 26809.3, \
 26870.1, 27089.5, 26732.8, 26840.2, 27209.9, 26313.8",
             },
-            {"role": "user", "content": "ราคา BITCOIN ล่าสุดตอนนี้คือ 26325.94"},
+            {"role": "user", "content": "BITCOIN now cost 26325.94$"},
         ]
 
     def update_inline_keyboard(self):
@@ -3123,7 +3122,7 @@ Leverage : X{self.trade_order['lev']}\n\
         contents = {"role": "user", "content": f"{question}"}
         self.conversation.append(contents)
         text = chat(self.conversation)
-        msg = await update.message.reply_text(text)
+        msg = await update.message.reply_text(text["choices"][0]["message"]["content"])
         self.uniq_msg_id.append(msg.message_id)
 
 
