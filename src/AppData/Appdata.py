@@ -885,6 +885,6 @@ openai.api_key = os.environ["OpenAiToken"]
 
 def chat(messages):
     return openai.ChatCompletion.create(
-        model="gpt-4.0-turbo",
+        model="gpt-3.5-turbo",
         messages=messages,
     )
