@@ -1102,13 +1102,7 @@ class Telegram:
         else:
             # For Commands cancel
             self.msg_id.append(update.message.message_id)
-            for id in self.uniq_msg_id:
-                try:
-                    await context.bot.delete_message(
-                        chat_id=self.chat_id, message_id=id
-                    )
-                except Exception:
-                    continue
+            await self.delete_unig_messages(context)
             msgs = await update.message.reply_text(
                 msg, reply_markup=self.reply_markup["menu"]
             )
@@ -1172,11 +1166,7 @@ class Telegram:
         CommandHandler for get back to trade menu
         """
         self.msg_id.append(update.message.message_id)
-        for id in self.ask_msg_id:
-            try:
-                await context.bot.delete_message(chat_id=self.chat_id, message_id=id)
-            except Exception:
-                continue
+        await self.delete_ask_messages(context)
         msgs = await update.message.reply_text(
             self.trade_reply_text + self.trade_reply_margin,
             reply_markup=self.dynamic_reply_markup["trade"],
@@ -1249,14 +1239,7 @@ class Telegram:
             reply_markup=self.dynamic_reply_markup["trade"],
         )
         self.uniq_msg_id.append(msg.message_id)
-        if len(self.ask_msg_id) > 0:
-            for id in self.ask_msg_id:
-                try:
-                    await context.bot.delete_message(
-                        chat_id=self.chat_id, message_id=id
-                    )
-                except Exception:
-                    continue
+        await self.delete_ask_messages(context)
         return ConversationHandler.END
 
     async def get_lev_handler(
@@ -1296,14 +1279,7 @@ class Telegram:
             reply_markup=self.dynamic_reply_markup["trade"],
         )
         self.uniq_msg_id.append(msg.message_id)
-        if len(self.ask_msg_id) > 0:
-            for id in self.ask_msg_id:
-                try:
-                    await context.bot.delete_message(
-                        chat_id=self.chat_id, message_id=id
-                    )
-                except Exception:
-                    continue
+        await self.delete_ask_messages(context)
         return ConversationHandler.END
 
     async def get_amount_handler(
@@ -1342,14 +1318,7 @@ class Telegram:
             reply_markup=self.dynamic_reply_markup["trade"],
         )
         self.uniq_msg_id.append(msg.message_id)
-        if len(self.ask_msg_id) > 0:
-            for id in self.ask_msg_id:
-                try:
-                    await context.bot.delete_message(
-                        chat_id=self.chat_id, message_id=id
-                    )
-                except Exception:
-                    continue
+        await self.delete_ask_messages(context)
         return ConversationHandler.END
 
     async def get_tp_price_handler(
@@ -1384,14 +1353,7 @@ class Telegram:
             reply_markup=self.dynamic_reply_markup["trade"],
         )
         self.uniq_msg_id.append(msg.message_id)
-        if len(self.ask_msg_id) > 0:
-            for id in self.ask_msg_id:
-                try:
-                    await context.bot.delete_message(
-                        chat_id=self.chat_id, message_id=id
-                    )
-                except Exception:
-                    continue
+        await self.delete_ask_messages(context)
         return ConversationHandler.END
 
     async def get_sl_price_handler(
@@ -1427,14 +1389,7 @@ class Telegram:
             reply_markup=self.dynamic_reply_markup["trade"],
         )
         self.uniq_msg_id.append(msg.message_id)
-        if len(self.ask_msg_id) > 0:
-            for id in self.ask_msg_id:
-                try:
-                    await context.bot.delete_message(
-                        chat_id=self.chat_id, message_id=id
-                    )
-                except Exception:
-                    continue
+        await self.delete_ask_messages(context)
         return ConversationHandler.END
 
     async def trade_order_type(
@@ -1772,13 +1727,7 @@ Leverage: {self.trade_order['lev']}\n"
         else:
             # For Commands cancel
             self.msg_id.append(update.message.message_id)
-            for id in self.uniq_msg_id:
-                try:
-                    await context.bot.delete_message(
-                        chat_id=self.chat_id, message_id=id
-                    )
-                except Exception:
-                    continue
+            await self.delete_unig_messages(context)
             msgs = await update.message.reply_text(
                 text="โปรดเลือกกลยุทธ์ของท่าน",
                 reply_markup=self.reply_markup["analyse"],
@@ -1854,14 +1803,7 @@ Leverage: {self.trade_order['lev']}\n"
                 reply_markup=self.reply_markup["analyse"],
             )
         self.uniq_msg_id.append(msgs.message_id)
-        if len(self.ask_msg_id) > 0:
-            for id in self.ask_msg_id:
-                try:
-                    await context.bot.delete_message(
-                        chat_id=self.chat_id, message_id=id
-                    )
-                except Exception:
-                    continue
+        await self.delete_ask_messages(context)
         return ConversationHandler.END
 
     ## Position PNL Handlers
@@ -1908,14 +1850,7 @@ Order นี้จะใช้ Margin จะปรับเป็น: {round(mar
                 reply_markup=self.dynamic_reply_markup["position"],
             )
         self.uniq_msg_id.append(msg.message_id)
-        if len(self.ask_msg_id) > 0:
-            for id in self.ask_msg_id:
-                try:
-                    await context.bot.delete_message(
-                        chat_id=self.chat_id, message_id=id
-                    )
-                except Exception:
-                    continue
+        await self.delete_ask_messages(context)
         return ConversationHandler.END
 
     async def position_confirm_lev(
@@ -2011,14 +1946,7 @@ Leverage : X{self.trade_order['lev']}\n\
                 reply_markup=self.dynamic_reply_markup["position"],
             )
         self.uniq_msg_id.append(msg.message_id)
-        if len(self.ask_msg_id) > 0:
-            for id in self.ask_msg_id:
-                try:
-                    await context.bot.delete_message(
-                        chat_id=self.chat_id, message_id=id
-                    )
-                except Exception:
-                    continue
+        await self.delete_ask_messages(context)
         return ConversationHandler.END
 
     async def position_confirm_tp(
@@ -2125,14 +2053,7 @@ Leverage : X{self.trade_order['lev']}\n\
                 reply_markup=self.dynamic_reply_markup["position"],
             )
         self.uniq_msg_id.append(msg.message_id)
-        if len(self.ask_msg_id) > 0:
-            for id in self.ask_msg_id:
-                try:
-                    await context.bot.delete_message(
-                        chat_id=self.chat_id, message_id=id
-                    )
-                except Exception:
-                    continue
+        await self.delete_ask_messages(context)
         return ConversationHandler.END
 
     async def position_confirm_sl(
@@ -2239,13 +2160,7 @@ Leverage : X{self.trade_order['lev']}\n\
         else:
             # For Commands cancel
             self.msg_id.append(update.message.message_id)
-            for id in self.uniq_msg_id:
-                try:
-                    await context.bot.delete_message(
-                        chat_id=self.chat_id, message_id=id
-                    )
-                except Exception:
-                    continue
+            await self.delete_unig_messages(context)
             msgs = await update.message.reply_text(
                 self.coin_pnl_reply_text,
                 reply_markup=self.dynamic_reply_markup["position"],
@@ -2464,14 +2379,7 @@ Leverage : X{self.trade_order['lev']}\n\
             reply_markup=self.dynamic_reply_markup["risk"],
         )
         self.uniq_msg_id.append(msg.message_id)
-        if len(self.ask_msg_id) > 0:
-            for id in self.ask_msg_id:
-                try:
-                    await context.bot.delete_message(
-                        chat_id=self.chat_id, message_id=id
-                    )
-                except Exception:
-                    continue
+        await self.delete_ask_messages(context)
         return ConversationHandler.END
 
     async def get_min_balance_handler(
@@ -2507,14 +2415,7 @@ Leverage : X{self.trade_order['lev']}\n\
             reply_markup=self.dynamic_reply_markup["risk"],
         )
         self.uniq_msg_id.append(msg.message_id)
-        if len(self.ask_msg_id) > 0:
-            for id in self.ask_msg_id:
-                try:
-                    await context.bot.delete_message(
-                        chat_id=self.chat_id, message_id=id
-                    )
-                except Exception:
-                    continue
+        await self.delete_ask_messages(context)
         return ConversationHandler.END
 
     async def save_risk_to_db(
@@ -2564,11 +2465,7 @@ Leverage : X{self.trade_order['lev']}\n\
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
     ) -> None:
         self.msg_id.append(update.message.message_id)
-        for id in self.uniq_msg_id:
-            try:
-                await context.bot.delete_message(chat_id=self.chat_id, message_id=id)
-            except Exception:
-                continue
+        await self.delete_unig_messages(context)
         msg = self.risk_reply_text + "\n\nอย่าเสี่ยงมากนะคะนายท่าน"
         msgs = await update.message.reply_text(
             msg, reply_markup=self.dynamic_reply_markup["risk"]
@@ -2790,14 +2687,7 @@ Leverage : X{self.trade_order['lev']}\n\
             reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
         )
         self.uniq_msg_id.append(msgs.message_id)
-        if len(self.ask_msg_id) > 0:
-            for id in self.ask_msg_id:
-                try:
-                    await context.bot.delete_message(
-                        chat_id=self.chat_id, message_id=id
-                    )
-                except Exception:
-                    continue
+        await self.delete_ask_messages(context)
         return ConversationHandler.END
 
     async def back_to_vxma_settings(
@@ -2815,13 +2705,7 @@ Leverage : X{self.trade_order['lev']}\n\
         else:
             # For Commands cancel
             self.msg_id.append(update.message.message_id)
-            for id in self.uniq_msg_id:
-                try:
-                    await context.bot.delete_message(
-                        chat_id=self.chat_id, message_id=id
-                    )
-                except Exception:
-                    continue
+            await self.delete_unig_messages(context)
             msgs = await update.message.reply_text(
                 text=self.text_reply_bot_setting,
                 reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
@@ -2954,14 +2838,7 @@ Leverage : X{self.trade_order['lev']}\n\
         respon = update.message.text
         self.msg_id.append(update.message.message_id)
         self.sec_info["API_KEY"] = str(respon)
-        if len(self.ask_msg_id) > 0:
-            for id in self.ask_msg_id:
-                try:
-                    await context.bot.delete_message(
-                        chat_id=self.chat_id, message_id=id
-                    )
-                except Exception:
-                    continue
+        await self.delete_ask_messages(context)
         msg = await update.message.reply_text(
             f"API KEY Binance ของท่าคือ {self.sec_info['API_KEY']}\nโปรดกรอก API SECRET ต่อไป\n\n กด /cancel เพื่อยกเลิก",
         )
@@ -3018,14 +2895,7 @@ Leverage : X{self.trade_order['lev']}\n\
                 reply_markup=self.reply_markup["secure"],
             )
         self.uniq_msg_id.append(msg.message_id)
-        if len(self.ask_msg_id) > 0:
-            for id in self.ask_msg_id:
-                try:
-                    await context.bot.delete_message(
-                        chat_id=self.chat_id, message_id=id
-                    )
-                except Exception:
-                    continue
+        await self.delete_ask_messages(context)
         return ConversationHandler.END
 
     async def back_to_secure_menu(
@@ -3044,6 +2914,16 @@ Leverage : X{self.trade_order['lev']}\n\
         else:
             # For Commands cancel
             self.msg_id.append(update.message.message_id)
+            await self.delete_unig_messages(context)
+            msgs = await update.message.reply_text(
+                text="โปรดเลือกการตั้งค่า",
+                reply_markup=self.reply_markup["secure"],
+            )
+            self.uniq_msg_id.append(msgs.message_id)
+            return ConversationHandler.END
+
+    async def delete_unig_messages(self, context) -> None:
+        if len(self.uniq_msg_id) > 0:
             for id in self.uniq_msg_id:
                 try:
                     await context.bot.delete_message(
@@ -3051,12 +2931,16 @@ Leverage : X{self.trade_order['lev']}\n\
                     )
                 except Exception:
                     continue
-            msgs = await update.message.reply_text(
-                text="โปรดเลือกการตั้งค่า",
-                reply_markup=self.reply_markup["secure"],
-            )
-            self.uniq_msg_id.append(msgs.message_id)
-            return ConversationHandler.END
+
+    async def delete_ask_messages(self, context) -> None:
+        if len(self.ask_msg_id) > 0:
+            for id in self.ask_msg_id:
+                try:
+                    await context.bot.delete_message(
+                        chat_id=self.chat_id, message_id=id
+                    )
+                except Exception:
+                    continue
 
     ## Customs Tasks to run once
     async def clear_task(self, context: ContextTypes.DEFAULT_TYPE):
