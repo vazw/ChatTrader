@@ -3096,10 +3096,11 @@ Leverage : X{self.trade_order['lev']}\n\
         self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
     ) -> None:
         """Echo the user message."""
-        self.msg_id.append(update.message.message_id)
-        question = update.message.text
-        text = question + choice(EGGS)
-        await update.message.reply_text(text)
+        self.uniq_msg_id.append(update.message.message_id)
+        # question = update.message.text
+        text = choice(EGGS)
+        msg = await update.message.reply_text(text)
+        self.uniq_msg_id.append(msg.message_id)
 
 
 def main():
