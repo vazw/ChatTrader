@@ -540,6 +540,7 @@ class Telegram:
             "lev": 10,
             "e_price": 0.0,
             "price": 0.0,
+            "min_amt": 0.0,
             "amt": 0.0,
             "margin": 0.0,
             "pnl": 0.0,
@@ -1062,8 +1063,13 @@ class Telegram:
                 f"{symbol[:-5]} {tf}\n"
                 for id, symbol, tf in self.bot_trade.watchlist  # pyright: ignore
             ]
+            text0 = (
+                "เหรียญที่ดูอยู่ :\n"
+                if len(text) > 0
+                else "กดเปิดบอทเพื่อโหลดลิสต์เหรียญ"
+            )
             self.watchlist_reply_text = (
-                "เหรียญที่ดูอยู่ :\n" + "".join(text) + "\n\nโปรดเลือกการตั้งค่า"
+                f"{text0}" + "".join(text) + "\n\nโปรดเลือกการตั้งค่า"
             )
             msgs = await query.edit_message_text(
                 text=f"{self.watchlist_reply_text}",
@@ -1182,7 +1188,7 @@ class Telegram:
         query = update.callback_query
         await query.answer()
         msg = await query.edit_message_text(
-            text="โปรดใส่ชื่อเหรียญ \n\n กด /cancel เพื่อยกเลิก"
+            text="โปรดใส่ชื่อเหรียญ เช่น btcbusd bnbusdt eth xmr\n\n กด /cancel เพื่อยกเลิก"
         )
         self.ask_msg_id.append(msg.message_id)
         return T_SYMBOL
@@ -1205,8 +1211,12 @@ class Telegram:
                 quote = "USDT"
                 base = symbol
             self.trade_order["symbol"] = f"{base}/{quote}:{quote}"
+            exchange = await self.binance_.get_exchange()
             self.trade_order["price"] = await self.binance_.get_bidask(
                 self.trade_order["symbol"], "bid"
+            )
+            self.trade_order["min_amt"] = exchange.amount_to_precision(
+                self.trade_order["symbol"], 5.5 / self.trade_order["price"]
             )
             await self.binance_.update_balance()
             currnet_position = await self.bot_trade.check_current_position(
@@ -1290,7 +1300,7 @@ class Telegram:
         query = update.callback_query
         await query.answer()
         msg = await query.edit_message_text(
-            text="โปรดใส่จำนวนเหรียญ \n\n กด /cancel เพื่อยกเลิก"
+            text=f"โปรดใส่จำนวนเหรียญ และตรวจสอบทศนิยมให้ดี\nเหรียญนี้ใช้ Size ขั้นต่ำ : {self.trade_order['min_amt']}\n\n กด /cancel เพื่อยกเลิก"
         )
         self.ask_msg_id.append(msg.message_id)
         return T_AMT
@@ -1517,6 +1527,9 @@ Leverage: {self.trade_order['lev']}\n"
         exchange = await self.binance_.get_exchange()
         await self.binance_.connect_loads()
         try:
+            self.trade_order["amt"] = exchange.amount_to_precision(
+                self.trade_order["symbol"], self.trade_order["amt"]
+            )
             await self.bot_trade.get_currentmode()
             position_data = await self.bot_trade.check_current_position(
                 self.trade_order["symbol"], self.binance_.position_data.copy()
@@ -1534,9 +1547,15 @@ Leverage: {self.trade_order['lev']}\n"
             text0 = await open_long()
             text_repons[0] = text0
             if self.trade_order["tp"]:
+                self.trade_order["tp_price"] = exchange.price_to_precision(
+                    self.trade_order["symbol"], self.trade_order["tp_price"]
+                )
                 text2 = await open_tp_long()
                 text_repons[2] = text2
             if self.trade_order["sl"]:
+                self.trade_order["sl_price"] = exchange.price_to_precision(
+                    self.trade_order["symbol"], self.trade_order["sl_price"]
+                )
                 text3 = await open_sl_long()
                 text_repons[3] = text3
             text = "".join(text_repons)
@@ -1652,6 +1671,9 @@ Leverage: {self.trade_order['lev']}\n"
         exchange = await self.binance_.get_exchange()
         await self.binance_.connect_loads()
         try:
+            self.trade_order["amt"] = exchange.amount_to_precision(
+                self.trade_order["symbol"], self.trade_order["amt"]
+            )
             await self.bot_trade.get_currentmode()
             position_data = await self.bot_trade.check_current_position(
                 self.trade_order["symbol"], self.binance_.position_data.copy()
@@ -1669,9 +1691,15 @@ Leverage: {self.trade_order['lev']}\n"
             text0 = await open_short()
             text_repons[0] = text0
             if self.trade_order["tp"]:
+                self.trade_order["tp_price"] = exchange.price_to_precision(
+                    self.trade_order["symbol"], self.trade_order["tp_price"]
+                )
                 text2 = await open_tp_short()
                 text_repons[2] = text2
             if self.trade_order["sl"]:
+                self.trade_order["sl_price"] = exchange.price_to_precision(
+                    self.trade_order["symbol"], self.trade_order["sl_price"]
+                )
                 text3 = await open_sl_short()
                 text_repons[3] = text3
             await self.binance_.disconnect()
@@ -1988,6 +2016,9 @@ Leverage : X{self.trade_order['lev']}\n\
                 self.binance_.cancel_order(
                     self.trade_order["symbol"], self.trade_order["tp_id"]
                 )
+            self.trade_order["new_tp_price"] = exchange.price_to_precision(
+                self.trade_order["symbol"], self.trade_order["new_tp_price"]
+            )
             if self.trade_order["type"] == "long":
                 text = await open_tp("sell", self.bot_trade.currentMode.Lside)
             elif self.trade_order["type"] == "short":
@@ -2093,6 +2124,9 @@ Leverage : X{self.trade_order['lev']}\n\
                 self.binance_.cancel_order(
                     self.trade_order["symbol"], self.trade_order["sl_id"]
                 )
+            self.trade_order["new_sl_price"] = exchange.price_to_precision(
+                self.trade_order["symbol"], self.trade_order["new_sl_price"]
+            )
             if self.trade_order["type"] == "long":
                 text = await open_sl("sell", self.bot_trade.currentMode.Lside)
             elif self.trade_order["type"] == "short":
@@ -2212,8 +2246,14 @@ Leverage : X{self.trade_order['lev']}\n\
                 for symbol_list in split_list(positiondata, 3)
             ]
             coins_key = InlineKeyboardMarkup(coins + pnl_back_button)
+            text = [
+                f"{status['symbol'][i]} จำนวน {status['positionAmt'][i]} P/L {round(status['unrealizedProfit'][i], 3)}$\n"
+                for i in range(len(status.index))
+            ]
+            self.pnl_reply = "Postion ที่มีการเปิดอยู่\n" + "".join(text)
         else:
             coins_key = InlineKeyboardMarkup(pnl_back_button)
+            self.pnl_reply = "หากคุณมีความรู้ แต่ยังขาดทุนอยู่ นั่นแสดงว่า คุณยังควบคุมความโลภ และความกลัว ไม่ได้"
             msg = "ท่านไม่มี Position ใด ๆ อยู่ในขณะนี้"
         msgs = await query.edit_message_text(text=msg, reply_markup=coins_key)
         self.uniq_msg_id.append(msgs.message_id)
@@ -2233,8 +2273,12 @@ Leverage : X{self.trade_order['lev']}\n\
             ## TODO EDIT POSITION
             self.reset_trade_order_data()
             self.trade_order["symbol"] = f"{callback['Method']}"
+            exchange = await self.binance_.get_exchange()
             self.trade_order["price"] = await self.binance_.get_bidask(
                 self.trade_order["symbol"], "bid"
+            )
+            self.trade_order["min_amt"] = exchange.amount_to_precision(
+                self.trade_order["symbol"], 5.5 / self.trade_order["price"]
             )
             position_data = await self.bot_trade.check_current_position(
                 self.trade_order["symbol"], self.binance_.position_data.copy()
@@ -2586,8 +2630,12 @@ Leverage : X{self.trade_order['lev']}\n\
             )
         elif callback["Method"] == "TRADE":
             self.trade_menu_selected = "vxma_settings_2"
+            exchange = await self.binance_.get_exchange()
             self.trade_order["price"] = await self.binance_.get_bidask(
                 self.trade_order["symbol"], "bid"
+            )
+            self.trade_order["min_amt"] = exchange.amount_to_precision(
+                self.trade_order["symbol"], 5.5 / self.trade_order["price"]
             )
             await self.binance_.update_balance()
             currnet_position = await self.bot_trade.check_current_position(
