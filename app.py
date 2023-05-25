@@ -1459,7 +1459,7 @@ class Telegram:
                 await exchange.create_market_order(
                     self.trade_order["symbol"],
                     "buy",
-                    abs(self.trade_order["amt"]),
+                    abs(float(self.trade_order["amt"])),
                     params={
                         "positionSide": self.bot_trade.currentMode.Lside,
                         "newClientOrderId": orderid,
@@ -1603,7 +1603,7 @@ Leverage: {self.trade_order['lev']}\n"
                 await exchange.create_market_order(
                     self.trade_order["symbol"],
                     "sell",
-                    abs(self.trade_order["amt"]),
+                    abs(float(self.trade_order["amt"])),
                     params={
                         "positionSide": self.bot_trade.currentMode.Sside,
                         "newClientOrderId": orderid,
@@ -2003,7 +2003,7 @@ Leverage : X{self.trade_order['lev']}\n\
                     self.trade_order["symbol"],
                     "TAKE_PROFIT_MARKET",
                     side,
-                    abs(self.trade_order["amt"]),
+                    abs(float(self.trade_order["amt"])),
                     self.trade_order["new_tp_price"],
                     params={
                         "stopPrice": self.trade_order["new_tp_price"],
@@ -2113,7 +2113,7 @@ Leverage : X{self.trade_order['lev']}\n\
                     self.trade_order["symbol"],
                     "stop_market",
                     side,
-                    abs(self.trade_order["amt"]),
+                    abs(float(self.trade_order["amt"])),
                     params={
                         "stopPrice": self.trade_order["new_sl_price"],
                         "positionSide": position_side,
@@ -2166,7 +2166,7 @@ Leverage : X{self.trade_order['lev']}\n\
                 order = await exchange.create_market_order(
                     self.trade_order["symbol"],
                     side,
-                    abs(self.trade_order["amt"]),
+                    abs(float(self.trade_order["amt"])),
                     params={
                         "positionSide": position_side,
                         "newClientOrderId": orderid,
