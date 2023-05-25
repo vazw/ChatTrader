@@ -165,7 +165,7 @@ class Telegram:
             trade = [
                 [
                     InlineKeyboardButton(
-                        "ℹ️ดูรายละเอียด",
+                        "ℹ️ดูรายละเอียด Position ที่มี",
                         callback_data=json.dumps(
                             {
                                 "Mode": "PNLC",
@@ -2060,7 +2060,7 @@ Leverage : X{self.trade_order['lev']}\n\
             elif self.trade_order["type"] == "short":
                 text = await open_tp("buy", self.bot_trade.currentMode.Sside)
             await self.binance_.disconnect()
-            self.trade_order["tp_price"] = self.trade_order["new_tp_price"]
+            self.trade_order["tp_price"] = float(self.trade_order["new_tp_price"])
 
             self.update_inline_keyboard()
             msgs = await query.edit_message_text(
@@ -2169,7 +2169,7 @@ Leverage : X{self.trade_order['lev']}\n\
             elif self.trade_order["type"] == "short":
                 text = await open_sl("buy", self.bot_trade.currentMode.Sside)
             await self.binance_.disconnect()
-            self.trade_order["sl_price"] = self.trade_order["new_sl_price"]
+            self.trade_order["sl_price"] = float(self.trade_order["new_sl_price"])
 
             self.update_inline_keyboard()
             msgs = await query.edit_message_text(
@@ -2357,7 +2357,10 @@ Leverage : X{self.trade_order['lev']}\n\
                 else "short"
             )
             symbol_order = await self.binance_.get_tp_sl_price(
-                self.trade_order["symbol"], f"{callback['Side']}".upper()
+                self.trade_order["symbol"],
+                f"{callback['Side']}".upper()
+                if self.bot_trade.currentMode.dualSidePosition
+                else "BOTH",
             )
             await self.binance_.disconnect()
             self.trade_order["amt"] = abs(
