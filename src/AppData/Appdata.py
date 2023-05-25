@@ -700,12 +700,12 @@ REPLY_MARKUP = {
                     callback_data='{"Mode": "secure", "Method": "API"}',
                 ),
             ],
-            [
-                InlineKeyboardButton(
-                    "⚙️ตั้งค่ารหัสผ่าน",
-                    callback_data='{"Mode": "secure", "Method": "PASS"}',
-                ),
-            ],
+            # [
+            #     InlineKeyboardButton(
+            #         "⚙️ตั้งค่ารหัสผ่าน",
+            #         callback_data='{"Mode": "secure", "Method": "PASS"}',
+            #     ),
+            # ],
             [
                 InlineKeyboardButton(
                     "❌ กลับ",
