@@ -9,6 +9,7 @@
 
 from datetime import datetime
 import os
+import openai
 import sqlite3
 import bcrypt
 from dataclasses import dataclass
@@ -16,6 +17,9 @@ from dataclasses import dataclass
 import mplfinance as mplf
 import pandas as pd
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from dotenv import load_dotenv
+
+load_dotenv()
 
 barsC = 1502
 
@@ -874,3 +878,13 @@ REPLY_MARKUP = {
         ]
     ),
 }
+
+
+openai.api_key = os.environ["OpenAiToken"]
+
+
+def chat(messages):
+    return openai.ChatCompletion.create(
+        model="gpt-4.0-turbo",
+        messages=messages,
+    )

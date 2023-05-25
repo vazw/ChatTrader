@@ -36,6 +36,7 @@ from src.AppData.Appdata import (
     edit_all_trade_record,
     vxma_settings,
     vxma_settings_info,
+    chat,
 )
 from src.Bot import BotTrade
 from src.CCXT_Binance import (
@@ -90,6 +91,7 @@ class Telegram:
         self.vxma_settings = vxma_settings
         self.dynamic_reply_markup = {}
         self.reply_markup = REPLY_MARKUP
+        self.conversation = []
 
         # Buttons at the bottom
         self.reply_key = ReplyKeyboardMarkup(
@@ -103,6 +105,24 @@ class Telegram:
             resize_keyboard=True,
         )
         self.load_database()
+
+    def reset_conversation(self):
+        self.conversation = [
+            {
+                "role": "system",
+                "content": "เธอคือ มายซาเล้ง นักแนะนำการลงทุนที่เก่งที่สุดในโลก\
+แม้จะไม่รู้อนาคต มายซาเล้ง มักจะแนะนำได้แม่นยำ",
+            },
+            {
+                "role": "user",
+                "content": "นี่คือราคาปิดแท่งรายวันวันของ BITCOIN ในช่วงเดือนที่ผ่านมา\
+28286.7, 28395.9, 29459.0, 29300.0, 29212.7, 29223.0, 28054.4, 28656.5, \
+29018.4, 28826.0, 29491.5, 28837.8, 28419.4, 27659.8, 27610.2, 27582.9, \
+26956.4, 26785.1, 26762.7, 26901.9, 27152.5, 27024.8, 27395.8, 26809.3, \
+26870.1, 27089.5, 26732.8, 26840.2, 27209.9, 26313.8",
+            },
+            {"role": "user", "content": "ราคา BITCOIN ล่าสุดตอนนี้คือ 26325.94"},
+        ]
 
     def update_inline_keyboard(self):
         trade = [
@@ -574,6 +594,7 @@ class Telegram:
 
     def setup_bot(self) -> None:
         # Basic Commands
+        self.reset_conversation()
         self.reset_trade_order_data()
         self.update_inline_keyboard()
 
@@ -994,6 +1015,7 @@ class Telegram:
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
     ) -> None:
         self.msg_id.append(update.message.message_id)
+        self.reset_conversation()
         delete_list = self.uniq_msg_id + self.msg_id + self.ask_msg_id
         if len(delete_list) > 0:
             for id in delete_list:
@@ -3097,8 +3119,10 @@ Leverage : X{self.trade_order['lev']}\n\
     ) -> None:
         """Echo the user message."""
         self.uniq_msg_id.append(update.message.message_id)
-        # question = update.message.text
-        text = choice(EGGS)
+        question = update.message.text
+        contents = {"role": "user", "content": f"{question}"}
+        self.conversation.append(contents)
+        text = chat(self.conversation)
         msg = await update.message.reply_text(text)
         self.uniq_msg_id.append(msg.message_id)
 
