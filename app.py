@@ -1769,7 +1769,7 @@ Leverage: {self.trade_order['lev']}\n"
         respon = update.message.text
         self.msg_id.append(update.message.message_id)
         try:
-            symbol = str(respon)
+            symbol = str(respon).upper()
             quote = "BUSD" if symbol.endswith("BUSD") else "USDT"
             base = symbol[:-4]
             self.vxma_settings["symbol"] = f"{base}/{quote}:{quote}"
@@ -1784,18 +1784,16 @@ Leverage: {self.trade_order['lev']}\n"
                 aol=self.vxma_settings["Andean"],
                 pivot=self.vxma_settings["Pivot"],
             )
+            self.update_inline_keyboard()
             df = await self.bot_trade.bot_3(
                 self.vxma_settings["symbol"],
                 ta_data.__dict__,
                 self.vxma_settings["timeframe"],
             )
-            path = candle(
-                df, self.vxma_settings["symbol"], self.vxma_settings["timeframe"]
-            )
+            path = candle(df, symbol, self.vxma_settings["timeframe"])
             msgs0 = await update.message.reply_photo(path)
             self.uniq_msg_id.append(msgs0.message_id)
             self.text_reply_bot_setting = f"รายการตั้งค่า สำหรับกลยุทธ์ สำหรับ {symbol}"
-            self.update_inline_keyboard()
             msgs = await update.message.reply_text(
                 text=self.text_reply_bot_setting,
                 reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],

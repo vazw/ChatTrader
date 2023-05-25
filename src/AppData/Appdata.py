@@ -358,7 +358,7 @@ class AppConfig:
 
 
 def candle(df, symbol, tf):
-    data = df.tail(60)
+    data = df.tail(100)
     titles = f"{symbol}_{tf}"
     try:
         vxma = mplf.make_addplot(
