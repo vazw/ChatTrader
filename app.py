@@ -1218,9 +1218,18 @@ class Telegram:
             self.trade_order["price"] = await self.binance_.get_bidask(
                 self.trade_order["symbol"], "bid"
             )
-            self.trade_order["min_amt"] = exchange.amount_to_precision(
-                self.trade_order["symbol"], 5.5 / self.trade_order["price"]
+            markets = await exchange.fetchMarkets()
+            self.trade_order["min_amt"] = float(
+                (
+                    data["limits"]["amount"]["min"]
+                    for data in markets
+                    if data["symbol"] == self.trade_order["symbol"]
+                ).__next__()
             )
+            if self.trade_order["min_amt"] * self.trade_order["price"] < 5.0:
+                self.trade_order["min_amt"] = exchange.amount_to_precision(
+                    self.trade_order["symbol"], 6.0 / self.trade_order["price"]
+                )
             await self.binance_.update_balance()
             currnet_position = await self.bot_trade.check_current_position(
                 self.trade_order["symbol"], self.binance_.position_data.copy()
@@ -2283,9 +2292,18 @@ Leverage : X{self.trade_order['lev']}\n\
             self.trade_order["price"] = await self.binance_.get_bidask(
                 self.trade_order["symbol"], "bid"
             )
-            self.trade_order["min_amt"] = exchange.amount_to_precision(
-                self.trade_order["symbol"], 5.5 / self.trade_order["price"]
+            markets = await exchange.fetchMarkets()
+            self.trade_order["min_amt"] = float(
+                (
+                    data["limits"]["amount"]["min"]
+                    for data in markets
+                    if data["symbol"] == self.trade_order["symbol"]
+                ).__next__()
             )
+            if self.trade_order["min_amt"] * self.trade_order["price"] < 5.0:
+                self.trade_order["min_amt"] = exchange.amount_to_precision(
+                    self.trade_order["symbol"], 6.0 / self.trade_order["price"]
+                )
             position_data = await self.bot_trade.check_current_position(
                 self.trade_order["symbol"], self.binance_.position_data.copy()
             )
@@ -2605,9 +2623,18 @@ Leverage : X{self.trade_order['lev']}\n\
             self.trade_order["price"] = await self.binance_.get_bidask(
                 self.trade_order["symbol"], "bid"
             )
-            self.trade_order["min_amt"] = exchange.amount_to_precision(
-                self.trade_order["symbol"], 5.5 / self.trade_order["price"]
+            markets = await exchange.fetchMarkets()
+            self.trade_order["min_amt"] = float(
+                (
+                    data["limits"]["amount"]["min"]
+                    for data in markets
+                    if data["symbol"] == self.trade_order["symbol"]
+                ).__next__()
             )
+            if self.trade_order["min_amt"] * self.trade_order["price"] < 5.0:
+                self.trade_order["min_amt"] = exchange.amount_to_precision(
+                    self.trade_order["symbol"], 6.0 / self.trade_order["price"]
+                )
             await self.binance_.update_balance()
             currnet_position = await self.bot_trade.check_current_position(
                 self.trade_order["symbol"], self.binance_.position_data.copy()
