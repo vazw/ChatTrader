@@ -122,17 +122,13 @@ class vxma:
         cBull = np.full(self.length, np.nan)
         cBear = np.full(self.length, np.nan)
         for i in range(2, self.length):
-            up11 = max(
-                Close[i], Open[i], up1[i - 1] - (up1[i - 1] - Close[i]) * alpha
-            )
+            up11 = max(Close[i], Open[i], up1[i - 1] - (up1[i - 1] - Close[i]) * alpha)
             up22 = max(
                 Close[i] ** 2,
                 Open[i] ** 2,
                 up2[i - 1] - (up2[i - 1] - Close[i] ** 2) * alpha,
             )
-            dn11 = min(
-                Close[i], Open[i], dn1[i - 1] + (Close[i] - dn1[i - 1]) * alpha
-            )
+            dn11 = min(Close[i], Open[i], dn1[i - 1] + (Close[i] - dn1[i - 1]) * alpha)
             dn22 = min(
                 Close[i] ** 2,
                 Open[i] ** 2,
@@ -243,11 +239,11 @@ class vxma:
             else:
                 slPrice[i] = np.nan
             # if trend change get pre-signal
-            if trend[i] != 1 and trend[i - 1] == 1 and isSL[i] != 1:
+            if trend[i] != 1 and trend[i - 1] == 1:  # and isSL[i] != 1:
                 preBuy[i] = 0
                 preSell[i] = 1
                 TRENDL[i] = Low[i]
-            elif trend[i] == 1 and trend[i - 1] != 1 and isSL[i] != 1:
+            elif trend[i] == 1 and trend[i - 1] != 1:  # and isSL[i] != 1:
                 preBuy[i] = 1
                 preSell[i] = 0
                 TRENDL[i] = High[i]

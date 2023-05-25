@@ -76,6 +76,7 @@ class Telegram:
         self.watchlist_reply_text = ":"
         self.coins_settings_key = ""
         self.vxma_selected_state = ""
+        self.vxma_menu_selected_state = ""
         self.trade_order = {}
         self.sec_info = {
             "API_KEY": "",
@@ -383,6 +384,142 @@ class Telegram:
                     ],
                 ]
             ),
+            "vxma_settings_2": InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings" , "Method": "timeframe", "Type": "str"}',
+                            text=f"timeframe : {self.vxma_settings['timeframe']}",
+                        ),
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "hedge", "Type": "bool"}',
+                            text=f"hedge : {'ON 🟢' if self.vxma_settings['hedge'] else 'OFF 🔴'}",
+                        ),
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "hedgeTF", "Type": "str"}',
+                            text=f"hedgeTF : {self.vxma_settings['hedgeTF']}",
+                        ),
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "ATR", "Type": "int"}',
+                            text=f"ATR : {self.vxma_settings['ATR']}",
+                        ),
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "ATR_m", "Type": "float"}',
+                            text=f"ATR_m : {self.vxma_settings['ATR_m']}",
+                        ),
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "Pivot", "Type": "int"}',
+                            text=f"Pivot : {self.vxma_settings['Pivot']}",
+                        ),
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "EMA", "Type": "int"}',
+                            text=f"EMA : {self.vxma_settings['EMA']}",
+                        ),
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "subhag", "Type": "int"}',
+                            text=f"subhag : {self.vxma_settings['subhag']}",
+                        ),
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method" : "smooth", "Type": "int"}',
+                            text=f"smooth : {self.vxma_settings['smooth']}",
+                        ),
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "RSI", "Type": "int"}',
+                            text=f"RSI : {self.vxma_settings['RSI']}",
+                        ),
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "Andean", "Type": "int"}',
+                            text=f"Andean : {self.vxma_settings['Andean']}",
+                        ),
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "leverage", "Type": "int"}',
+                            text=f"leverage : {self.vxma_settings['leverage']}",
+                        ),
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "Useshort", "Type": "bool"}',
+                            text=f"Useshort : {'ON 🟢' if self.vxma_settings['Useshort'] else 'OFF 🔴'}",
+                        ),
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method":"UseTP", "Type": "bool"}',
+                            text=f"UseTP : {'ON 🟢' if self.vxma_settings['UseTP'] else 'OFF 🔴'}",
+                        ),
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "UseTP2", "Type": "bool"}',
+                            text=f"UseTP2 : {'ON 🟢' if self.vxma_settings['UseTP2'] else 'OFF 🔴'}",
+                        ),
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "Uselong", "Type": "bool"}',
+                            text=f"Uselong : {'ON 🟢' if self.vxma_settings['Uselong'] else 'OFF 🔴'}",
+                        ),
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "UseSL", "Type": "bool"}',
+                            text=f"UseSL : {'ON 🟢' if self.vxma_settings['UseSL'] else 'OFF 🔴'}",
+                        ),
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "Tail_SL", "Type": "bool"}',
+                            text=f"Tail_SL : {'ON 🟢' if self.vxma_settings['Tail_SL'] else 'OFF 🔴'}",
+                        ),
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "TP1", "Type": "int"}',
+                            text=f"TP1 : {self.vxma_settings['TP1']}",
+                        ),
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "RR1", "Type": "float"}',
+                            text=f"RR1 : {self.vxma_settings['RR1']}",
+                        ),
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "RR2", "Type": "float"}',
+                            text=f"RR2 : {self.vxma_settings['RR2']}",
+                        ),
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "TP2", "Type": "int"}',
+                            text=f"TP2 : {self.vxma_settings['TP2']}",
+                        ),
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "Risk", "Type": "str"}',
+                            text=f"Risk : {self.vxma_settings['Risk']}",
+                        ),
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings", "Method": "maxMargin, "Type": "str""}',
+                            text=f"maxMargin : {self.vxma_settings['maxMargin']}",
+                        ),
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            "กราฟ📈",
+                            callback_data='{"Mode": "vxma_settings", "Method": "CHART"}',
+                        ),
+                        InlineKeyboardButton(
+                            "เปลี่ยนเหรียญ",
+                            callback_data='{"Mode": "vxma_settings", "Method": "symbol", "Type": "str"}',
+                        ),
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            "💾บันทึก",
+                            callback_data='{"Mode": "vxma_settings", "Method": "SAVE_ADD"}',
+                        ),
+                        InlineKeyboardButton(
+                            "❌ กลับ",
+                            callback_data='{"Mode": "vxma_settings", "Method": "BACK"}',
+                        ),
+                    ],
+                ]
+            ),
         }
 
     def load_database(self) -> None:
@@ -440,6 +577,22 @@ class Telegram:
             ),
             CallbackQueryHandler(
                 self.setting_handler, lambda x: (eval(x))["Mode"] == "setting"
+            ),
+            ConversationHandler(
+                entry_points=[
+                    CallbackQueryHandler(
+                        self.analyse_handler, lambda x: (eval(x))["Mode"] == "analyse"
+                    )
+                ],
+                states={
+                    SETTING_STATE: [
+                        MessageHandler(
+                            filters.TEXT & ~filters.COMMAND,
+                            self.analyse_get_symbol,
+                        )
+                    ],
+                },
+                fallbacks=[CommandHandler("cancel", self.back_to_analyse_menu)],
             ),
         ]
 
@@ -1568,6 +1721,35 @@ Leverage: {self.trade_order['lev']}\n"
         )
 
     ## Analyser menu
+    async def back_to_analyse_menu(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        query = update.callback_query
+        if query is not None:
+            # For Back Buttons
+            await query.answer()
+            msgs = await query.edit_message_text(
+                text="โปรดเลือกกลยุทธ์ของท่าน",
+                reply_markup=self.reply_markup["analyse"],
+            )
+            self.uniq_msg_id.append(msgs.message_id)
+        else:
+            # For Commands cancel
+            self.msg_id.append(update.message.message_id)
+            for id in self.uniq_msg_id:
+                try:
+                    await context.bot.delete_message(
+                        chat_id=self.chat_id, message_id=id
+                    )
+                except Exception:
+                    continue
+            msgs = await update.message.reply_text(
+                text="โปรดเลือกกลยุทธ์ของท่าน",
+                reply_markup=self.reply_markup["analyse"],
+            )
+            self.uniq_msg_id.append(msgs.message_id)
+            return ConversationHandler.END
+
     async def analyse_handler(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
     ) -> None:
@@ -1575,11 +1757,65 @@ Leverage: {self.trade_order['lev']}\n"
         await query.answer()
         callback = eval(query.data)
         if callback["Method"] == "VXMA":
-            msg = "Please choose:"
-            msgs = await query.edit_message_text(
-                text=msg, reply_markup=self.reply_markup["menu"]
+            msg = await query.edit_message_text(
+                text="โปรดกรอกชื่อคู่เทรดที่ท่านต้องการวิเคราะห์\n\nกด /cancel เพื่อยกเลิก"
+            )
+            self.ask_msg_id.append(msg.message_id)
+            return SETTING_STATE
+
+    async def analyse_get_symbol(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ):
+        respon = update.message.text
+        self.msg_id.append(update.message.message_id)
+        try:
+            symbol = str(respon)
+            quote = "BUSD" if symbol.endswith("BUSD") else "USDT"
+            base = symbol[:-4]
+            self.vxma_settings["symbol"] = f"{base}/{quote}:{quote}"
+            self.vxma_menu_selected_state = "vxma_settings_2"
+            ta_data = TATable(
+                atr_p=self.vxma_settings["ATR"],
+                atr_m=self.vxma_settings["ATR_m"],
+                ema=self.vxma_settings["EMA"],
+                linear=self.vxma_settings["subhag"],
+                smooth=self.vxma_settings["smooth"],
+                rsi=self.vxma_settings["RSI"],
+                aol=self.vxma_settings["Andean"],
+                pivot=self.vxma_settings["Pivot"],
+            )
+            df = await self.bot_trade.bot_3(
+                self.vxma_settings["symbol"],
+                ta_data.__dict__,
+                self.vxma_settings["timeframe"],
+            )
+            path = candle(
+                df, self.vxma_settings["symbol"], self.vxma_settings["timeframe"]
+            )
+            msgs0 = await update.message.reply_photo(path)
+            self.uniq_msg_id.append(msgs0.message_id)
+            self.text_reply_bot_setting = f"รายการตั้งค่า สำหรับกลยุทธ์ สำหรับ {symbol}"
+            self.update_inline_keyboard()
+            msgs = await update.message.reply_text(
+                text=self.text_reply_bot_setting,
+                reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
+            )
+        except Exception as e:
+            text = f"เกิดข้อผิดพลาด :{e}\nโปรดตรวจสอบให้แน่ใจว่าเหรียญ {respon} นั้นถูกต้อง\n\nโปรดทำรายการใหม่อีกครั้ง"
+            msgs = await update.message.reply_text(
+                text=text,
+                reply_markup=self.reply_markup["analyse"],
             )
         self.uniq_msg_id.append(msgs.message_id)
+        if len(self.ask_msg_id) > 0:
+            for id in self.ask_msg_id:
+                try:
+                    await context.bot.delete_message(
+                        chat_id=self.chat_id, message_id=id
+                    )
+                except Exception:
+                    continue
+        return ConversationHandler.END
 
     ## Position PNL Handlers
     async def position_get_lev_handler(
@@ -2306,6 +2542,7 @@ Leverage : X{self.trade_order['lev']}\n\
                 reply_markup=self.dynamic_reply_markup["setting"],
             )
         else:
+            self.vxma_menu_selected_state = "vxma_settings"
             configs = bot_setting()
             self.vxma_settings["id"] = callback["Method"]
             config = configs.loc[self.vxma_settings["id"],]
@@ -2338,7 +2575,7 @@ Leverage : X{self.trade_order['lev']}\n\
             await query.delete_message()
             msgs = await query.message.reply_text(
                 text=self.text_reply_bot_setting,
-                reply_markup=self.dynamic_reply_markup["vxma_settings"],
+                reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
             )
         self.uniq_msg_id.append(msgs.message_id)
 
@@ -2376,7 +2613,7 @@ Leverage : X{self.trade_order['lev']}\n\
             await query.delete_message()
             msgs = await query.message.reply_text(
                 text=self.text_reply_bot_setting,
-                reply_markup=self.dynamic_reply_markup["vxma_settings"],
+                reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
             )
         elif callback["Method"] == "SAVE":
             msgs = await query.edit_message_text(
@@ -2399,7 +2636,9 @@ Leverage : X{self.trade_order['lev']}\n\
                 msgs = await query.edit_message_text(
                     text=self.text_reply_bot_setting
                     + f"\n\n{vxma_settings_info[self.vxma_selected_state]} สำเร็จ",
-                    reply_markup=self.dynamic_reply_markup["vxma_settings"],
+                    reply_markup=self.dynamic_reply_markup[
+                        self.vxma_menu_selected_state
+                    ],
                 )
             else:
                 text = f"ท่านได้เลือกเมนู {vxma_settings_info[self.vxma_selected_state]} \n\nท่านต้องการแก้ไขใช่หรือไม่?"
@@ -2418,7 +2657,7 @@ Leverage : X{self.trade_order['lev']}\n\
         if callback["Method"] == "BACK":
             msgs = await query.edit_message_text(
                 text=self.text_reply_bot_setting,
-                reply_markup=self.dynamic_reply_markup["vxma_settings"],
+                reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
             )
             self.uniq_msg_id.append(msgs.message_id)
             return ConversationHandler.END
@@ -2449,7 +2688,7 @@ Leverage : X{self.trade_order['lev']}\n\
         self.update_inline_keyboard()
         msgs = await update.message.reply_text(
             text=self.text_reply_bot_setting + text,
-            reply_markup=self.dynamic_reply_markup["vxma_settings"],
+            reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
         )
         self.uniq_msg_id.append(msgs.message_id)
         if len(self.ask_msg_id) > 0:
@@ -2471,7 +2710,7 @@ Leverage : X{self.trade_order['lev']}\n\
             await query.answer()
             msgs = await query.edit_message_text(
                 text=self.text_reply_bot_setting,
-                reply_markup=self.dynamic_reply_markup["vxma_settings"],
+                reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
             )
             self.uniq_msg_id.append(msgs.message_id)
         else:
@@ -2486,7 +2725,7 @@ Leverage : X{self.trade_order['lev']}\n\
                     continue
             msgs = await update.message.reply_text(
                 text=self.text_reply_bot_setting,
-                reply_markup=self.dynamic_reply_markup["vxma_settings"],
+                reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
             )
             self.uniq_msg_id.append(msgs.message_id)
             return ConversationHandler.END
@@ -2500,7 +2739,7 @@ Leverage : X{self.trade_order['lev']}\n\
         if callback["Method"] == "BACK":
             msgs = await query.edit_message_text(
                 text=self.text_reply_bot_setting,
-                reply_markup=self.dynamic_reply_markup["vxma_settings"],
+                reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
             )
         else:
             try:
@@ -2520,7 +2759,9 @@ Leverage : X{self.trade_order['lev']}\n\
                 text = f"เกิดข้อผิดพลาด {e}\n\nโปรดทำรายการใหม่อีกครั้งค่ะ"
                 msgs = await query.edit_message_text(
                     text=self.text_reply_bot_setting + text,
-                    reply_markup=self.dynamic_reply_markup["vxma_settings"],
+                    reply_markup=self.dynamic_reply_markup[
+                        self.vxma_menu_selected_state
+                    ],
                 )
         self.uniq_msg_id.append(msgs.message_id)
 
@@ -2533,7 +2774,7 @@ Leverage : X{self.trade_order['lev']}\n\
         if callback["Method"] == "BACK":
             msgs = await query.edit_message_text(
                 text=self.text_reply_bot_setting,
-                reply_markup=self.dynamic_reply_markup["vxma_settings"],
+                reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
             )
         else:
             try:
@@ -2550,7 +2791,9 @@ Leverage : X{self.trade_order['lev']}\n\
                 text = f"เกิดข้อผิดพลาด {e}\n\nโปรดทำรายการใหม่อีกครั้งค่ะ"
                 msgs = await query.edit_message_text(
                     text=self.text_reply_bot_setting + text,
-                    reply_markup=self.dynamic_reply_markup["vxma_settings"],
+                    reply_markup=self.dynamic_reply_markup[
+                        self.vxma_menu_selected_state
+                    ],
                 )
         self.uniq_msg_id.append(msgs.message_id)
 
