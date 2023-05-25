@@ -1,5 +1,6 @@
 import asyncio
 from datetime import datetime
+from random import choice
 import os
 import pandas as pd
 import sqlite3
@@ -26,6 +27,7 @@ from src.AppData import HELP_MESSAGE, WELCOME_MESSAGE, split_list
 from src.AppData.Appdata import (
     REPLY_MARKUP,
     TA_TYPE,
+    EGGS,
     AppConfig,
     TATable,
     bot_setting,
@@ -1011,7 +1013,7 @@ class Telegram:
             chat_id=self.chat_id, message_id=update.message.message_id
         )
         msg = await update.message.reply_text(
-            "🙏ยินดีต้อนรับค่ะนายท่าน นี่คือรายการทั้งหมด ที่น้องเลขาคนนี้สามารถช่วยนายท่านได้:",
+            "🙏ยินดีต้อนรับค่ะนายท่าน นี่คือรายการทั้งหมด\nที่น้องเลขาคนนี้สามารถช่วยนายท่านได้:",
             reply_markup=self.reply_markup["menu"],
         )
         self.uniq_msg_id.append(msg.message_id)
@@ -1099,7 +1101,7 @@ class Telegram:
     ) -> None:
         """This Handler can Handle both command and inline button respons"""
         query = update.callback_query
-        msg = '"หุ้นดีขายออก หุ้นกระจอกเก็บไว้"'
+        msg = choice(EGGS)
         if query is not None:
             # For Back Buttons
             await query.answer()
@@ -1143,7 +1145,7 @@ class Telegram:
                 + f"\nFree   : {round(fiat_balance['USDT']['free'],2)}$"
                 + f"\nMargin : {round(fiat_balance['USDT']['used'],2)}$"
                 + f"\nTotal  : {round(fiat_balance['USDT']['total'],2)}$"
-                + f"\nNet Profit/Loss  : {round(netunpl,2)}$"
+                + f"\nกำไร/ขาดทุน  : {round(netunpl,2)}$"
             )
         elif callback["Method"] == "BUSD":
             msg = (
@@ -1151,7 +1153,7 @@ class Telegram:
                 + f"\nFree   : {round(fiat_balance['BUSD']['free'],2)}$"
                 + f"\nMargin : {round(fiat_balance['BUSD']['used'],2)}$"
                 + f"\nTotal  : {round(fiat_balance['BUSD']['total'],2)}$"
-                + f"\nNet Profit/Loss  : {round(netunpl,2)}$"
+                + f"\nกำไร/ขาดทุน  : {round(netunpl,2)}$"
             )
         elif callback["Method"] == "USDT":
             msg = (
@@ -1159,7 +1161,7 @@ class Telegram:
                 + f"\nFree   : {round(fiat_balance['USDT']['free'],2)}$"
                 + f"\nMargin : {round(fiat_balance['USDT']['used'],2)}$"
                 + f"\nTotal  : {round(fiat_balance['USDT']['total'],2)}$"
-                + f"\nNet Profit/Loss  : {round(netunpl,2)}$"
+                + f"\nกำไร/ขาดทุน  : {round(netunpl,2)}$"
             )
         msgs = await query.edit_message_text(
             text=msg, reply_markup=self.reply_markup["menu"]
@@ -1735,7 +1737,7 @@ Leverage: {self.trade_order['lev']}\n"
             )
         else:
             msgs = await query.edit_message_text(
-                text="“ความล้มเหลว” ก็คือ “ความสำเร็จ” ถ้าหากเรา “เรียนรู้” จากมัน",
+                text=choice(EGGS),
                 reply_markup=self.reply_markup["menu"],
             )
 
@@ -1773,7 +1775,7 @@ Leverage: {self.trade_order['lev']}\n"
         callback = eval(query.data)
         if callback["Method"] == "BACK":
             msgs = await query.edit_message_text(
-                text="หาเวลาพักบ้างนะคะ", reply_markup=self.reply_markup["menu"]
+                text=choice(EGGS), reply_markup=self.reply_markup["menu"]
             )
             self.uniq_msg_id.append(msgs.message_id)
             return ConversationHandler.END
@@ -2163,7 +2165,7 @@ Leverage : X{self.trade_order['lev']}\n\
                 )
                 await self.binance_.update_balance(force=True)
                 pnl = "\nกำไร" if self.trade_order["pnl"] > 0.0 else "ขาดทุน"
-                return f"{order['status']} - ธุรกรรมที่ถูกปิดไป{pnl} : {self.trade_order['pnl']}$"
+                return f"{order['status']} - ธุรกรรมที่ถูกปิดไป{pnl} : {self.trade_order['pnl']}$\n\n"
             except Exception as e:
                 return f"\nเกิดข้อผิดพลาดในการปิด Order เดิม :{e}"
 
@@ -2177,7 +2179,7 @@ Leverage : X{self.trade_order['lev']}\n\
         await self.binance_.update_balance(True)
         await self.binance_.disconnect()
         msgs = await query.edit_message_text(
-            text=self.coin_pnl_reply_text + text,
+            text=self.coin_pnl_reply_text + text + choice(EGGS),
             reply_markup=self.reply_markup["menu"],
         )
 
@@ -2367,7 +2369,7 @@ Leverage : X{self.trade_order['lev']}\n\
                 text=msg, reply_markup=self.dynamic_reply_markup["setting"]
             )
         elif callback["Method"] == "RISK":
-            msg = "อย่าเสี่ยงมากนะคะนายท่าน :"
+            msg = "อย่าเสี่ยงมากนะคะนายท่าน \n" + choice(EGGS)
             msgs = await query.edit_message_text(
                 text=msg, reply_markup=self.dynamic_reply_markup["risk"]
             )
@@ -2417,8 +2419,8 @@ Leverage : X{self.trade_order['lev']}\n\
         self.msg_id.append(update.message.message_id)
         try:
             self.risk["max_risk"] = float(respon)
-            text = f"ท่านได้กำหนดความเสี่ยงทั้งหมดไว้ที่ : {self.risk['max_risk']}"
-            self.risk_reply_text = text
+            text = f"ท่านได้กำหนดความเสี่ยงทั้งหมดไว้ที่ : {self.risk['max_risk']}\n"
+            self.risk_reply_text = text + choice(EGGS)
             self.update_inline_keyboard()
         except Exception as e:
             text = f"เกิดข้อผิดพลาด {e}\nโปรดทำรายการใหม่อีกรั้ง"
