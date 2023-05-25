@@ -765,7 +765,7 @@ REPLY_MARKUP = {
         [
             [
                 InlineKeyboardButton(
-                    "ยืนยัน✅",
+                    "✅ยืนยัน",
                     callback_data='{"Mode": "position_confirm_sl", "Method": "OK"}',
                 ),
             ],
@@ -781,7 +781,7 @@ REPLY_MARKUP = {
         [
             [
                 InlineKeyboardButton(
-                    "ยืนยัน✅",
+                    "✅ยืนยัน",
                     callback_data='{"Mode": "position_confirm_tp", "Method": "OK"}',
                 ),
             ],
@@ -797,7 +797,7 @@ REPLY_MARKUP = {
         [
             [
                 InlineKeyboardButton(
-                    "ยืนยัน✅",
+                    "✅ยืนยัน",
                     callback_data='{"Mode": "position_confirm_lev", "Method": "OK"}',
                 ),
             ],
@@ -813,7 +813,7 @@ REPLY_MARKUP = {
         [
             [
                 InlineKeyboardButton(
-                    "ยืนยัน✅",
+                    "✅ยืนยัน",
                     callback_data='{"Mode": "vxma_settings_confirm", "Method": "OK"}',
                 ),
             ],
@@ -829,7 +829,7 @@ REPLY_MARKUP = {
         [
             [
                 InlineKeyboardButton(
-                    "ยืนยัน✅",
+                    "✅ยืนยัน",
                     callback_data='{"Mode": "vxma_settings_confirm_del", "Method": "OK"}',
                 ),
             ],
@@ -845,7 +845,7 @@ REPLY_MARKUP = {
         [
             [
                 InlineKeyboardButton(
-                    "ยืนยัน✅",
+                    "✅ยืนยัน",
                     callback_data='{"Mode": "vxma_settings_confirm_save", "Method": "OK"}',
                 ),
             ],
@@ -861,7 +861,7 @@ REPLY_MARKUP = {
         [
             [
                 InlineKeyboardButton(
-                    "ยืนยัน✅",
+                    "✅ยืนยัน",
                     callback_data='{"Mode": "vxma_settings_confirm_save", "Method": "OK"}',
                 ),
             ],

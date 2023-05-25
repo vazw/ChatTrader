@@ -1976,7 +1976,8 @@ Leverage : X{self.trade_order['lev']}\n\
             text=f"ราคา Take Profit {self.trade_order['type']} ของ\
 {self.trade_order['symbol']} {text}\n\
 ราคาเปิด Position นี้คือ : {self.trade_order['price']}\n\
-โปรดใส่ราคา Take Profit หากต้องการแก้ไข \n\n กด /cancel เพื่อยกเลิก"
+โปรดใส่ราคา Take Profit หากต้องการแก้ไข \n\
+หรือหากต้องการใช้ % คำนวนให้พิมพ์ ลงท้ายด้วย % เช่น 5% \n\n กด /cancel เพื่อยกเลิก"
         )
         self.ask_msg_id.append(msg.message_id)
         return P_TP
@@ -1988,7 +1989,17 @@ Leverage : X{self.trade_order['lev']}\n\
         respon = update.message.text
         self.msg_id.append(update.message.message_id)
         try:
-            self.trade_order["new_tp_price"] = float(respon)
+            if str(respon).endswith("%"):
+                if self.trade_order["type"] == "long":
+                    self.trade_order["new_tp_price"] = (
+                        self.trade_order["price"] * (float(respon[:-1]) + 100) / 100
+                    )
+                elif self.trade_order["type"] == "short":
+                    self.trade_order["new_tp_price"] = (
+                        self.trade_order["price"] * (float(respon[:-1]) - 100) / 100
+                    )
+            else:
+                self.trade_order["new_tp_price"] = float(respon)
             self.trade_order["tp"] = True
             text_ = (
                 f" จาก {self.trade_order['tp_price']} "
@@ -2085,7 +2096,8 @@ Leverage : X{self.trade_order['lev']}\n\
             text=f"ราคา Stop-Loss {self.trade_order['type']} ของ\
 {self.trade_order['symbol']} {text}\n\
 ราคาเปิด Position นี้คือ : {self.trade_order['price']}\n\
-โปรดใส่ราคา Stop-Loss ใหม่หากต้องการแก้ไข \n\n กด /cancel เพื่อยกเลิก"
+โปรดใส่ราคา Stop-Loss ใหม่หากต้องการแก้ไข\n\
+หรือหากต้องการใช้ % คำนวนให้พิมพ์ ลงท้ายด้วย % เช่น 5% \n\n กด /cancel เพื่อยกเลิก"
         )
         self.ask_msg_id.append(msg.message_id)
         return P_SL
@@ -2097,7 +2109,17 @@ Leverage : X{self.trade_order['lev']}\n\
         respon = update.message.text
         self.msg_id.append(update.message.message_id)
         try:
-            self.trade_order["new_sl_price"] = float(respon)
+            if str(respon).endswith("%"):
+                if self.trade_order["type"] == "long":
+                    self.trade_order["new_sl_price"] = (
+                        self.trade_order["price"] * (float(respon[:-1]) - 100) / 100
+                    )
+                elif self.trade_order["type"] == "short":
+                    self.trade_order["new_sl_price"] = (
+                        self.trade_order["price"] * (float(respon[:-1]) + 100) / 100
+                    )
+            else:
+                self.trade_order["new_sl_price"] = float(respon)
             self.trade_order["sl"] = True
             text_ = (
                 f" จาก {self.trade_order['sl_price']} "
