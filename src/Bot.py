@@ -1680,7 +1680,7 @@ class BotTrade:
             },
             "short": {
                 "price": price_short,
-                "amount": amt_short,
+                "amount": abs(amt_short),
                 "pnl": upnl_short,
                 "position": is_in_Short,
                 "margin": margin_short,
