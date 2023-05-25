@@ -2287,8 +2287,16 @@ Leverage : X{self.trade_order['lev']}\n\
         else:
             ## TODO EDIT POSITION
             self.reset_trade_order_data()
-            self.trade_order["symbol"] = f"{callback['Method']}"
+            symbol = str(callback["Method"]).upper()
+            if symbol.endswith("BUSD") or symbol.endswith("USDT"):
+                quote = "BUSD" if symbol.endswith("BUSD") else "USDT"
+                base = symbol[:-4]
+            else:
+                quote = "USDT"
+                base = symbol
+            self.trade_order["symbol"] = f"{base}/{quote}:{quote}"
             exchange = await self.binance_.get_exchange()
+            await self.binance_.connect_loads()
             self.trade_order["price"] = await self.binance_.get_bidask(
                 self.trade_order["symbol"], "bid"
             )
