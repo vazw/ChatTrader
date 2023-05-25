@@ -2018,11 +2018,11 @@ Leverage : X{self.trade_order['lev']}\n\
             if str(respon).endswith("%"):
                 if self.trade_order["type"] == "long":
                     self.trade_order["new_tp_price"] = (
-                        self.trade_order["price"] * (float(respon[:-1]) + 100) / 100
+                        self.trade_order["e_price"] * (float(respon[:-1]) + 100) / 100
                     )
                 elif self.trade_order["type"] == "short":
                     self.trade_order["new_tp_price"] = (
-                        self.trade_order["price"] * (float(respon[:-1]) - 100) / 100
+                        self.trade_order["e_price"] * (float(respon[:-1]) - 100) / 100
                     )
             else:
                 self.trade_order["new_tp_price"] = float(respon)
@@ -2138,11 +2138,11 @@ Leverage : X{self.trade_order['lev']}\n\
             if str(respon).endswith("%"):
                 if self.trade_order["type"] == "long":
                     self.trade_order["new_sl_price"] = (
-                        self.trade_order["price"] * (float(respon[:-1]) - 100) / 100
+                        self.trade_order["e_price"] * (float(respon[:-1]) - 100) / 100
                     )
                 elif self.trade_order["type"] == "short":
                     self.trade_order["new_sl_price"] = (
-                        self.trade_order["price"] * (float(respon[:-1]) + 100) / 100
+                        self.trade_order["e_price"] * (float(respon[:-1]) + 100) / 100
                     )
             else:
                 self.trade_order["new_sl_price"] = float(respon)
