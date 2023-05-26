@@ -31,6 +31,7 @@ from .AppData.Appdata import (
     edit_all_trade_record,
     read_one_open_trade_record,
     remove_last_line_from_string,
+    check_risk_str_float,
 )
 from .CCXT_Binance import (
     binance_i,
@@ -1025,13 +1026,7 @@ class BotTrade:
         quote = symbol[-4:]
         freeusd = float(balance["free"][quote])
         low = float(df["lowest"][last])
-        if RISK[0] == "$":
-            risk = float(RISK[1 : len(RISK)])
-        elif RISK[0] == "%":
-            percent = float(RISK[1 : len(RISK)])
-            risk = (percent / 100) * freeusd
-        else:
-            risk = float(RISK)
+        risk = check_risk_str_float(RISK, freeusd)
         amount = abs(risk / (df["close"][last] - low))
         if amount < min_amount:
             await self.notify_send(
@@ -1047,13 +1042,7 @@ class BotTrade:
         quote = symbol[-4:]
         freeusd = float(balance["free"][quote])
         high = float(df["highest"][last])
-        if RISK[0] == "$":
-            risk = float(RISK[1 : len(RISK)])
-        elif RISK[0] == "%":
-            percent = float(RISK[1 : len(RISK)])
-            risk = (percent / 100) * freeusd
-        else:
-            risk = float(RISK)
+        risk = check_risk_str_float(RISK, freeusd)
         amount = abs(risk / (high - df["close"][last]))
         if amount < min_amount:
             await self.notify_send(

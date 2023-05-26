@@ -118,8 +118,8 @@ vxma_settings = {
     "RR2": 4.5,
     "TP1": 50,
     "TP2": 50,
-    "Risk": "$2",
-    "maxMargin": "%10",
+    "Risk": "2$",
+    "maxMargin": "10%",
     "hedge": True,
     "hedgeTF": "30m",
 }
@@ -139,12 +139,12 @@ EGGS = [
     "หาเวลาพักบ้างนะคะ",
     "“ความล้มเหลว” ก็คือ “ความสำเร็จ” ถ้าหากเรา “เรียนรู้” จากมัน",
     "ปัญหาไม่ได้มีไว้เพื่อแก้ ปัญหามีไว้เพื่อเรียนรู้ ถ้าจะแก้ ให้แก้ที่เหตุของปัญหา",
-    "กาแฟซักแก้วไหมคะนายท่าน ☕️",
+    "รับกาแฟซักแก้วไหมคะนายท่าน ☕️",
 ]
 
 vxma_settings_info = {
     "id": "0",
-    "symbol": "คู่เทรด",
+    "symbol": "คู่เทรด/เหรียญ",
     "timeframe": "Timeframe",
     "ATR": "ATR Length",
     "ATR_m": "ATR Mutiplier",
@@ -163,14 +163,14 @@ vxma_settings_info = {
     "Pivot": "จำนวนแท่งย้อนหลัง",
     "RR1": "Risk:Reward สำหรับ TP",
     "RR2": "Risk:Reward สำหรับ TP2",
-    "TP1": "%การปิด Position ของ TP",
-    "TP2": "%การปิด Position ของ TP",
+    "TP1": "จำนวน % การปิด Position ของ TP",
+    "TP2": "จำนวน % การปิด Position ของ TP2",
     "Risk": 'ความเสี่ยงที่รับได้เป็นดอลลาร์ USD หากนำหน้าด้วย "%" จะเป็นการใช้เปอร์เซ็นเงินในพอร์ต\
 เช่น %1 จะใช้เงินในพอร์ต 1%',
     "maxMargin": 'ขนาด Position สูงสุด ต่อ 1 Position เป็นดอลลาร์ USD หากนำหน้าด้วย "%"\
 จะเป็นการใช้เปอร์เซ็นเงินในพอร์ตเช่น %1 จะใช้เงินในพอร์ต 1%',
     "hedge": "เปิด/ปิดใช้งาน Hedge Strategy",
-    "hedgeTF": "Timeframe สำหรับ Hedge Strategy",
+    "hedgeTF": "Timeframe สำหรับกลยุทธ์ Hedging",
 }
 
 
@@ -220,17 +220,30 @@ def perf(id, pwd):
         return None
 
 
-def max_margin_size(size, free_balance) -> float:
-    if size[0] == "$":
-        Max_Size = float(size[1 : len(size)])
-        return Max_Size
-    elif size[0] == "%":
-        size = float(size[1 : len(size)])
+def check_risk_str_float(risk: str, free_fiat: float) -> float:
+    if "$" in risk:
+        risk_ = float(risk.replace("$", ""))
+    elif "%" in risk:
+        percent = float(risk.replace("%", ""))
+        risk_ = (percent / 100) * free_fiat
+    else:
+        risk_ = float(risk)
+    return risk_
+
+
+def caculate_margin(price, amt, lev) -> float:
+    return float(price) * float(amt) / int(lev)
+
+
+def max_margin_size(size: str, free_balance: float) -> float:
+    if "$" in size:
+        Max_Size = float(size.replace("$", ""))
+    elif "%" in size:
+        size = float(size.replace("%", ""))
         Max_Size = free_balance * (size / 100)
-        return Max_Size
     else:
         Max_Size = float(size)
-        return Max_Size
+    return Max_Size
 
 
 def remove_last_line_from_string(text: str) -> str:

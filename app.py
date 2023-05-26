@@ -38,6 +38,7 @@ from src.AppData.Appdata import (
     vxma_settings_info,
     chat,
     remove_last_line_from_string,
+    caculate_margin,
 )
 from src.Bot import BotTrade
 from src.CCXT_Binance import (
@@ -430,7 +431,7 @@ method to make great profit in Cryptocurrency Markets",
                             text=f"timeframe : {self.vxma_settings['timeframe']}",
                         ),
                         InlineKeyboardButton(
-                            f"เหรียญ : {self.vxma_settings['symbol']}",
+                            f"เหรียญ : {self.vxma_settings['symbol'][:-5]}",
                             callback_data='{"Mode": "vxma_settings", "Method": "symbol", "Type": "str"}',
                         ),
                     ],
@@ -541,25 +542,25 @@ method to make great profit in Cryptocurrency Markets",
                     [
                         InlineKeyboardButton(
                             callback_data='{"Mode": "vxma_settings", "Method": "TP1", "Type": "int"}',
-                            text=f"TP1 : {self.vxma_settings['TP1']}",
+                            text=f"%TP1 : {self.vxma_settings['TP1']}",
                         ),
                         InlineKeyboardButton(
                             callback_data='{"Mode": "vxma_settings", "Method": "RR1", "Type": "float"}',
                             text=f"RR1 : {self.vxma_settings['RR1']}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "RR2", "Type": "float"}',
-                            text=f"RR2 : {self.vxma_settings['RR2']}",
+                            callback_data='{"Mode": "vxma_settings", "Method": "Risk", "Type": "str"}',
+                            text=f"Risk : {self.vxma_settings['Risk']}",
                         ),
                     ],
                     [
                         InlineKeyboardButton(
                             callback_data='{"Mode": "vxma_settings", "Method": "TP2", "Type": "int"}',
-                            text=f"TP2 : {self.vxma_settings['TP2']}",
+                            text=f"%TP2 : {self.vxma_settings['TP2']}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "Risk", "Type": "str"}',
-                            text=f"Risk : {self.vxma_settings['Risk']}",
+                            callback_data='{"Mode": "vxma_settings", "Method": "RR2", "Type": "float"}',
+                            text=f"RR2 : {self.vxma_settings['RR2']}",
                         ),
                         InlineKeyboardButton(
                             callback_data='{"Mode": "vxma_settings", "Method": "maxMargin, "Type": "str""}',
@@ -578,7 +579,7 @@ method to make great profit in Cryptocurrency Markets",
                     ],
                     [
                         InlineKeyboardButton(
-                            "💾บันทึก",
+                            "💾เพิ่มตั้งค่านี้ไปยังบอท",
                             callback_data='{"Mode": "vxma_settings", "Method": "SAVE_ADD"}',
                         ),
                         InlineKeyboardButton(
@@ -1314,8 +1315,9 @@ method to make great profit in Cryptocurrency Markets",
                 text = (
                     text
                     + f"\n\n ท่านมี Position Long ของ เหรียญนี้อยู่ในมือ\n\
-                เป็นจำนวน  {round(currnet_position['long']['amount'], 3)} เหรียญ\n\
-                กำไร/ขาดทุน {round(currnet_position['long']['pnl'], 3)}$"
+เป็นจำนวน  {round(currnet_position['long']['amount'], 3)} เหรียญ\n\
+ใช้ Margin  {round(currnet_position['long']['margin'], 3)}$\n\
+กำไร/ขาดทุน {round(currnet_position['long']['pnl'], 3)}$"
                 )
             elif currnet_position["short"]["position"]:
                 self.trade_order["pnl"] = currnet_position["short"]["pnl"]
@@ -1323,8 +1325,9 @@ method to make great profit in Cryptocurrency Markets",
                 text = (
                     text
                     + f"\n\n ท่านมี Position Short ของ เหรียญนี้อยู่ในมือ\n\
-                เป็นจำนวน  {round(currnet_position['short']['amount'], 3)} เหรียญ\n\
-                กำไร/ขาดทุน {round(currnet_position['short']['pnl'], 3)}$"
+เป็นจำนวน  {round(currnet_position['short']['amount'], 3)} เหรียญ\n\
+ใช้ Margin  {round(currnet_position['short']['margin'], 3)}$\n\
+กำไร/ขาดทุน {round(currnet_position['short']['pnl'], 3)}$"
                 )
             self.trade_reply_text = text
             self.update_inline_keyboard()
@@ -1360,10 +1363,10 @@ method to make great profit in Cryptocurrency Markets",
         try:
             self.trade_order["lev"] = int(respon)
             self.update_inline_keyboard()
-            margin = (
-                self.trade_order["price"]
-                * self.trade_order["amt"]
-                / self.trade_order["lev"]
+            margin = caculate_margin(
+                self.trade_order["price"],
+                self.trade_order["amt"],
+                self.trade_order["lev"],
             )
 
             text = f"\n\nOrder นี้จะใช้ Margin ทั้งหมด: {round(margin, 3)}$"
@@ -1400,10 +1403,10 @@ method to make great profit in Cryptocurrency Markets",
         try:
             self.trade_order["amt"] = abs(float(respon))
             self.update_inline_keyboard()
-            margin = (
-                self.trade_order["price"]
-                * self.trade_order["amt"]
-                / self.trade_order["lev"]
+            margin = caculate_margin(
+                self.trade_order["price"],
+                self.trade_order["amt"],
+                self.trade_order["lev"],
             )
 
             text = f"\n\nOrder นี้จะใช้ Margin ทั้งหมด: {round(margin, 3)}$"
@@ -1540,10 +1543,16 @@ method to make great profit in Cryptocurrency Markets",
                     },
                 )
                 await self.binance_.update_balance(force=True)
+                self.trade_order["margin"] = caculate_margin(
+                    self.trade_order["price"],
+                    self.trade_order["amt"],
+                    self.trade_order["lev"],
+                )
                 return f"\n\nรายงานการทำธุรกรรม :\n\
 ได้ออกคำสั่งเปิด Long สำหรับ : {self.trade_order['symbol']}\n\
 จำนวน : {self.trade_order['amt']}\n\
-Leverage: {self.trade_order['lev']}\n"
+Leverage: {self.trade_order['lev']}\n\
+Margin : {self.trade_order['margin']}"
             except ccxt.InsufficientFunds:
                 return "\nข้ออภัยค่ะ ยอดเงินของท่านไม่เพียงพอในการออก Order💸\
     โปรดตรวจสอบ Size โดยระเอียดอีกครั้ง แล้วทำรายการใหม่ ขอบคุณค่ะ🙏"
@@ -1683,11 +1692,17 @@ Leverage: {self.trade_order['lev']}\n"
                         "newClientOrderId": orderid,
                     },
                 )
+                self.trade_order["margin"] = caculate_margin(
+                    self.trade_order["price"],
+                    self.trade_order["amt"],
+                    self.trade_order["lev"],
+                )
                 await self.binance_.update_balance(force=True)
                 return f"\n\nรายงานการทำธุรกรรม :\n\
 ได้ออกคำสั่งเปิด Short สำหรับ : {self.trade_order['symbol']}\n\
 จำนวน : {self.trade_order['amt']}\n\
-Leverage: {self.trade_order['lev']}\n"
+Leverage: {self.trade_order['lev']}\n\
+Margin : {self.trade_order['margin']}"
             except ccxt.InsufficientFunds:
                 return "\nข้ออภัยค่ะ ยอดเงินของท่านไม่เพียงพอในการออก Order💸\
     โปรดตรวจสอบ Size โดยระเอียดอีกครั้ง แล้วทำรายการใหม่ ขอบคุณค่ะ🙏"
@@ -2327,8 +2342,9 @@ Leverage : X{self.trade_order['lev']}\n\
         query = update.callback_query
         await query.answer()
         if self.trade_menu_selected == "trade":
+            self.reset_trade_order_data()
             msgs = await query.edit_message_text(
-                self.trade_reply_text + self.trade_reply_margin,
+                self.trade_reply_text,
                 reply_markup=self.dynamic_reply_markup["trade"],
             )
             self.uniq_msg_id.append(msgs.message_id)
@@ -2785,15 +2801,17 @@ Leverage : X{self.trade_order['lev']}\n\
                 text = (
                     text
                     + f"\n\n ท่านมี Position Long ของ เหรียญนี้อยู่ในมือ\n\
-                เป็นจำนวน  {round(currnet_position['long']['amount'], 3)} เหรียญ\n\
-                กำไร/ขาดทุน {round(currnet_position['long']['pnl'], 3)}$"
+เป็นจำนวน  {round(currnet_position['long']['amount'], 3)} เหรียญ\n\
+ใช้ Margin  {round(currnet_position['long']['margin'], 3)}$\n\
+กำไร/ขาดทุน {round(currnet_position['long']['pnl'], 3)}$"
                 )
             elif currnet_position["short"]["position"]:
                 text = (
                     text
                     + f"\n\n ท่านมี Position Short ของ เหรียญนี้อยู่ในมือ\n\
-                เป็นจำนวน  {round(currnet_position['short']['amount'], 3)} เหรียญ\n\
-                กำไร/ขาดทุน {round(currnet_position['short']['pnl'], 3)}$"
+เป็นจำนวน  {round(currnet_position['short']['amount'], 3)} เหรียญ\n\
+ใช้ Margin  {round(currnet_position['short']['margin'], 3)}$\n\
+กำไร/ขาดทุน {round(currnet_position['short']['pnl'], 3)}$"
                 )
             self.trade_reply_text = text
             msgs = await query.edit_message_text(
