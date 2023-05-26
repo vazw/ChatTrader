@@ -2047,13 +2047,12 @@ Leverage : X{self.trade_order['lev']}\n\
             price = callback["D"].split("|")
             self.trade_order["tp_id"], self.trade_order["tp_price"] = price
         text = (
-            f"เดิมของท่านคือ : {self.trade_order['tp_price']}"
+            f"ราคา Take Profit เดิมของท่านคือ : {self.trade_order['tp_price']}"
             if self.trade_order["tp_price"] != 0.0
             else ""
         )
         msg = await query.edit_message_text(
-            text=f"ราคา Take Profit {self.trade_order['type']} ของ\
-{self.trade_order['symbol']} {text}\n\
+            text=f"{self.trade_order['symbol']} {self.trade_order['type']}\n{text}\n\
 ราคาเปิด Position นี้คือ : {self.trade_order['price']}\n\
 โปรดใส่ราคา Take Profit หากต้องการแก้ไข \n\
 หรือหากต้องการใช้ % คำนวนให้พิมพ์ ลงท้ายด้วย % เช่น 5% \n\n กด /cancel เพื่อยกเลิก"
@@ -2169,16 +2168,13 @@ Leverage : X{self.trade_order['lev']}\n\
         if callback["D"] != 0:
             price = callback["D"].split("|")
             self.trade_order["sl_id"], self.trade_order["sl_price"] = price
-        self.trade_order["sl_id"] = callback["sl_id"]
-        self.trade_order["sl_price"] = callback["sl_price"]
         text = (
             f"ราคา Stop-Loss เดิมของท่านคือ : {self.trade_order['sl_price']}"
             if self.trade_order["sl_price"] != 0.0
             else ""
         )
         msg = await query.edit_message_text(
-            text=f"{self.trade_order['type']} {self.trade_order['symbol']} ของ\
- {text}\n\
+            text=f"{self.trade_order['type']} {self.trade_order['symbol']}\n{text}\n\
 ราคาเปิด Position นี้คือ : {self.trade_order['price']}\n\
 โปรดใส่ราคา Stop-Loss ใหม่หากต้องการแก้ไข\n\
 หรือหากต้องการใช้ % คำนวนให้พิมพ์ ลงท้ายด้วย % เช่น 5% \n\n กด /cancel เพื่อยกเลิก"
