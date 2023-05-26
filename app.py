@@ -186,7 +186,7 @@ method to make great profit in Cryptocurrency Markets",
             trade = [
                 [
                     InlineKeyboardButton(
-                        "ℹ️ดูรายละเอียด Position ที่มี",
+                        "ℹ️ ดูรายละเอียด Position ที่มี",
                         callback_data=json.dumps(
                             {
                                 "Mode": "PNLC",
@@ -233,19 +233,19 @@ method to make great profit in Cryptocurrency Markets",
                 [
                     [
                         InlineKeyboardButton(
-                            f"ความเสี่ยงที่รับได้ : {self.risk['max_risk']}",
+                            f"ความเสี่ยงที่รับได้ : {self.risk['max_risk']} $",
                             callback_data='{"Mode": "risk", "Method": "MAX_RISK"}',
                         ),
                     ],
                     [
                         InlineKeyboardButton(
-                            f"จะหยุดบอทเมื่อเงินเหลือ : {self.risk['min_balance']}",
+                            f"จะหยุดบอทเมื่อเงินเหลือ : {self.risk['min_balance']} $",
                             callback_data='{"Mode": "risk", "Method": "MIN_BALANCE"}',
                         ),
                     ],
                     [
                         InlineKeyboardButton(
-                            "บันทึก",
+                            "บันทึก💾",
                             callback_data='{"Mode": "risk", "Method": "SAVE"}',
                         ),
                         InlineKeyboardButton(
@@ -579,7 +579,7 @@ method to make great profit in Cryptocurrency Markets",
                     ],
                     [
                         InlineKeyboardButton(
-                            "💾เพิ่มตั้งค่านี้ไปยังบอท",
+                            "เพิ่มตั้งค่านี้ไปยังบอท💾",
                             callback_data='{"Mode": "vxma_settings", "Method": "SAVE_ADD"}',
                         ),
                         InlineKeyboardButton(
@@ -602,7 +602,7 @@ method to make great profit in Cryptocurrency Markets",
             "type": "MARKET",
             "side": "BOTH",
             "new_lev": 10,
-            "lev": 10,
+            "lev": 50,
             "e_price": 0.0,
             "price": 0.0,
             "min_amt": 0.0,
@@ -2343,6 +2343,7 @@ Leverage : X{self.trade_order['lev']}\n\
         await query.answer()
         if self.trade_menu_selected == "trade":
             self.reset_trade_order_data()
+            self.update_inline_keyboard()
             msgs = await query.edit_message_text(
                 self.trade_reply_text,
                 reply_markup=self.dynamic_reply_markup["trade"],

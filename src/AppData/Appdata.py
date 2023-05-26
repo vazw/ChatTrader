@@ -771,7 +771,7 @@ REPLY_MARKUP = {
         [
             [
                 InlineKeyboardButton(
-                    "ℹ️ดูรายละเอียด",
+                    "ℹ️ ดูรายละเอียด",
                     callback_data='{"Mode": "pnl", "Method": "COINS"}',
                 ),
             ],
