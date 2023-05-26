@@ -69,6 +69,7 @@ class Telegram:
         self.msg_id = []
         self.ask_msg_id = []
         self.uniq_msg_id = []
+        self.position_tp_sl_order = []
         self.bot_trade = ""
         self.status_bot = False
         self.status_scan = False
@@ -130,55 +131,85 @@ method to make great profit in Cryptocurrency Markets",
             [
                 InlineKeyboardButton(
                     f"Order Type: {self.trade_order['type']}",
-                    callback_data='{"Mode": "trade", "Method": "Type"}',
+                    callback_data='{"M": "trade", "H": "Type"}',
                 ),
                 InlineKeyboardButton(
                     f"Leverage: X{self.trade_order['lev']}",
-                    callback_data='{"Mode": "trade", "Method": "Lev"}',
+                    callback_data='{"M": "trade", "H": "Lev"}',
                 ),
             ],
             [
                 InlineKeyboardButton(
                     f"ราคา : {self.trade_order['price']}",
-                    callback_data='{"Mode": "trade", "Method": "Price"}',
+                    callback_data='{"M": "trade", "H": "Price"}',
                 ),
             ],
             [
                 InlineKeyboardButton(
                     f"จำนวน : {self.trade_order['amt'] if self.trade_order['amt'] > 0.0 else '--.--'}",
-                    callback_data='{"Mode": "trade", "Method": "Amt"}',
+                    callback_data='{"M": "trade", "H": "Amt"}',
                 ),
             ],
             [
                 InlineKeyboardButton(
                     f"TP : {self.trade_order['tp_price'] if self.trade_order['tp_price'] > 0.0 else '--.--'}",
-                    callback_data='{"Mode": "trade", "Method": "TP"}',
+                    callback_data='{"M": "trade", "H": "TP"}',
                 ),
             ],
             [
                 InlineKeyboardButton(
                     f"SL : {self.trade_order['sl_price'] if self.trade_order['sl_price'] > 0.0 else '--.--'}",
-                    callback_data='{"Mode": "trade", "Method": "SL"}',
+                    callback_data='{"M": "trade", "H": "SL"}',
                 ),
             ],
             [
                 InlineKeyboardButton(
                     "LONG 📈",
-                    callback_data='{"Mode": "trade", "Method": "LONG"}',
+                    callback_data='{"M": "trade", "H": "LONG"}',
                 ),
                 InlineKeyboardButton(
                     "📉 SHORT",
-                    callback_data='{"Mode": "trade", "Method": "SHORT"}',
+                    callback_data='{"M": "trade", "H": "SHORT"}',
                 ),
             ],
             [
                 InlineKeyboardButton(
                     "เปลี่ยนเหรียญ",
-                    callback_data='{"Mode": "trade", "Method": "Change"}',
+                    callback_data='{"M": "trade", "H": "Change"}',
                 ),
                 InlineKeyboardButton(
                     "❌ กลับ",
-                    callback_data='{"Mode": "trade", "Method": "BACK"}',
+                    callback_data='{"M": "trade", "H": "BACK"}',
+                ),
+            ],
+        ]
+        position = [
+            [
+                InlineKeyboardButton(
+                    f"TP : {self.trade_order['tp_price'] if self.trade_order['tp_price'] > 0.0 else '--.--'}",
+                    callback_data='{"M": "position", "H": "TP", "D": 0}',
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    f"SL : {self.trade_order['sl_price'] if self.trade_order['sl_price'] > 0.0 else '--.--'}",
+                    callback_data='{"M": "position", "H": "SL", "D": 0}',
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    f"ปิด Postion : {self.trade_order['price']}",
+                    callback_data='{"M": "position_", "H": "Close"}',
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    f"Leverage: X{self.trade_order['lev']}",
+                    callback_data='{"M": "position", "H": "Lev"}',
+                ),
+                InlineKeyboardButton(
+                    "❌ กลับ",
+                    callback_data='{"M": "position_", "H": "BACK"}',
                 ),
             ],
         ]
@@ -189,14 +220,31 @@ method to make great profit in Cryptocurrency Markets",
                         "ℹ️ ดูรายละเอียด Position ที่มี",
                         callback_data=json.dumps(
                             {
-                                "Mode": "PNLC",
-                                "Method": self.trade_order["symbol"],
+                                "M": "PNLC",
+                                "H": self.trade_order["symbol"],
                                 "Side": self.trade_order["side"],
                             }
                         ),
                     ),
                 ]
             ] + trade
+        if len(self.position_tp_sl_order) > 0:
+            tp_sl = [
+                [
+                    InlineKeyboardButton(
+                        f"{i['type'].upper()} : {i['price']}",
+                        callback_data=json.dumps(
+                            {
+                                "M": "position",
+                                "H": f"{i['type']}".upper(),
+                                "D": f"{i['id']}|{i['price']}",
+                            }
+                        ),
+                    )
+                ]
+                for i in self.position_tp_sl_order
+            ]
+            position = tp_sl + position
         self.dynamic_reply_markup = {
             "trade": InlineKeyboardMarkup(trade),
             "setting": InlineKeyboardMarkup(
@@ -204,27 +252,27 @@ method to make great profit in Cryptocurrency Markets",
                     [
                         InlineKeyboardButton(
                             f"BOT STATUS : {'ON 🟢' if self.status_bot else 'OFF 🔴'}",
-                            callback_data='{"Mode": "setting", "Method": "BOT"}',
+                            callback_data='{"M": "setting", "H": "BOT"}',
                         ),
                     ],
                     [
                         InlineKeyboardButton(
                             "ตั้งค่าความเสี่ยง",
-                            callback_data='{"Mode": "setting", "Method": "RISK"}',
+                            callback_data='{"M": "setting", "H": "RISK"}',
                         ),
                         InlineKeyboardButton(
                             "ตั้งค่ารายเหรียญ",
-                            callback_data='{"Mode": "setting", "Method": "COINS"}',
+                            callback_data='{"M": "setting", "H": "COINS"}',
                         ),
                     ],
                     [
                         InlineKeyboardButton(
                             f"SCAN : {'ON 🟢' if self.status_scan else 'OFF 🔴'}",
-                            callback_data='{"Mode": "setting", "Method": "SCAN"}',
+                            callback_data='{"M": "setting", "H": "SCAN"}',
                         ),
                         InlineKeyboardButton(
                             "❌ กลับ",
-                            callback_data='{"Mode": "setting", "Method": "BACK"}',
+                            callback_data='{"M": "setting", "H": "BACK"}',
                         ),
                     ],
                 ]
@@ -234,191 +282,160 @@ method to make great profit in Cryptocurrency Markets",
                     [
                         InlineKeyboardButton(
                             f"ความเสี่ยงที่รับได้ : {self.risk['max_risk']} $",
-                            callback_data='{"Mode": "risk", "Method": "MAX_RISK"}',
+                            callback_data='{"M": "risk", "H": "MAX_RISK"}',
                         ),
                     ],
                     [
                         InlineKeyboardButton(
                             f"จะหยุดบอทเมื่อเงินเหลือ : {self.risk['min_balance']} $",
-                            callback_data='{"Mode": "risk", "Method": "MIN_BALANCE"}',
+                            callback_data='{"M": "risk", "H": "MIN_BALANCE"}',
                         ),
                     ],
                     [
                         InlineKeyboardButton(
                             "บันทึก💾",
-                            callback_data='{"Mode": "risk", "Method": "SAVE"}',
+                            callback_data='{"M": "risk", "H": "SAVE"}',
                         ),
                         InlineKeyboardButton(
                             "❌ กลับ",
-                            callback_data='{"Mode": "risk", "Method": "BACK"}',
+                            callback_data='{"M": "risk", "H": "BACK"}',
                         ),
                     ],
                 ]
             ),
-            "position": InlineKeyboardMarkup(
-                [
-                    [
-                        InlineKeyboardButton(
-                            f"TP : {self.trade_order['tp_price'] if self.trade_order['tp_price'] > 0.0 else '--.--'}",
-                            callback_data='{"Mode": "position", "Method": "TP"}',
-                        ),
-                    ],
-                    [
-                        InlineKeyboardButton(
-                            f"SL : {self.trade_order['sl_price'] if self.trade_order['sl_price'] > 0.0 else '--.--'}",
-                            callback_data='{"Mode": "position", "Method": "SL"}',
-                        ),
-                    ],
-                    [
-                        InlineKeyboardButton(
-                            f"ปิด Postion : {self.trade_order['price']}",
-                            callback_data='{"Mode": "position_", "Method": "Close"}',
-                        ),
-                    ],
-                    [
-                        InlineKeyboardButton(
-                            f"Leverage: X{self.trade_order['lev']}",
-                            callback_data='{"Mode": "position", "Method": "Lev"}',
-                        ),
-                        InlineKeyboardButton(
-                            "❌ กลับ",
-                            callback_data='{"Mode": "position_", "Method": "BACK"}',
-                        ),
-                    ],
-                ]
-            ),
+            "position": InlineKeyboardMarkup(position),
             "vxma_settings": InlineKeyboardMarkup(
                 [
                     [
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings" , "Method": "timeframe", "Type": "str"}',
+                            callback_data='{"M": "vxma_settings" , "H": "timeframe", "Type": "str"}',
                             text=f"timeframe : {self.vxma_settings['timeframe']}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "hedge", "Type": "bool"}',
+                            callback_data='{"M": "vxma_settings", "H": "hedge", "Type": "bool"}',
                             text=f"hedge : {'ON 🟢' if self.vxma_settings['hedge'] else 'OFF 🔴'}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "hedgeTF", "Type": "str"}',
+                            callback_data='{"M": "vxma_settings", "H": "hedgeTF", "Type": "str"}',
                             text=f"hedgeTF : {self.vxma_settings['hedgeTF']}",
                         ),
                     ],
                     [
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "ATR", "Type": "int"}',
+                            callback_data='{"M": "vxma_settings", "H": "ATR", "Type": "int"}',
                             text=f"ATR : {self.vxma_settings['ATR']}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "ATR_m", "Type": "float"}',
+                            callback_data='{"M": "vxma_settings", "H": "ATR_m", "Type": "float"}',
                             text=f"ATR_m : {self.vxma_settings['ATR_m']}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "Pivot", "Type": "int"}',
+                            callback_data='{"M": "vxma_settings", "H": "Pivot", "Type": "int"}',
                             text=f"Pivot : {self.vxma_settings['Pivot']}",
                         ),
                     ],
                     [
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "EMA", "Type": "int"}',
+                            callback_data='{"M": "vxma_settings", "H": "EMA", "Type": "int"}',
                             text=f"EMA : {self.vxma_settings['EMA']}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "subhag", "Type": "int"}',
+                            callback_data='{"M": "vxma_settings", "H": "subhag", "Type": "int"}',
                             text=f"subhag : {self.vxma_settings['subhag']}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method" : "smooth", "Type": "int"}',
+                            callback_data='{"M": "vxma_settings", "H" : "smooth", "Type": "int"}',
                             text=f"smooth : {self.vxma_settings['smooth']}",
                         ),
                     ],
                     [
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "RSI", "Type": "int"}',
+                            callback_data='{"M": "vxma_settings", "H": "RSI", "Type": "int"}',
                             text=f"RSI : {self.vxma_settings['RSI']}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "Andean", "Type": "int"}',
+                            callback_data='{"M": "vxma_settings", "H": "Andean", "Type": "int"}',
                             text=f"Andean : {self.vxma_settings['Andean']}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "leverage", "Type": "int"}',
+                            callback_data='{"M": "vxma_settings", "H": "leverage", "Type": "int"}',
                             text=f"leverage : {self.vxma_settings['leverage']}",
                         ),
                     ],
                     [
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "Useshort", "Type": "bool"}',
+                            callback_data='{"M": "vxma_settings", "H": "Useshort", "Type": "bool"}',
                             text=f"Useshort : {'ON 🟢' if self.vxma_settings['Useshort'] else 'OFF 🔴'}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method":"UseTP", "Type": "bool"}',
+                            callback_data='{"M": "vxma_settings", "H":"UseTP", "Type": "bool"}',
                             text=f"UseTP : {'ON 🟢' if self.vxma_settings['UseTP'] else 'OFF 🔴'}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "UseTP2", "Type": "bool"}',
+                            callback_data='{"M": "vxma_settings", "H": "UseTP2", "Type": "bool"}',
                             text=f"UseTP2 : {'ON 🟢' if self.vxma_settings['UseTP2'] else 'OFF 🔴'}",
                         ),
                     ],
                     [
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "Uselong", "Type": "bool"}',
+                            callback_data='{"M": "vxma_settings", "H": "Uselong", "Type": "bool"}',
                             text=f"Uselong : {'ON 🟢' if self.vxma_settings['Uselong'] else 'OFF 🔴'}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "UseSL", "Type": "bool"}',
+                            callback_data='{"M": "vxma_settings", "H": "UseSL", "Type": "bool"}',
                             text=f"UseSL : {'ON 🟢' if self.vxma_settings['UseSL'] else 'OFF 🔴'}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "Tail_SL", "Type": "bool"}',
+                            callback_data='{"M": "vxma_settings", "H": "Tail_SL", "Type": "bool"}',
                             text=f"Tail_SL : {'ON 🟢' if self.vxma_settings['Tail_SL'] else 'OFF 🔴'}",
                         ),
                     ],
                     [
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "TP1", "Type": "int"}',
+                            callback_data='{"M": "vxma_settings", "H": "TP1", "Type": "int"}',
                             text=f"TP1 : {self.vxma_settings['TP1']}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "RR1", "Type": "float"}',
+                            callback_data='{"M": "vxma_settings", "H": "RR1", "Type": "float"}',
                             text=f"RR1 : {self.vxma_settings['RR1']}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "RR2", "Type": "float"}',
+                            callback_data='{"M": "vxma_settings", "H": "RR2", "Type": "float"}',
                             text=f"RR2 : {self.vxma_settings['RR2']}",
                         ),
                     ],
                     [
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "TP2", "Type": "int"}',
+                            callback_data='{"M": "vxma_settings", "H": "TP2", "Type": "int"}',
                             text=f"TP2 : {self.vxma_settings['TP2']}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "Risk", "Type": "str"}',
+                            callback_data='{"M": "vxma_settings", "H": "Risk", "Type": "str"}',
                             text=f"Risk : {self.vxma_settings['Risk']}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "maxMargin, "Type": "str""}',
+                            callback_data='{"M": "vxma_settings", "H": "maxMargin, "Type": "str""}',
                             text=f"maxMargin : {self.vxma_settings['maxMargin']}",
                         ),
                     ],
                     [
                         InlineKeyboardButton(
                             "กราฟ📈",
-                            callback_data='{"Mode": "vxma_settings", "Method": "CHART"}',
+                            callback_data='{"M": "vxma_settings", "H": "CHART"}',
                         ),
                         InlineKeyboardButton(
                             "💾บันทึก",
-                            callback_data='{"Mode": "vxma_settings", "Method": "SAVE"}',
+                            callback_data='{"M": "vxma_settings", "H": "SAVE"}',
                         ),
                     ],
                     [
                         InlineKeyboardButton(
                             "ลบ🗑",
-                            callback_data='{"Mode": "vxma_settings", "Method": "DELETE"}',
+                            callback_data='{"M": "vxma_settings", "H": "DELETE"}',
                         ),
                         InlineKeyboardButton(
                             "❌ กลับ",
-                            callback_data='{"Mode": "vxma_settings", "Method": "BACK"}',
+                            callback_data='{"M": "vxma_settings", "H": "BACK"}',
                         ),
                     ],
                 ]
@@ -427,28 +444,28 @@ method to make great profit in Cryptocurrency Markets",
                 [
                     [
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings" , "Method": "timeframe", "Type": "str"}',
-                            text=f"timeframe : {self.vxma_settings['timeframe']}",
+                            f"เหรียญ : {self.vxma_settings['symbol'][:-5]}",
+                            callback_data='{"M": "vxma_settings", "H": "symbol", "Type": "str"}',
                         ),
                         InlineKeyboardButton(
-                            f"เหรียญ : {self.vxma_settings['symbol'][:-5]}",
-                            callback_data='{"Mode": "vxma_settings", "Method": "symbol", "Type": "str"}',
+                            callback_data='{"M": "vxma_settings" , "H": "timeframe", "Type": "str"}',
+                            text=f"timeframe : {self.vxma_settings['timeframe']}",
                         ),
                     ],
                     [
                         InlineKeyboardButton(
                             "เทรด💹",
-                            callback_data='{"Mode": "vxma_settings", "Method": "TRADE"}',
+                            callback_data='{"M": "vxma_settings", "H": "TRADE"}',
                         ),
                     ],
                     [
                         InlineKeyboardButton(
                             "⚙️ตั้งค่ากลยุทธ์",
-                            callback_data='{"Mode": "vxma_settings", "Method": "Setting"}',
+                            callback_data='{"M": "vxma_settings", "H": "Setting"}',
                         ),
                         InlineKeyboardButton(
                             "❌ กลับ",
-                            callback_data='{"Mode": "vxma_settings", "Method": "BACK"}',
+                            callback_data='{"M": "vxma_settings", "H": "BACK"}',
                         ),
                     ],
                 ]
@@ -457,134 +474,134 @@ method to make great profit in Cryptocurrency Markets",
                 [
                     [
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings" , "Method": "timeframe", "Type": "str"}',
+                            callback_data='{"M": "vxma_settings" , "H": "timeframe", "Type": "str"}',
                             text=f"timeframe : {self.vxma_settings['timeframe']}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "hedge", "Type": "bool"}',
+                            callback_data='{"M": "vxma_settings", "H": "hedge", "Type": "bool"}',
                             text=f"hedge : {'ON 🟢' if self.vxma_settings['hedge'] else 'OFF 🔴'}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "hedgeTF", "Type": "str"}',
+                            callback_data='{"M": "vxma_settings", "H": "hedgeTF", "Type": "str"}',
                             text=f"hedgeTF : {self.vxma_settings['hedgeTF']}",
                         ),
                     ],
                     [
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "ATR", "Type": "int"}',
+                            callback_data='{"M": "vxma_settings", "H": "ATR", "Type": "int"}',
                             text=f"ATR : {self.vxma_settings['ATR']}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "ATR_m", "Type": "float"}',
+                            callback_data='{"M": "vxma_settings", "H": "ATR_m", "Type": "float"}',
                             text=f"ATR_m : {self.vxma_settings['ATR_m']}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "Pivot", "Type": "int"}',
+                            callback_data='{"M": "vxma_settings", "H": "Pivot", "Type": "int"}',
                             text=f"Pivot : {self.vxma_settings['Pivot']}",
                         ),
                     ],
                     [
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "EMA", "Type": "int"}',
+                            callback_data='{"M": "vxma_settings", "H": "EMA", "Type": "int"}',
                             text=f"EMA : {self.vxma_settings['EMA']}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "subhag", "Type": "int"}',
+                            callback_data='{"M": "vxma_settings", "H": "subhag", "Type": "int"}',
                             text=f"subhag : {self.vxma_settings['subhag']}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method" : "smooth", "Type": "int"}',
+                            callback_data='{"M": "vxma_settings", "H" : "smooth", "Type": "int"}',
                             text=f"smooth : {self.vxma_settings['smooth']}",
                         ),
                     ],
                     [
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "RSI", "Type": "int"}',
+                            callback_data='{"M": "vxma_settings", "H": "RSI", "Type": "int"}',
                             text=f"RSI : {self.vxma_settings['RSI']}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "Andean", "Type": "int"}',
+                            callback_data='{"M": "vxma_settings", "H": "Andean", "Type": "int"}',
                             text=f"Andean : {self.vxma_settings['Andean']}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "leverage", "Type": "int"}',
+                            callback_data='{"M": "vxma_settings", "H": "leverage", "Type": "int"}',
                             text=f"leverage : {self.vxma_settings['leverage']}",
                         ),
                     ],
                     [
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "Useshort", "Type": "bool"}',
+                            callback_data='{"M": "vxma_settings", "H": "Useshort", "Type": "bool"}',
                             text=f"Useshort : {'ON 🟢' if self.vxma_settings['Useshort'] else 'OFF 🔴'}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method":"UseTP", "Type": "bool"}',
+                            callback_data='{"M": "vxma_settings", "H":"UseTP", "Type": "bool"}',
                             text=f"UseTP : {'ON 🟢' if self.vxma_settings['UseTP'] else 'OFF 🔴'}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "UseTP2", "Type": "bool"}',
+                            callback_data='{"M": "vxma_settings", "H": "UseTP2", "Type": "bool"}',
                             text=f"UseTP2 : {'ON 🟢' if self.vxma_settings['UseTP2'] else 'OFF 🔴'}",
                         ),
                     ],
                     [
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "Uselong", "Type": "bool"}',
+                            callback_data='{"M": "vxma_settings", "H": "Uselong", "Type": "bool"}',
                             text=f"Uselong : {'ON 🟢' if self.vxma_settings['Uselong'] else 'OFF 🔴'}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "UseSL", "Type": "bool"}',
+                            callback_data='{"M": "vxma_settings", "H": "UseSL", "Type": "bool"}',
                             text=f"UseSL : {'ON 🟢' if self.vxma_settings['UseSL'] else 'OFF 🔴'}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "Tail_SL", "Type": "bool"}',
+                            callback_data='{"M": "vxma_settings", "H": "Tail_SL", "Type": "bool"}',
                             text=f"Tail_SL : {'ON 🟢' if self.vxma_settings['Tail_SL'] else 'OFF 🔴'}",
                         ),
                     ],
                     [
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "TP1", "Type": "int"}',
+                            callback_data='{"M": "vxma_settings", "H": "TP1", "Type": "int"}',
                             text=f"%TP1 : {self.vxma_settings['TP1']}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "RR1", "Type": "float"}',
+                            callback_data='{"M": "vxma_settings", "H": "RR1", "Type": "float"}',
                             text=f"RR1 : {self.vxma_settings['RR1']}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "Risk", "Type": "str"}',
+                            callback_data='{"M": "vxma_settings", "H": "Risk", "Type": "str"}',
                             text=f"Risk : {self.vxma_settings['Risk']}",
                         ),
                     ],
                     [
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "TP2", "Type": "int"}',
+                            callback_data='{"M": "vxma_settings", "H": "TP2", "Type": "int"}',
                             text=f"%TP2 : {self.vxma_settings['TP2']}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "RR2", "Type": "float"}',
+                            callback_data='{"M": "vxma_settings", "H": "RR2", "Type": "float"}',
                             text=f"RR2 : {self.vxma_settings['RR2']}",
                         ),
                         InlineKeyboardButton(
-                            callback_data='{"Mode": "vxma_settings", "Method": "maxMargin, "Type": "str""}',
+                            callback_data='{"M": "vxma_settings", "H": "maxMargin, "Type": "str""}',
                             text=f"maxMargin : {self.vxma_settings['maxMargin']}",
                         ),
                     ],
                     [
                         InlineKeyboardButton(
                             "กราฟ📈",
-                            callback_data='{"Mode": "vxma_settings", "Method": "CHART"}',
+                            callback_data='{"M": "vxma_settings", "H": "CHART"}',
                         ),
                         InlineKeyboardButton(
                             "เปลี่ยนเหรียญ",
-                            callback_data='{"Mode": "vxma_settings", "Method": "symbol", "Type": "str"}',
+                            callback_data='{"M": "vxma_settings", "H": "symbol", "Type": "str"}',
                         ),
                     ],
                     [
                         InlineKeyboardButton(
                             "เพิ่มตั้งค่านี้ไปยังบอท💾",
-                            callback_data='{"Mode": "vxma_settings", "Method": "SAVE_ADD"}',
+                            callback_data='{"M": "vxma_settings", "H": "SAVE_ADD"}',
                         ),
                         InlineKeyboardButton(
                             "❌ กลับ",
-                            callback_data='{"Mode": "vxma_settings", "Method": "BACK_2"}',
+                            callback_data='{"M": "vxma_settings", "H": "BACK_2"}',
                         ),
                     ],
                 ]
@@ -633,26 +650,22 @@ method to make great profit in Cryptocurrency Markets",
             # Handler for Back to menu for all menu
             CallbackQueryHandler(
                 self.back_to_menu,
-                lambda x: (eval(x))["Mode"] in ["fiat", "pnl", "setting", "secure"]
-                and (eval(x))["Method"] == "BACK",
+                lambda x: (eval(x))["M"] in ["fiat", "pnl", "setting", "secure"]
+                and (eval(x))["H"] == "BACK",
             ),
         ]
 
         main_menu_handlers = [
             # Handlers set for buttons workarounds.
+            CallbackQueryHandler(self.button_menu, lambda x: (eval(x))["M"] == "menu"),
+            CallbackQueryHandler(self.fiat_handler, lambda x: (eval(x))["M"] == "fiat"),
             CallbackQueryHandler(
-                self.button_menu, lambda x: (eval(x))["Mode"] == "menu"
-            ),
-            CallbackQueryHandler(
-                self.fiat_handler, lambda x: (eval(x))["Mode"] == "fiat"
-            ),
-            CallbackQueryHandler(
-                self.setting_handler, lambda x: (eval(x))["Mode"] == "setting"
+                self.setting_handler, lambda x: (eval(x))["M"] == "setting"
             ),
             ConversationHandler(
                 entry_points=[
                     CallbackQueryHandler(
-                        self.analyse_handler, lambda x: (eval(x))["Mode"] == "analyse"
+                        self.analyse_handler, lambda x: (eval(x))["M"] == "analyse"
                     )
                 ],
                 states={
@@ -674,8 +687,8 @@ method to make great profit in Cryptocurrency Markets",
                 entry_points=[
                     CallbackQueryHandler(
                         self.get_symbol_handler,
-                        lambda x: (eval(x))["Mode"] == "menuex"
-                        and (eval(x))["Method"] == "Trade",
+                        lambda x: (eval(x))["M"] == "menuex"
+                        and (eval(x))["H"] == "Trade",
                     )
                 ],
                 states={
@@ -692,8 +705,8 @@ method to make great profit in Cryptocurrency Markets",
                 entry_points=[
                     CallbackQueryHandler(
                         self.get_symbol_handler,
-                        lambda x: (eval(x))["Mode"] == "trade"
-                        and (eval(x))["Method"] == "Change",
+                        lambda x: (eval(x))["M"] == "trade"
+                        and (eval(x))["H"] == "Change",
                     )
                 ],
                 states={
@@ -710,8 +723,7 @@ method to make great profit in Cryptocurrency Markets",
                 entry_points=[
                     CallbackQueryHandler(
                         self.get_lev_handler,
-                        lambda x: (eval(x))["Mode"] == "trade"
-                        and (eval(x))["Method"] == "Lev",
+                        lambda x: (eval(x))["M"] == "trade" and (eval(x))["H"] == "Lev",
                     )
                 ],
                 states={
@@ -728,8 +740,7 @@ method to make great profit in Cryptocurrency Markets",
                 entry_points=[
                     CallbackQueryHandler(
                         self.get_amount_handler,
-                        lambda x: (eval(x))["Mode"] == "trade"
-                        and (eval(x))["Method"] == "Amt",
+                        lambda x: (eval(x))["M"] == "trade" and (eval(x))["H"] == "Amt",
                     )
                 ],
                 states={
@@ -746,8 +757,7 @@ method to make great profit in Cryptocurrency Markets",
                 entry_points=[
                     CallbackQueryHandler(
                         self.get_tp_price_handler,
-                        lambda x: (eval(x))["Mode"] == "trade"
-                        and (eval(x))["Method"] == "TP",
+                        lambda x: (eval(x))["M"] == "trade" and (eval(x))["H"] == "TP",
                     )
                 ],
                 states={
@@ -764,8 +774,7 @@ method to make great profit in Cryptocurrency Markets",
                 entry_points=[
                     CallbackQueryHandler(
                         self.get_sl_price_handler,
-                        lambda x: (eval(x))["Mode"] == "trade"
-                        and (eval(x))["Method"] == "SL",
+                        lambda x: (eval(x))["M"] == "trade" and (eval(x))["H"] == "SL",
                     )
                 ],
                 states={
@@ -779,30 +788,26 @@ method to make great profit in Cryptocurrency Markets",
             ),
             CallbackQueryHandler(
                 self.trade_order_type,
-                lambda x: (eval(x))["Mode"] == "trade"
-                and (eval(x))["Method"] == "Type",
+                lambda x: (eval(x))["M"] == "trade" and (eval(x))["H"] == "Type",
             ),
             CallbackQueryHandler(
                 self.trade_order_type_handler,
-                lambda x: (eval(x))["Mode"] == "order_type",
+                lambda x: (eval(x))["M"] == "order_type",
             ),
             # Long Buttons
             CallbackQueryHandler(
                 self.trade_long_button,
-                lambda x: (eval(x))["Mode"] == "trade"
-                and (eval(x))["Method"] == "LONG",
+                lambda x: (eval(x))["M"] == "trade" and (eval(x))["H"] == "LONG",
             ),
             # # Short Buttons
             CallbackQueryHandler(
                 self.trade_short_button,
-                lambda x: (eval(x))["Mode"] == "trade"
-                and (eval(x))["Method"] == "SHORT",
+                lambda x: (eval(x))["M"] == "trade" and (eval(x))["H"] == "SHORT",
             ),
             # BACK
             CallbackQueryHandler(
                 self.back_from_trade_menu,
-                lambda x: (eval(x))["Mode"] == "trade"
-                and (eval(x))["Method"] == "BACK",
+                lambda x: (eval(x))["M"] == "trade" and (eval(x))["H"] == "BACK",
             ),
         ]
 
@@ -810,45 +815,43 @@ method to make great profit in Cryptocurrency Markets",
             # confirm buttons
             CallbackQueryHandler(
                 self.position_confirm_lev,
-                lambda x: (eval(x))["Mode"] == "position_confirm_lev",
+                lambda x: (eval(x))["M"] == "position_confirm_lev",
             ),
             CallbackQueryHandler(
                 self.position_confirm_sl,
-                lambda x: (eval(x))["Mode"] == "position_confirm_sl",
+                lambda x: (eval(x))["M"] == "position_confirm_sl",
             ),
             CallbackQueryHandler(
                 self.position_confirm_tp,
-                lambda x: (eval(x))["Mode"] == "position_confirm_tp",
+                lambda x: (eval(x))["M"] == "position_confirm_tp",
             ),
             # Symbols
             CallbackQueryHandler(
                 self.info_pnl_per_coin,
-                lambda x: (eval(x))["Mode"] == "PNLC",
+                lambda x: (eval(x))["M"] == "PNLC",
             ),
             # back from info_pnl_per_coin
             CallbackQueryHandler(
-                self.show_info_pnl_per_coin,
-                lambda x: (eval(x))["Mode"] == "position_"
-                and (eval(x))["Method"] == "BACK",
+                self.show_position_coins_menu,
+                lambda x: (eval(x))["M"] == "position_" and (eval(x))["H"] == "BACK",
             ),
             # edit symbol fot pnl
             CallbackQueryHandler(
-                self.show_info_pnl_per_coin,
-                lambda x: (eval(x))["Mode"] == "pnl" and (eval(x))["Method"] == "COINS",
+                self.show_position_coins_menu,
+                lambda x: (eval(x))["M"] == "pnl" and (eval(x))["H"] == "COINS",
             ),
             # ClosePosition
             CallbackQueryHandler(
                 self.position_close_handler,
-                lambda x: (eval(x))["Mode"] == "position_"
-                and (eval(x))["Method"] == "Close",
+                lambda x: (eval(x))["M"] == "position_" and (eval(x))["H"] == "Close",
             ),
             # edit TP,SL,Leverage Handlers
             ConversationHandler(
                 entry_points=[
                     CallbackQueryHandler(
                         self.position_get_tp_price_handler,
-                        lambda x: (eval(x))["Mode"] == "position"
-                        and (eval(x))["Method"] == "TP",
+                        lambda x: (eval(x))["M"] == "position"
+                        and (eval(x))["H"] == "TP",
                     )
                 ],
                 states={
@@ -859,14 +862,16 @@ method to make great profit in Cryptocurrency Markets",
                         )
                     ],
                 },
-                fallbacks=[CommandHandler("cancel", self.back_to_info_pnl_per_coin)],
+                fallbacks=[
+                    CommandHandler("cancel", self.back_to_show_position_coins_menu)
+                ],
             ),
             ConversationHandler(
                 entry_points=[
                     CallbackQueryHandler(
                         self.position_get_sl_price_handler,
-                        lambda x: (eval(x))["Mode"] == "position"
-                        and (eval(x))["Method"] == "SL",
+                        lambda x: (eval(x))["M"] == "position"
+                        and (eval(x))["H"] == "SL",
                     )
                 ],
                 states={
@@ -877,14 +882,16 @@ method to make great profit in Cryptocurrency Markets",
                         )
                     ],
                 },
-                fallbacks=[CommandHandler("cancel", self.back_to_info_pnl_per_coin)],
+                fallbacks=[
+                    CommandHandler("cancel", self.back_to_show_position_coins_menu)
+                ],
             ),
             ConversationHandler(
                 entry_points=[
                     CallbackQueryHandler(
                         self.position_get_lev_handler,
-                        lambda x: (eval(x))["Mode"] == "position"
-                        and (eval(x))["Method"] == "Lev",
+                        lambda x: (eval(x))["M"] == "position"
+                        and (eval(x))["H"] == "Lev",
                     )
                 ],
                 states={
@@ -895,7 +902,9 @@ method to make great profit in Cryptocurrency Markets",
                         )
                     ],
                 },
-                fallbacks=[CommandHandler("cancel", self.back_to_info_pnl_per_coin)],
+                fallbacks=[
+                    CommandHandler("cancel", self.back_to_show_position_coins_menu)
+                ],
             ),
         ]
 
@@ -906,8 +915,8 @@ method to make great profit in Cryptocurrency Markets",
                 entry_points=[
                     CallbackQueryHandler(
                         self.get_max_risk_handler,
-                        lambda x: (eval(x))["Mode"] == "risk"
-                        and (eval(x))["Method"] == "MAX_RISK",
+                        lambda x: (eval(x))["M"] == "risk"
+                        and (eval(x))["H"] == "MAX_RISK",
                     )
                 ],
                 states={
@@ -923,8 +932,8 @@ method to make great profit in Cryptocurrency Markets",
                 entry_points=[
                     CallbackQueryHandler(
                         self.get_min_balance_handler,
-                        lambda x: (eval(x))["Mode"] == "risk"
-                        and (eval(x))["Method"] == "MIN_BALANCE",
+                        lambda x: (eval(x))["M"] == "risk"
+                        and (eval(x))["H"] == "MIN_BALANCE",
                     )
                 ],
                 states={
@@ -938,35 +947,35 @@ method to make great profit in Cryptocurrency Markets",
             ),
             CallbackQueryHandler(
                 self.save_risk_to_db,
-                lambda x: (eval(x))["Mode"] == "risk" and (eval(x))["Method"] == "SAVE",
+                lambda x: (eval(x))["M"] == "risk" and (eval(x))["H"] == "SAVE",
             ),
             CallbackQueryHandler(
                 self.back_from_risk_menu,
-                lambda x: ((eval(x))["Mode"] == "risk" or (eval(x))["Mode"] == "COINS")
-                and (eval(x))["Method"] == "BACK",
+                lambda x: ((eval(x))["M"] == "risk" or (eval(x))["M"] == "COINS")
+                and (eval(x))["H"] == "BACK",
             ),
             ## TODO add symbols handler for setting
             CallbackQueryHandler(
                 self.edit_config_per_coin,
-                lambda x: (eval(x))["Mode"] == "COINS",
+                lambda x: (eval(x))["M"] == "COINS",
             ),
             CallbackQueryHandler(
                 self.vxma_settings_handler,
-                lambda x: (eval(x))["Mode"] == "vxma_settings",
+                lambda x: (eval(x))["M"] == "vxma_settings",
             ),
             CallbackQueryHandler(
                 self.vxma_save_settings_confirm,
-                lambda x: (eval(x))["Mode"] == "vxma_settings_confirm_save",
+                lambda x: (eval(x))["M"] == "vxma_settings_confirm_save",
             ),
             CallbackQueryHandler(
                 self.vxma_del_settings_confirm,
-                lambda x: (eval(x))["Mode"] == "vxma_settings_confirm_del",
+                lambda x: (eval(x))["M"] == "vxma_settings_confirm_del",
             ),
             ConversationHandler(
                 entry_points=[
                     CallbackQueryHandler(
                         self.vxma_edit_settings_confirm,
-                        lambda x: (eval(x))["Mode"] == "vxma_settings_confirm",
+                        lambda x: (eval(x))["M"] == "vxma_settings_confirm",
                     )
                 ],
                 states={
@@ -987,8 +996,8 @@ method to make great profit in Cryptocurrency Markets",
                 entry_points=[
                     CallbackQueryHandler(
                         self.set_api_handler,
-                        lambda x: (eval(x))["Mode"] == "secure"
-                        and (eval(x))["Method"] == "API",
+                        lambda x: (eval(x))["M"] == "secure"
+                        and (eval(x))["H"] == "API",
                     )
                 ],
                 states={
@@ -1097,7 +1106,7 @@ method to make great profit in Cryptocurrency Markets",
         await query.answer()
         callback = eval(query.data)
         ## Main menu will be here
-        if callback["Method"] == "CheckBalance":
+        if callback["H"] == "CheckBalance":
             msgs = await query.edit_message_text(
                 text="โปรดเลือกกระเป๋าเงินเฟียต",
                 reply_markup=self.reply_markup["fiat"],
@@ -1105,17 +1114,17 @@ method to make great profit in Cryptocurrency Markets",
             await self.binance_.update_balance()
             await self.binance_.disconnect()
             # Trade use different callback
-        # elif callback["Method"] == "Trade":
+        # elif callback["H"] == "Trade":
         #     msgs = await query.edit_message_text(
         #         text="Please Select Fiat Balance",
         #         reply_markup=self.reply_markup["trade"],
         #     )
-        elif callback["Method"] == "Analyser":
+        elif callback["H"] == "Analyser":
             msgs = await query.edit_message_text(
                 text="โปรดเลือกกลยุทธ์ของท่าน",
                 reply_markup=self.reply_markup["analyse"],
             )
-        elif callback["Method"] == "PositionData":
+        elif callback["H"] == "PositionData":
             await self.binance_.update_balance()
             await self.binance_.disconnect()
             self.trade_menu_selected = "pnl"
@@ -1132,7 +1141,7 @@ method to make great profit in Cryptocurrency Markets",
                 text=self.pnl_reply,
                 reply_markup=self.reply_markup["pnl"],
             )
-        elif callback["Method"] == "BotSetting":
+        elif callback["H"] == "BotSetting":
             text = [
                 f"{symbol[:-5]} {tf}\n"
                 for id, symbol, tf in self.bot_trade.watchlist  # pyright: ignore
@@ -1149,12 +1158,12 @@ method to make great profit in Cryptocurrency Markets",
                 text=f"{self.watchlist_reply_text}",
                 reply_markup=self.dynamic_reply_markup["setting"],
             )
-        elif callback["Method"] == "apiSetting":
+        elif callback["H"] == "apiSetting":
             msgs = await query.edit_message_text(
                 text="โปรดเลือกการตั้งค่า",
                 reply_markup=self.reply_markup["secure"],
             )
-        elif callback["Method"] == "X":
+        elif callback["H"] == "X":
             await query.delete_message()
         else:
             msgs = await query.edit_message_text(
@@ -1207,7 +1216,7 @@ method to make great profit in Cryptocurrency Markets",
             else 0.0
         )
 
-        if callback["Method"] == "ALL":
+        if callback["H"] == "ALL":
             msg = (
                 "BUSD"
                 + f"\nFree   : {round(fiat_balance['BUSD']['free'],2)}$"
@@ -1218,7 +1227,7 @@ method to make great profit in Cryptocurrency Markets",
                 + f"\nTotal  : {round(fiat_balance['USDT']['total'],2)}$"
                 + f"\nกำไร/ขาดทุน  : {round(netunpl,2)}$"
             )
-        elif callback["Method"] == "BUSD":
+        elif callback["H"] == "BUSD":
             msg = (
                 "BUSD"
                 + f"\nFree   : {round(fiat_balance['BUSD']['free'],2)}$"
@@ -1226,7 +1235,7 @@ method to make great profit in Cryptocurrency Markets",
                 + f"\nTotal  : {round(fiat_balance['BUSD']['total'],2)}$"
                 + f"\nกำไร/ขาดทุน  : {round(netunpl,2)}$"
             )
-        elif callback["Method"] == "USDT":
+        elif callback["H"] == "USDT":
             msg = (
                 "USDT"
                 + f"\nFree   : {round(fiat_balance['USDT']['free'],2)}$"
@@ -1312,23 +1321,19 @@ method to make great profit in Cryptocurrency Markets",
             if currnet_position["long"]["position"]:
                 self.trade_order["pnl"] = currnet_position["long"]["pnl"]
                 self.trade_order["side"] = "LONG"
-                text = (
-                    text
-                    + f"\n\n ท่านมี Position Long ของ เหรียญนี้อยู่ในมือ\n\
+                text += f"\n\n ท่านมี Position Long ของ เหรียญนี้อยู่ในมือ\n\
 เป็นจำนวน  {round(currnet_position['long']['amount'], 3)} เหรียญ\n\
 ใช้ Margin  {round(currnet_position['long']['margin'], 3)}$\n\
 กำไร/ขาดทุน {round(currnet_position['long']['pnl'], 3)}$"
-                )
+
             elif currnet_position["short"]["position"]:
                 self.trade_order["pnl"] = currnet_position["short"]["pnl"]
                 self.trade_order["side"] = "SHORT"
-                text = (
-                    text
-                    + f"\n\n ท่านมี Position Short ของ เหรียญนี้อยู่ในมือ\n\
+                text += f"\n\n และท่านยังมี Position Short ของ เหรียญนี้อยู่ในมือ\n\
 เป็นจำนวน  {round(currnet_position['short']['amount'], 3)} เหรียญ\n\
 ใช้ Margin  {round(currnet_position['short']['margin'], 3)}$\n\
 กำไร/ขาดทุน {round(currnet_position['short']['pnl'], 3)}$"
-                )
+
             self.trade_reply_text = text
             self.update_inline_keyboard()
         except Exception as e:
@@ -1509,13 +1514,13 @@ method to make great profit in Cryptocurrency Markets",
         query = update.callback_query
         await query.answer()
         callback = eval(query.data)
-        if callback["Method"] == "BACK":
+        if callback["H"] == "BACK":
             msgs = await query.edit_message_text(
                 text=self.trade_reply_text + self.trade_reply_margin,
                 reply_markup=self.dynamic_reply_markup["trade"],
             )
         else:
-            self.trade_order["type"] = f"{callback['Method']}"
+            self.trade_order["type"] = f"{callback['H']}"
             self.update_inline_keyboard()
             msgs = await query.edit_message_text(
                 text=self.trade_reply_text + self.trade_reply_margin,
@@ -1871,13 +1876,13 @@ Margin : {self.trade_order['margin']}"
         query = update.callback_query
         await query.answer()
         callback = eval(query.data)
-        if callback["Method"] == "BACK":
+        if callback["H"] == "BACK":
             msgs = await query.edit_message_text(
                 text=choice(EGGS), reply_markup=self.reply_markup["menu"]
             )
             self.uniq_msg_id.append(msgs.message_id)
             return ConversationHandler.END
-        if callback["Method"] == "VXMA":
+        if callback["H"] == "VXMA":
             msg = await query.edit_message_text(
                 text="โปรดกรอกชื่อคู่เทรดที่ท่านต้องการวิเคราะห์\n เช่น btc bnbbusd ethusdt\n\nกด /cancel เพื่อยกเลิก"
             )
@@ -1993,12 +1998,12 @@ Order นี้จะใช้ Margin จะปรับเป็น: {round(mar
         query = update.callback_query
         await query.answer()
         callback = eval(query.data)
-        if callback["Method"] == "BACK":
+        if callback["H"] == "BACK":
             msgs = await query.edit_message_text(
                 text=self.coin_pnl_reply_text,
                 reply_markup=self.dynamic_reply_markup["position"],
             )
-        elif callback["Method"] == "OK":
+        elif callback["H"] == "OK":
             await self.binance_.setleverage(
                 self.trade_order["symbol"], self.trade_order["new_lev"]
             )
@@ -2037,6 +2042,10 @@ Leverage : X{self.trade_order['lev']}\n\
         """Handler to asks for trade TP Price"""
         query = update.callback_query
         await query.answer()
+        callback = eval(query.data)
+        if callback["D"] != 0:
+            price = callback["D"].split("|")
+            self.trade_order["tp_id"], self.trade_order["tp_price"] = price
         text = (
             f"เดิมของท่านคือ : {self.trade_order['tp_price']}"
             if self.trade_order["tp_price"] != 0.0
@@ -2072,13 +2081,12 @@ Leverage : X{self.trade_order['lev']}\n\
                 self.trade_order["new_tp_price"] = float(respon)
             self.trade_order["tp"] = True
             text_ = (
-                f" จาก {self.trade_order['tp_price']} "
+                f"แก้ไขราคา Take Profit จาก {self.trade_order['tp_price']}  ไปเป็น"
                 if self.trade_order["tp_price"] != 0.0
-                else ""
+                else "เพิ่มราคา Take Profit "
             )
 
-            text = f"ท่านต้องการแก้ไขราคา Take Profit {text_}\
-ไปเป็น {self.trade_order['new_tp_price']}\n\
+            text = f"ท่านต้องการ{text_} {self.trade_order['new_tp_price']}\n\
 \nหากถูกต้องกด \"ยืนยัน\" เพื่อส่งคำสั่ง"
             msg = await update.message.reply_text(
                 text,
@@ -2121,12 +2129,12 @@ Leverage : X{self.trade_order['lev']}\n\
         query = update.callback_query
         await query.answer()
         callback = eval(query.data)
-        if callback["Method"] == "BACK":
+        if callback["H"] == "BACK":
             msgs = await query.edit_message_text(
                 text=self.coin_pnl_reply_text,
                 reply_markup=self.dynamic_reply_markup["position"],
             )
-        elif callback["Method"] == "OK":
+        elif callback["H"] == "OK":
             exchange = await self.binance_.get_exchange()
             await self.binance_.connect_loads()
             if self.trade_order["tp_id"] != 0:
@@ -2157,14 +2165,20 @@ Leverage : X{self.trade_order['lev']}\n\
         """Handler to asks for trade SL Price"""
         query = update.callback_query
         await query.answer()
+        callback = eval(query.data)
+        if callback["D"] != 0:
+            price = callback["D"].split("|")
+            self.trade_order["sl_id"], self.trade_order["sl_price"] = price
+        self.trade_order["sl_id"] = callback["sl_id"]
+        self.trade_order["sl_price"] = callback["sl_price"]
         text = (
-            f"เดิมของท่านคือ : {self.trade_order['sl_price']}"
+            f"ราคา Stop-Loss เดิมของท่านคือ : {self.trade_order['sl_price']}"
             if self.trade_order["sl_price"] != 0.0
             else ""
         )
         msg = await query.edit_message_text(
-            text=f"ราคา Stop-Loss {self.trade_order['type']} ของ\
-{self.trade_order['symbol']} {text}\n\
+            text=f"{self.trade_order['type']} {self.trade_order['symbol']} ของ\
+ {text}\n\
 ราคาเปิด Position นี้คือ : {self.trade_order['price']}\n\
 โปรดใส่ราคา Stop-Loss ใหม่หากต้องการแก้ไข\n\
 หรือหากต้องการใช้ % คำนวนให้พิมพ์ ลงท้ายด้วย % เช่น 5% \n\n กด /cancel เพื่อยกเลิก"
@@ -2192,13 +2206,11 @@ Leverage : X{self.trade_order['lev']}\n\
                 self.trade_order["new_sl_price"] = float(respon)
             self.trade_order["sl"] = True
             text_ = (
-                f" จาก {self.trade_order['sl_price']} "
+                f"แก้ไขราคา Stop-Loss  จาก {self.trade_order['sl_price']} ไปเป็น"
                 if self.trade_order["sl_price"] != 0.0
-                else ""
+                else "เพิ่มราคา Stop-Loss เท่ากับ"
             )
-            text = f"\n\nท่านต้องการแก้ไขราคา Stop-Loss \
-{text_}\
-ไปเป็น {self.trade_order['new_sl_price']}\n\
+            text = f"\n\nท่านต้องการ{text_} {self.trade_order['new_sl_price']}\n\
 \nหากถูกต้องกด \"ยืนยัน\" เพื่อส่งคำสั่ง"
 
             msg = await update.message.reply_text(
@@ -2241,12 +2253,12 @@ Leverage : X{self.trade_order['lev']}\n\
         query = update.callback_query
         await query.answer()
         callback = eval(query.data)
-        if callback["Method"] == "BACK":
+        if callback["H"] == "BACK":
             msgs = await query.edit_message_text(
                 text=self.coin_pnl_reply_text,
                 reply_markup=self.dynamic_reply_markup["position"],
             )
-        elif callback["Method"] == "OK":
+        elif callback["H"] == "OK":
             exchange = await self.binance_.get_exchange()
             await self.binance_.connect_loads()
             if self.trade_order["sl_id"] != 0:
@@ -2312,7 +2324,7 @@ Leverage : X{self.trade_order['lev']}\n\
 
         self.uniq_msg_id.append(msgs.message_id)
 
-    async def back_to_info_pnl_per_coin(
+    async def back_to_show_position_coins_menu(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
     ) -> None:
         """This Handler can Handle both command and inline button respons"""
@@ -2336,7 +2348,7 @@ Leverage : X{self.trade_order['lev']}\n\
             self.uniq_msg_id.append(msgs.message_id)
             return ConversationHandler.END
 
-    async def show_info_pnl_per_coin(
+    async def show_position_coins_menu(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
     ):
         query = update.callback_query
@@ -2357,7 +2369,7 @@ Leverage : X{self.trade_order['lev']}\n\
             [
                 InlineKeyboardButton(
                     "❌ กลับ",
-                    callback_data="{'Mode': 'PNLC', 'Method' :'BACK_TO_MENU'}",
+                    callback_data="{'M': 'PNLC', 'H' :'BACK_TO_MENU'}",
                     ## Chnage back to JSONDict
                 )
             ]
@@ -2368,12 +2380,12 @@ Leverage : X{self.trade_order['lev']}\n\
                 (
                     json.dumps(
                         {
-                            "Mode": "PNLC",
-                            "Method": status["symbol"][i],
+                            "M": "PNLC",
+                            "H": status["symbol"][i],
                             "Side": status["positionSide"][i],
                         }
                     ),
-                    f"{status['symbol'][i]} P/L {round(status['unrealizedProfit'][i], 3)}$",
+                    f"{status['positionSide'][i]} {status['symbol'][i]} P/L {round(status['unrealizedProfit'][i], 3)}$",
                 )
                 for i in range(len(status.index))
             ]
@@ -2407,7 +2419,7 @@ Leverage : X{self.trade_order['lev']}\n\
         query = update.callback_query
         await query.answer()
         callback = eval(query.data)
-        if callback["Method"] == "BACK_TO_MENU":
+        if callback["H"] == "BACK_TO_MENU":
             msgs = await query.edit_message_text(
                 text=f"{self.pnl_reply}",
                 reply_markup=self.reply_markup["pnl"],
@@ -2415,7 +2427,7 @@ Leverage : X{self.trade_order['lev']}\n\
         else:
             ## TODO EDIT POSITION
             self.reset_trade_order_data()
-            symbol = str(callback["Method"]).upper()
+            symbol = str(callback["H"]).upper()
             if ":" in symbol:
                 self.trade_order["symbol"] = symbol
             else:
@@ -2453,7 +2465,7 @@ Leverage : X{self.trade_order['lev']}\n\
                 if position_data["long"]["position"]
                 else "short"
             )
-            symbol_order = await self.binance_.get_tp_sl_price(
+            self.position_tp_sl_order = await self.binance_.get_tp_sl_price(
                 self.trade_order["symbol"],
                 f"{callback['Side']}".upper()
                 if self.bot_trade.currentMode.dualSidePosition
@@ -2472,10 +2484,6 @@ Leverage : X{self.trade_order['lev']}\n\
             ]
             pnl_t = "ขาดทุน" if self.trade_order["pnl"] < 0.0 else "กำไร"
             emoji = "📈" if self.trade_order["type"].upper() == "LONG" else "📉"
-            self.trade_order["tp_id"] = symbol_order["tp_id"]
-            self.trade_order["sl_id"] = symbol_order["sl_id"]
-            self.trade_order["tp_price"] = symbol_order["tp_price"]
-            self.trade_order["sl_price"] = symbol_order["sl_price"]
             self.trade_order["lev"] = position_data["leverage"]
             text = f"\n{emoji}Postion {self.trade_order['type'].upper()}\n\
 🪙จำนวน {self.trade_order['amt']}\n\n\
@@ -2500,7 +2508,7 @@ Leverage : X{self.trade_order['lev']}\n\
         query = update.callback_query
         await query.answer()
         callback = eval(query.data)
-        if callback["Method"] == "BOT":
+        if callback["H"] == "BOT":
             if self.status_bot:
                 self.status_bot = False
                 text = "\n\n🔴ปิดบอทสำเร็จ"
@@ -2514,7 +2522,7 @@ Leverage : X{self.trade_order['lev']}\n\
             msgs = await query.edit_message_text(
                 text=msg, reply_markup=self.dynamic_reply_markup["setting"]
             )
-        elif callback["Method"] == "SCAN":
+        elif callback["H"] == "SCAN":
             if self.status_scan:
                 self.status_scan = False
                 text = "\n\n🔴ปิดบอทแสกนตลาดสำเร็จ"
@@ -2528,18 +2536,18 @@ Leverage : X{self.trade_order['lev']}\n\
             msgs = await query.edit_message_text(
                 text=msg, reply_markup=self.dynamic_reply_markup["setting"]
             )
-        elif callback["Method"] == "RISK":
+        elif callback["H"] == "RISK":
             msg = "อย่าเสี่ยงมากนะคะนายท่าน \n" + choice(EGGS)
             msgs = await query.edit_message_text(
                 text=msg, reply_markup=self.dynamic_reply_markup["risk"]
             )
-        elif callback["Method"] == "COINS":
+        elif callback["H"] == "COINS":
             msg = "โปรดเลือกเหรียญดังนี้:"
             coins = [
                 [
                     InlineKeyboardButton(
                         f"{symbol[:-5]} {tf}".replace("/", ""),
-                        callback_data=json.dumps({"Mode": "COINS", "Method": cid}),
+                        callback_data=json.dumps({"M": "COINS", "H": cid}),
                     )
                     for cid, symbol, tf in symbol_list
                 ]
@@ -2548,7 +2556,7 @@ Leverage : X{self.trade_order['lev']}\n\
                 [
                     InlineKeyboardButton(
                         "❌ กลับ",
-                        callback_data="{'Mode': 'COINS', 'Method': 'BACK_TO_MENU'}",
+                        callback_data="{'M': 'COINS', 'H': 'BACK_TO_MENU'}",
                     )
                 ]
             ]
@@ -2691,7 +2699,7 @@ Leverage : X{self.trade_order['lev']}\n\
         query = update.callback_query
         await query.answer()
         callback = eval(query.data)
-        if callback["Method"] == "BACK_TO_MENU":
+        if callback["H"] == "BACK_TO_MENU":
             msgs = await query.edit_message_text(
                 text=f"{self.watchlist_reply_text}",
                 reply_markup=self.dynamic_reply_markup["setting"],
@@ -2699,7 +2707,7 @@ Leverage : X{self.trade_order['lev']}\n\
         else:
             self.vxma_menu_selected_state = "vxma_settings"
             configs = bot_setting()
-            self.vxma_settings["id"] = callback["Method"]
+            self.vxma_settings["id"] = callback["H"]
             config = configs.loc[self.vxma_settings["id"],]
 
             for config_ in split_list(config.items(), 2):
@@ -2724,7 +2732,7 @@ Leverage : X{self.trade_order['lev']}\n\
         query = update.callback_query
         await query.answer()
         callback = eval(query.data)
-        if callback["Method"] == "BACK":
+        if callback["H"] == "BACK":
             if self.vxma_menu_selected_state == "vxma_settings":
                 msgs = await query.edit_message_text(
                     text="โปรดเลือกเหรียญดังนี้:", reply_markup=self.coins_settings_key
@@ -2734,31 +2742,31 @@ Leverage : X{self.trade_order['lev']}\n\
                     text="โปรดเลือกกลยุทธ์ของท่าน",
                     reply_markup=self.reply_markup["analyse"],
                 )
-        elif callback["Method"] == "CHART":
+        elif callback["H"] == "CHART":
             await self.vxma_send_candle_pic(query)
             await query.delete_message()
             msgs = await query.message.reply_text(
                 text=self.text_reply_bot_setting,
                 reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
             )
-        elif callback["Method"] == "BACK_2":
+        elif callback["H"] == "BACK_2":
             self.vxma_menu_selected_state = "vxma_settings_1"
             msgs = await query.edit_message_text(
                 text=self.text_reply_bot_setting,
                 reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
             )
-        elif callback["Method"] == "Setting":
+        elif callback["H"] == "Setting":
             self.vxma_menu_selected_state = "vxma_settings_2"
             msgs = await query.edit_message_text(
                 text=f"รายการตั้งค่ากลยุทธ์สำหรับ {self.vxma_settings['symbol']}",
                 reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
             )
-        elif callback["Method"] == "SAVE":
+        elif callback["H"] == "SAVE":
             msgs = await query.edit_message_text(
                 text=f"โปรดยืนยัน หากต้องการบันทึกข้อมูลเหรียญ {self.vxma_settings['symbol']}",
                 reply_markup=self.reply_markup["vxma_settings_confirm_save"],
             )
-        elif callback["Method"] == "SAVE_ADD":
+        elif callback["H"] == "SAVE_ADD":
             text = [
                 f"{key} : {value}\n"
                 for key, value in self.vxma_settings.items()
@@ -2771,7 +2779,7 @@ Leverage : X{self.trade_order['lev']}\n\
                 text=f"{text0}\n\nโปรดยืนยัน หากต้องการบันทึกข้อมูลเหรียญ {self.vxma_settings['symbol']}",
                 reply_markup=self.reply_markup["vxma_settings_confirm_save_2"],
             )
-        elif callback["Method"] == "TRADE":
+        elif callback["H"] == "TRADE":
             self.trade_menu_selected = "vxma_settings_1"
             exchange = await self.binance_.get_exchange()
             self.trade_order["price"] = await self.binance_.get_bidask(
@@ -2799,33 +2807,35 @@ Leverage : X{self.trade_order['lev']}\n\
             self.update_inline_keyboard()
             text = f"คู่เหรียญ  {self.trade_order['symbol']}\nราคาปัจจุบัน : {self.trade_order['price']}$"
             if currnet_position["long"]["position"]:
+                pnl_t = "ขาดทุน" if currnet_position["long"]["pnl"] < 0.0 else "กำไร"
                 text = (
                     text
                     + f"\n\n ท่านมี Position Long ของ เหรียญนี้อยู่ในมือ\n\
 เป็นจำนวน  {round(currnet_position['long']['amount'], 3)} เหรียญ\n\
 ใช้ Margin  {round(currnet_position['long']['margin'], 3)}$\n\
-กำไร/ขาดทุน {round(currnet_position['long']['pnl'], 3)}$"
+ {pnl_t} {round(currnet_position['long']['pnl'], 3)}$"
                 )
             elif currnet_position["short"]["position"]:
+                pnl_t = "ขาดทุน" if currnet_position["short"]["pnl"] < 0.0 else "กำไร"
                 text = (
                     text
                     + f"\n\n ท่านมี Position Short ของ เหรียญนี้อยู่ในมือ\n\
 เป็นจำนวน  {round(currnet_position['short']['amount'], 3)} เหรียญ\n\
 ใช้ Margin  {round(currnet_position['short']['margin'], 3)}$\n\
-กำไร/ขาดทุน {round(currnet_position['short']['pnl'], 3)}$"
+{pnl_t} {round(currnet_position['short']['pnl'], 3)}$"
                 )
             self.trade_reply_text = text
             msgs = await query.edit_message_text(
                 text=self.trade_reply_text,
                 reply_markup=self.dynamic_reply_markup["trade"],
             )
-        elif callback["Method"] == "DELETE":
+        elif callback["H"] == "DELETE":
             msgs = await query.edit_message_text(
                 text=f"โปรดยืนยัน หากต้องการลบข้อมูลเหรียญ {self.vxma_settings['symbol']}",
                 reply_markup=self.reply_markup["vxma_settings_confirm_del"],
             )
-        elif callback["Method"] in self.vxma_settings.keys():
-            self.vxma_settings_selected_state = callback["Method"]
+        elif callback["H"] in self.vxma_settings.keys():
+            self.vxma_settings_selected_state = callback["H"]
             self.vxma_selected_state_type = callback["Type"]
             if self.vxma_selected_state_type == "bool":
                 self.vxma_settings[self.vxma_settings_selected_state] = (
@@ -2855,7 +2865,7 @@ Leverage : X{self.trade_order['lev']}\n\
         query = update.callback_query
         await query.answer()
         callback = eval(query.data)
-        if callback["Method"] == "BACK":
+        if callback["H"] == "BACK":
             msgs = await query.edit_message_text(
                 text=self.text_reply_bot_setting,
                 reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
@@ -2928,7 +2938,7 @@ Leverage : X{self.trade_order['lev']}\n\
         query = update.callback_query
         await query.answer()
         callback = eval(query.data)
-        if callback["Method"] == "BACK":
+        if callback["H"] == "BACK":
             msgs = await query.edit_message_text(
                 text=self.text_reply_bot_setting,
                 reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
@@ -2963,7 +2973,7 @@ Leverage : X{self.trade_order['lev']}\n\
         query = update.callback_query
         await query.answer()
         callback = eval(query.data)
-        if callback["Method"] == "BACK":
+        if callback["H"] == "BACK":
             msgs = await query.edit_message_text(
                 text=self.text_reply_bot_setting,
                 reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
@@ -3002,7 +3012,7 @@ Leverage : X{self.trade_order['lev']}\n\
         query = update.callback_query
         await query.answer()
         callback = eval(query.data)
-        if callback["Method"] == "BACK":
+        if callback["H"] == "BACK":
             msgs = await query.edit_message_text(
                 text=self.text_reply_bot_setting,
                 reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],

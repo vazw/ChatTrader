@@ -265,12 +265,9 @@ class Binance:
             return None
 
     async def get_tp_sl_price(self, symbol: str = "BTCUSDT", side: str = "BOTH"):
-        slId = 0
-        tpId = 0
-        slPrice = 0.0
-        tpPrice = 0.0
         exchange = await self.get_exchange()
         order_list = await exchange.fetch_orders(symbol, limit=10)
+        result = []
         symbol_order = pd.DataFrame(
             [
                 order["info"]
@@ -280,28 +277,27 @@ class Binance:
             ]
         )
         if len(symbol_order.index) > 0:
-            sl_price = (
-                symbol_order.loc[symbol_order["origType"] == "STOP_MARKET"]
-                .copy()
-                .reset_index()
-            )
-            tp_price = (
-                symbol_order.loc[symbol_order["origType"] == "TAKE_PROFIT_MARKET"]
-                .copy()
-                .reset_index()
-            )
-            if len(sl_price.index) > 0:
-                slId = sl_price["orderId"][0]
-                slPrice = float(sl_price["stopPrice"][0])
-            if len(tp_price.index) > 0:
-                tpId = tp_price["orderId"][0]
-                tpPrice = float(tp_price["stopPrice"][0])
-        return {
-            "sl_id": slId,
-            "sl_price": slPrice,
-            "tp_id": tpId,
-            "tp_price": tpPrice,
-        }
+            result += [
+                {
+                    "type": "sl",
+                    "price": symbol_order["stopPrice"][i],
+                    "id": symbol_order["orderId"][i],
+                }
+                for i in range(len(symbol_order.index))
+                if symbol_order["origType"][i] == "STOP_MARKET"
+                or symbol_order["origType"][i] == "STOP"
+            ]
+            result += [
+                {
+                    "type": "tp",
+                    "price": symbol_order["stopPrice"][i],
+                    "id": symbol_order["orderId"][i],
+                }
+                for i in range(len(symbol_order.index))
+                if symbol_order["origType"][i] == "TAKE_PROFIT_MARKET"
+                or symbol_order["origType"][i] == "TAKE_PROFIT"
+            ]
+        return result
 
     async def cancel_order(self, symbol: str = "BTCUSDT", order_id: str = "0"):
         exchange = await self.get_exchange()

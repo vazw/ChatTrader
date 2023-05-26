@@ -660,35 +660,35 @@ REPLY_MARKUP = {
             [
                 InlineKeyboardButton(
                     "💰เช็คกระเป๋าเงิน",
-                    callback_data='{"Mode": "menu", "Method": "CheckBalance"}',
+                    callback_data='{"M": "menu", "H": "CheckBalance"}',
                 ),
                 InlineKeyboardButton(
                     "💹เทรดมือ",
-                    callback_data='{"Mode": "menuex", "Method": "Trade"}',
+                    callback_data='{"M": "menuex", "H": "Trade"}',
                 ),
             ],
             [
                 InlineKeyboardButton(
                     "📈📉วิเคราะห์กราฟ",
-                    callback_data='{"Mode": "menu", "Method": "Analyser"}',
+                    callback_data='{"M": "menu", "H": "Analyser"}',
                 ),
                 InlineKeyboardButton(
                     "📊กำไร/ขาดทุน",
-                    callback_data='{"Mode": "menu", "Method": "PositionData"}',
+                    callback_data='{"M": "menu", "H": "PositionData"}',
                 ),
             ],
             [
                 InlineKeyboardButton(
                     "🤖บอท",
-                    callback_data='{"Mode": "menu", "Method": "BotSetting"}',
+                    callback_data='{"M": "menu", "H": "BotSetting"}',
                 ),
                 InlineKeyboardButton(
                     "⚙️ตั้งค่า",
-                    callback_data='{"Mode": "menu", "Method": "apiSetting"}',
+                    callback_data='{"M": "menu", "H": "apiSetting"}',
                 ),
                 InlineKeyboardButton(
                     "❌ปิดเมนู",
-                    callback_data='{"Mode": "menu", "Method": "X"}',
+                    callback_data='{"M": "menu", "H": "X"}',
                 ),
             ],
         ]
@@ -697,18 +697,18 @@ REPLY_MARKUP = {
         [
             [
                 InlineKeyboardButton(
-                    "USDT", callback_data='{"Mode": "fiat", "Method": "USDT"}'
+                    "USDT", callback_data='{"M": "fiat", "H": "USDT"}'
                 ),
                 InlineKeyboardButton(
-                    "BUSD", callback_data='{"Mode": "fiat", "Method": "BUSD"}'
+                    "BUSD", callback_data='{"M": "fiat", "H": "BUSD"}'
                 ),
             ],
             [
                 InlineKeyboardButton(
-                    "ทั้งหมด", callback_data='{"Mode": "fiat", "Method": "ALL"}'
+                    "ทั้งหมด", callback_data='{"M": "fiat", "H": "ALL"}'
                 ),
                 InlineKeyboardButton(
-                    "❌ กลับ", callback_data='{"Mode": "fiat", "Method": "BACK"}'
+                    "❌ กลับ", callback_data='{"M": "fiat", "H": "BACK"}'
                 ),
             ],
         ]
@@ -718,19 +718,19 @@ REPLY_MARKUP = {
             [
                 InlineKeyboardButton(
                     "⚙️ตั้งค่า API",
-                    callback_data='{"Mode": "secure", "Method": "API"}',
+                    callback_data='{"M": "secure", "H": "API"}',
                 ),
             ],
             # [
             #     InlineKeyboardButton(
             #         "⚙️ตั้งค่ารหัสผ่าน",
-            #         callback_data='{"Mode": "secure", "Method": "PASS"}',
+            #         callback_data='{"M": "secure", "H": "PASS"}',
             #     ),
             # ],
             [
                 InlineKeyboardButton(
                     "❌ กลับ",
-                    callback_data='{"Mode": "secure", "Method": "BACK"}',
+                    callback_data='{"M": "secure", "H": "BACK"}',
                 ),
             ],
         ]
@@ -740,13 +740,13 @@ REPLY_MARKUP = {
             [
                 InlineKeyboardButton(
                     "VXMA",
-                    callback_data='{"Mode": "analyse", "Method": "VXMA"}',
+                    callback_data='{"M": "analyse", "H": "VXMA"}',
                 ),
             ],
             [
                 InlineKeyboardButton(
                     "❌ กลับ",
-                    callback_data='{"Mode": "analyse", "Method": "BACK"}',
+                    callback_data='{"M": "analyse", "H": "BACK"}',
                 )
             ],
         ]
@@ -756,13 +756,13 @@ REPLY_MARKUP = {
             [
                 InlineKeyboardButton(
                     "MARKET",
-                    callback_data='{"Mode": "order_type", "Method": "MARKET"}',
+                    callback_data='{"M": "order_type", "H": "MARKET"}',
                 ),
             ],
             [
                 InlineKeyboardButton(
                     "❌ กลับ",
-                    callback_data='{"Mode": "order_type", "Method": "BACK"}',
+                    callback_data='{"M": "order_type", "H": "BACK"}',
                 )
             ],
         ]
@@ -772,12 +772,12 @@ REPLY_MARKUP = {
             [
                 InlineKeyboardButton(
                     "ℹ️ ดูรายละเอียด",
-                    callback_data='{"Mode": "pnl", "Method": "COINS"}',
+                    callback_data='{"M": "pnl", "H": "COINS"}',
                 ),
             ],
             [
                 InlineKeyboardButton(
-                    "❌ กลับ", callback_data='{"Mode": "pnl", "Method": "BACK"}'
+                    "❌ กลับ", callback_data='{"M": "pnl", "H": "BACK"}'
                 ),
             ],
         ]
@@ -787,13 +787,13 @@ REPLY_MARKUP = {
             [
                 InlineKeyboardButton(
                     "✅ยืนยัน",
-                    callback_data='{"Mode": "position_confirm_sl", "Method": "OK"}',
+                    callback_data='{"M": "position_confirm_sl", "H": "OK"}',
                 ),
             ],
             [
                 InlineKeyboardButton(
                     "❌ กลับ",
-                    callback_data='{"Mode": "position_confirm_sl", "Method": "BACK"}',
+                    callback_data='{"M": "position_confirm_sl", "H": "BACK"}',
                 ),
             ],
         ]
@@ -803,13 +803,13 @@ REPLY_MARKUP = {
             [
                 InlineKeyboardButton(
                     "✅ยืนยัน",
-                    callback_data='{"Mode": "position_confirm_tp", "Method": "OK"}',
+                    callback_data='{"M": "position_confirm_tp", "H": "OK"}',
                 ),
             ],
             [
                 InlineKeyboardButton(
                     "❌ กลับ",
-                    callback_data='{"Mode": "position_confirm_tp", "Method": "BACK"}',
+                    callback_data='{"M": "position_confirm_tp", "H": "BACK"}',
                 ),
             ],
         ]
@@ -819,13 +819,13 @@ REPLY_MARKUP = {
             [
                 InlineKeyboardButton(
                     "✅ยืนยัน",
-                    callback_data='{"Mode": "position_confirm_lev", "Method": "OK"}',
+                    callback_data='{"M": "position_confirm_lev", "H": "OK"}',
                 ),
             ],
             [
                 InlineKeyboardButton(
                     "❌ กลับ",
-                    callback_data='{"Mode": "position_confirm_lev", "Method": "BACK"}',
+                    callback_data='{"M": "position_confirm_lev", "H": "BACK"}',
                 ),
             ],
         ]
@@ -835,13 +835,13 @@ REPLY_MARKUP = {
             [
                 InlineKeyboardButton(
                     "✅ยืนยัน",
-                    callback_data='{"Mode": "vxma_settings_confirm", "Method": "OK"}',
+                    callback_data='{"M": "vxma_settings_confirm", "H": "OK"}',
                 ),
             ],
             [
                 InlineKeyboardButton(
                     "❌ กลับ",
-                    callback_data='{"Mode": "vxma_settings_confirm", "Method": "BACK"}',
+                    callback_data='{"M": "vxma_settings_confirm", "H": "BACK"}',
                 ),
             ],
         ]
@@ -851,13 +851,13 @@ REPLY_MARKUP = {
             [
                 InlineKeyboardButton(
                     "✅ยืนยัน",
-                    callback_data='{"Mode": "vxma_settings_confirm_del", "Method": "OK"}',
+                    callback_data='{"M": "vxma_settings_confirm_del", "H": "OK"}',
                 ),
             ],
             [
                 InlineKeyboardButton(
                     "❌ กลับ",
-                    callback_data='{"Mode": "vxma_settings_confirm_del", "Method": "BACK"}',
+                    callback_data='{"M": "vxma_settings_confirm_del", "H": "BACK"}',
                 ),
             ],
         ]
@@ -867,13 +867,13 @@ REPLY_MARKUP = {
             [
                 InlineKeyboardButton(
                     "✅ยืนยัน",
-                    callback_data='{"Mode": "vxma_settings_confirm_save", "Method": "OK"}',
+                    callback_data='{"M": "vxma_settings_confirm_save", "H": "OK"}',
                 ),
             ],
             [
                 InlineKeyboardButton(
                     "❌ กลับ",
-                    callback_data='{"Mode": "vxma_settings_confirm_save", "Method": "BACK"}',
+                    callback_data='{"M": "vxma_settings_confirm_save", "H": "BACK"}',
                 ),
             ],
         ]
@@ -883,13 +883,13 @@ REPLY_MARKUP = {
             [
                 InlineKeyboardButton(
                     "✅ยืนยัน",
-                    callback_data='{"Mode": "vxma_settings_confirm_save", "Method": "OK"}',
+                    callback_data='{"M": "vxma_settings_confirm_save", "H": "OK"}',
                 ),
             ],
             [
                 InlineKeyboardButton(
                     "❌ กลับ",
-                    callback_data='{"Mode": "vxma_settings_confirm_save", "Method": "BACK"}',
+                    callback_data='{"M": "vxma_settings_confirm_save", "H": "BACK"}',
                 ),
             ],
         ]
