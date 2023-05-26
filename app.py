@@ -37,6 +37,7 @@ from src.AppData.Appdata import (
     vxma_settings,
     vxma_settings_info,
     chat,
+    remove_last_line_from_string,
 )
 from src.Bot import BotTrade
 from src.CCXT_Binance import (
@@ -1024,9 +1025,10 @@ method to make great profit in Cryptocurrency Markets",
                     )
                 except Exception:
                     continue
+            self.uniq_msg_id.clear()
+            self.msg_id.clear()
+            self.ask_msg_id.clear()
 
-        self.msg_id.clear()
-        self.uniq_msg_id.clear()
         msg = await update.message.reply_text("Cleared!!")
         self.msg_id.append(msg.message_id)
 
@@ -1875,6 +1877,7 @@ Leverage: {self.trade_order['lev']}\n"
                 quote = "USDT"
                 base = symbol
             self.reset_trade_order_data()
+            self.vxma_settings = vxma_settings
             self.trade_order["symbol"] = self.vxma_settings[
                 "symbol"
             ] = f"{base}/{quote}:{quote}"
@@ -1972,12 +1975,12 @@ Order นี้จะใช้ Margin จะปรับเป็น: {round(mar
             pnl_t = "ขาดทุน" if self.trade_order["pnl"] < 0.0 else "กำไร"
 
             text = f"\n{emoji}Postion {self.trade_order['type'].upper()}\n\
-🪙จำนวน {self.trade_order['amt']}\n\
+🪙จำนวน {self.trade_order['amt']}\n\n\
 💶ราคาเข้า : {self.trade_order['e_price']}\n\
-💵ราคาปัจจุบัน : {self.trade_order['price']}\n\
+💵ราคาปัจจุบัน : {self.trade_order['price']}\n\n\
 💰Margin ที่ใช้ : {self.trade_order['margin']}$\n\
 Leverage : X{self.trade_order['lev']}\n\
-💸{pnl_t} : {self.trade_order['pnl']}$\n"
+💸{pnl_t} : {self.trade_order['pnl']}$"
             self.coin_pnl_reply_text = f"เหรียญ {self.trade_order['symbol']}" + text
             self.update_inline_keyboard()
             msgs = await query.edit_message_text(
@@ -2258,6 +2261,9 @@ Leverage : X{self.trade_order['lev']}\n\
             text = await close_order("buy", self.bot_trade.currentMode.Sside)
         await self.binance_.update_balance(True)
         await self.binance_.disconnect()
+        self.coin_pnl_reply_text = remove_last_line_from_string(
+            self.coin_pnl_reply_text
+        )
         msgs = await query.edit_message_text(
             text=self.coin_pnl_reply_text + text + choice(EGGS),
             reply_markup=self.reply_markup["menu"],
@@ -2429,12 +2435,12 @@ Leverage : X{self.trade_order['lev']}\n\
             self.trade_order["sl_price"] = symbol_order["sl_price"]
             self.trade_order["lev"] = position_data["leverage"]
             text = f"\n{emoji}Postion {self.trade_order['type'].upper()}\n\
-🪙จำนวน {self.trade_order['amt']}\n\
+🪙จำนวน {self.trade_order['amt']}\n\n\
 💶ราคาเข้า : {self.trade_order['e_price']}\n\
-💵ราคาปัจจุบัน : {self.trade_order['price']}\n\
+💵ราคาปัจจุบัน : {self.trade_order['price']}\n\n\
 💰Margin ที่ใช้ : {self.trade_order['margin']}$\n\
 Leverage : X{self.trade_order['lev']}\n\
-💸{pnl_t} : {self.trade_order['pnl']}$\n"
+💸{pnl_t} : {self.trade_order['pnl']}$"
             self.coin_pnl_reply_text = f"เหรียญ {self.trade_order['symbol']}" + text
             self.update_inline_keyboard()
             msgs = await query.edit_message_text(
@@ -3098,6 +3104,7 @@ Leverage : X{self.trade_order['lev']}\n\
                         self.msg_id.remove(id)
                     except Exception:
                         continue
+                self.msg_id.clear()
             await asyncio.sleep(5)
 
     async def make_bot_task(self, context: ContextTypes.DEFAULT_TYPE):

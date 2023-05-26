@@ -233,6 +233,10 @@ def max_margin_size(size, free_balance) -> float:
         return Max_Size
 
 
+def remove_last_line_from_string(text: str) -> str:
+    return text[: text.rfind("\n")]
+
+
 class RiskManageTable:
     def __init__(self, symbolist, balance):
         self.symbol = symbolist["symbol"]

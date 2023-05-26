@@ -30,6 +30,7 @@ from .AppData.Appdata import (
     edit_trade_record,
     edit_all_trade_record,
     read_one_open_trade_record,
+    remove_last_line_from_string,
 )
 from .CCXT_Binance import (
     binance_i,
@@ -126,10 +127,6 @@ common_names = {
     "initialMargin": "Margin $",
     "leverage": "Leverage",
 }
-
-
-def remove_last_line_from_string(text):
-    return text[: text.rfind("\n")]
 
 
 async def split_list(input_list, chunk_size):
