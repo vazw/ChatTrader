@@ -2381,7 +2381,7 @@ Leverage : X{self.trade_order['lev']}\n\
                             "Side": status["positionSide"][i],
                         }
                     ),
-                    f"{status['positionSide'][i]} {status['symbol'][i]} P/L {round(status['unrealizedProfit'][i], 3)}$",
+                    f"{status['positionSide'][i] if status['positionSide'][i] else ''} {status['symbol'][i]} P/L {round(status['unrealizedProfit'][i], 3)}$",
                 )
                 for i in range(len(status.index))
             ]
