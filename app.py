@@ -80,7 +80,7 @@ class Telegram:
         self.risk_reply_text = ":"
         self.watchlist_reply_text = ":"
         self.coins_settings_key = ""
-        self.vxma_selected_state = ""
+        self.vxma_settings_selected_state = ""
         self.vxma_menu_selected_state = ""
         self.trade_menu_selected = ""
         self.trade_order = {}
@@ -422,6 +422,36 @@ method to make great profit in Cryptocurrency Markets",
                     ],
                 ]
             ),
+            "vxma_settings_1": InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            callback_data='{"Mode": "vxma_settings" , "Method": "timeframe", "Type": "str"}',
+                            text=f"timeframe : {self.vxma_settings['timeframe']}",
+                        ),
+                        InlineKeyboardButton(
+                            f"เหรียญ : {self.vxma_settings['symbol']}",
+                            callback_data='{"Mode": "vxma_settings", "Method": "symbol", "Type": "str"}',
+                        ),
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            "เทรด💹",
+                            callback_data='{"Mode": "vxma_settings", "Method": "TRADE"}',
+                        ),
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            "⚙️ตั้งค่ากลยุทธ์",
+                            callback_data='{"Mode": "vxma_settings", "Method": "Setting"}',
+                        ),
+                        InlineKeyboardButton(
+                            "❌ กลับ",
+                            callback_data='{"Mode": "vxma_settings", "Method": "BACK"}',
+                        ),
+                    ],
+                ]
+            ),
             "vxma_settings_2": InlineKeyboardMarkup(
                 [
                     [
@@ -542,10 +572,6 @@ method to make great profit in Cryptocurrency Markets",
                             callback_data='{"Mode": "vxma_settings", "Method": "CHART"}',
                         ),
                         InlineKeyboardButton(
-                            "เทรด💹",
-                            callback_data='{"Mode": "vxma_settings", "Method": "TRADE"}',
-                        ),
-                        InlineKeyboardButton(
                             "เปลี่ยนเหรียญ",
                             callback_data='{"Mode": "vxma_settings", "Method": "symbol", "Type": "str"}',
                         ),
@@ -557,7 +583,7 @@ method to make great profit in Cryptocurrency Markets",
                         ),
                         InlineKeyboardButton(
                             "❌ กลับ",
-                            callback_data='{"Mode": "vxma_settings", "Method": "BACK"}',
+                            callback_data='{"Mode": "vxma_settings", "Method": "BACK_2"}',
                         ),
                     ],
                 ]
@@ -1787,7 +1813,7 @@ Leverage: {self.trade_order['lev']}\n"
     ):
         query = update.callback_query
         await query.answer()
-        if self.trade_menu_selected == "vxma_settings_2":
+        if self.trade_menu_selected == "vxma_settings_1":
             msgs = await query.edit_message_text(
                 text=self.text_reply_bot_setting,
                 reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
@@ -1881,7 +1907,7 @@ Leverage: {self.trade_order['lev']}\n"
             self.trade_order["symbol"] = self.vxma_settings[
                 "symbol"
             ] = f"{base}/{quote}:{quote}"
-            self.vxma_menu_selected_state = "vxma_settings_2"
+            self.vxma_menu_selected_state = "vxma_settings_1"
             self.update_inline_keyboard()
             await self.vxma_send_candle_pic(update)
             self.text_reply_bot_setting = f"รายการตั้งค่ากลยุทธ์สำหรับ {symbol}"
@@ -1890,7 +1916,7 @@ Leverage: {self.trade_order['lev']}\n"
                 reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
             )
         except Exception as e:
-            text = f"เกิดข้อผิดพลาด :{e}\nโปรดตรวจสอบให้แน่ใจว่าเหรียญ {respon} นั้นถูกต้อง\n\nโปรดทำรายการใหม่อีกครั้ง"
+            text = f"เกิดข้อผิดพลาด :{e}\nโปรดตรวจสอบให้แน่ใจว่าเหรียญ {self.vxma_settings['symbol']} นั้นถูกต้อง\n\nโปรดทำรายการใหม่อีกครั้ง"
             msgs = await update.message.reply_text(
                 text=text,
                 reply_markup=self.reply_markup["analyse"],
@@ -2686,7 +2712,7 @@ Leverage : X{self.trade_order['lev']}\n\
                 msgs = await query.edit_message_text(
                     text="โปรดเลือกเหรียญดังนี้:", reply_markup=self.coins_settings_key
                 )
-            elif self.vxma_menu_selected_state == "vxma_settings_2":
+            elif self.vxma_menu_selected_state == "vxma_settings_1":
                 msgs = await query.edit_message_text(
                     text="โปรดเลือกกลยุทธ์ของท่าน",
                     reply_markup=self.reply_markup["analyse"],
@@ -2696,6 +2722,18 @@ Leverage : X{self.trade_order['lev']}\n\
             await query.delete_message()
             msgs = await query.message.reply_text(
                 text=self.text_reply_bot_setting,
+                reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
+            )
+        elif callback["Method"] == "BACK_2":
+            self.vxma_menu_selected_state = "vxma_settings_1"
+            msgs = await query.edit_message_text(
+                text=self.text_reply_bot_setting,
+                reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
+            )
+        elif callback["Method"] == "Setting":
+            self.vxma_menu_selected_state = "vxma_settings_2"
+            msgs = await query.edit_message_text(
+                text=f"รายการตั้งค่ากลยุทธ์สำหรับ {self.vxma_settings['symbol']}",
                 reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
             )
         elif callback["Method"] == "SAVE":
@@ -2717,7 +2755,7 @@ Leverage : X{self.trade_order['lev']}\n\
                 reply_markup=self.reply_markup["vxma_settings_confirm_save_2"],
             )
         elif callback["Method"] == "TRADE":
-            self.trade_menu_selected = "vxma_settings_2"
+            self.trade_menu_selected = "vxma_settings_1"
             exchange = await self.binance_.get_exchange()
             self.trade_order["price"] = await self.binance_.get_bidask(
                 self.trade_order["symbol"], "bid"
@@ -2768,22 +2806,24 @@ Leverage : X{self.trade_order['lev']}\n\
                 reply_markup=self.reply_markup["vxma_settings_confirm_del"],
             )
         elif callback["Method"] in self.vxma_settings.keys():
-            self.vxma_selected_state = callback["Method"]
+            self.vxma_settings_selected_state = callback["Method"]
             self.vxma_selected_state_type = callback["Type"]
             if self.vxma_selected_state_type == "bool":
-                self.vxma_settings[self.vxma_selected_state] = (
-                    False if self.vxma_settings[self.vxma_selected_state] else True
+                self.vxma_settings[self.vxma_settings_selected_state] = (
+                    False
+                    if self.vxma_settings[self.vxma_settings_selected_state]
+                    else True
                 )
                 self.update_inline_keyboard()
                 msgs = await query.edit_message_text(
                     text=self.text_reply_bot_setting
-                    + f"\n\n{vxma_settings_info[self.vxma_selected_state]} สำเร็จ",
+                    + f"\n\n{vxma_settings_info[self.vxma_settings_selected_state]} สำเร็จ",
                     reply_markup=self.dynamic_reply_markup[
                         self.vxma_menu_selected_state
                     ],
                 )
             else:
-                text = f"ท่านได้เลือกเมนู {vxma_settings_info[self.vxma_selected_state]} \n\nท่านต้องการแก้ไขใช่หรือไม่?"
+                text = f"ท่านได้เลือกเมนู {vxma_settings_info[self.vxma_settings_selected_state]} \n\nท่านต้องการแก้ไขใช่หรือไม่?"
                 msgs = await query.edit_message_text(
                     text=self.text_reply_bot_setting + f"\n\n{text}",
                     reply_markup=self.reply_markup["vxma_settings_confirm"],
@@ -2805,8 +2845,8 @@ Leverage : X{self.trade_order['lev']}\n\
             return ConversationHandler.END
         else:
             msg = await query.edit_message_text(
-                text=f"ท่านได้เลือกเมนู {vxma_settings_info[self.vxma_selected_state]}\
-\n\n\nค่าปัจจุบันคือ {self.vxma_settings[self.vxma_selected_state]}\
+                text=f"ท่านได้เลือกเมนู {vxma_settings_info[self.vxma_settings_selected_state]}\
+\n\n\nค่าปัจจุบันคือ {self.vxma_settings[self.vxma_settings_selected_state]}\
  โปรดกรอกข้อมูลเพื่อทำการแก้ไข\n\nกด /cancel เพื่อยกเลิก"
             )
             self.ask_msg_id.append(msg.message_id)
@@ -2818,15 +2858,15 @@ Leverage : X{self.trade_order['lev']}\n\
         respon = update.message.text
         self.msg_id.append(update.message.message_id)
         try:
-            text = f"\nได้ทำการเปลี่ยน {vxma_settings_info[self.vxma_selected_state]}\
-จากเดิม : {self.vxma_settings[self.vxma_selected_state]} ไปเป็น {respon} เรียบร้อย"
+            text = f"\nได้ทำการเปลี่ยน {vxma_settings_info[self.vxma_settings_selected_state]}\
+จากเดิม : {self.vxma_settings[self.vxma_settings_selected_state]} ไปเป็น {respon} เรียบร้อย"
             if self.vxma_selected_state_type == "int":
-                self.vxma_settings[self.vxma_selected_state] = int(respon)
+                self.vxma_settings[self.vxma_settings_selected_state] = int(respon)
             elif self.vxma_selected_state_type == "float":
-                self.vxma_settings[self.vxma_selected_state] = float(respon)
+                self.vxma_settings[self.vxma_settings_selected_state] = float(respon)
             elif self.vxma_selected_state_type == "str":
-                self.vxma_settings[self.vxma_selected_state] = str(respon)
-            if self.vxma_selected_state in TA_TYPE:
+                self.vxma_settings[self.vxma_settings_selected_state] = str(respon)
+            if self.vxma_settings_selected_state in TA_TYPE:
                 await self.vxma_send_candle_pic(update)
 
         except Exception as e:
