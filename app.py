@@ -968,6 +968,10 @@ method to make great profit in Cryptocurrency Markets",
                 lambda x: (eval(x))["M"] == "vxma_settings_confirm_save",
             ),
             CallbackQueryHandler(
+                self.vxma_save_settings_confirm_2,
+                lambda x: (eval(x))["M"] == "vxma_settings_confirm_save_2",
+            ),
+            CallbackQueryHandler(
                 self.vxma_del_settings_confirm,
                 lambda x: (eval(x))["M"] == "vxma_settings_confirm_del",
             ),

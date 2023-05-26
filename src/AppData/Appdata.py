@@ -883,13 +883,13 @@ REPLY_MARKUP = {
             [
                 InlineKeyboardButton(
                     "✅ยืนยัน",
-                    callback_data='{"M": "vxma_settings_confirm_save", "H": "OK"}',
+                    callback_data='{"M": "vxma_settings_confirm_save_2", "H": "OK"}',
                 ),
             ],
             [
                 InlineKeyboardButton(
                     "❌ กลับ",
-                    callback_data='{"M": "vxma_settings_confirm_save", "H": "BACK"}',
+                    callback_data='{"M": "vxma_settings_confirm_save_2", "H": "BACK"}',
                 ),
             ],
         ]
