@@ -1131,7 +1131,7 @@ method to make great profit in Cryptocurrency Markets",
             status = self.binance_.position_data
             if len(status.index) > 0:
                 text = [
-                    f"{status['positionSide'][i] if status['positionSide'][i] else ''} {status['symbol'][i]} จำนวน {status['positionAmt'][i]} P/L {round(status['unrealizedProfit'][i], 3)}$\n"
+                    f"{status['positionSide'][i] if status['positionSide'][i] != 'BOTH' else ''} {status['symbol'][i]} จำนวน {status['positionAmt'][i]} P/L {round(status['unrealizedProfit'][i], 3)}$\n"
                     for i in range(len(status.index))
                 ]
                 self.pnl_reply = "Postion ที่มีการเปิดอยู่\n" + "".join(text)
@@ -2381,7 +2381,7 @@ Leverage : X{self.trade_order['lev']}\n\
                             "Side": status["positionSide"][i],
                         }
                     ),
-                    f"{status['positionSide'][i] if status['positionSide'][i] else ''} {status['symbol'][i]} P/L {round(status['unrealizedProfit'][i], 3)}$",
+                    f"{status['positionSide'][i] if status['positionSide'][i] != 'BOTH' else ''} {status['symbol'][i]} P/L {round(status['unrealizedProfit'][i], 3)}$",
                 )
                 for i in range(len(status.index))
             ]
