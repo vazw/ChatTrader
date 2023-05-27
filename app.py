@@ -1049,8 +1049,8 @@ method to make great profit in Cryptocurrency Markets",
         self.application.add_handler(MessageHandler(filters.COMMAND, self.unknown))
 
         # Running Background job.
-        self.application.job_queue.run_once(self.make_bot_task, when=1)
-        self.application.job_queue.run_once(self.clear_task, when=1)
+        self.application.job_queue.run_once(self.make_bot_task, when=5)
+        self.application.job_queue.run_once(self.clear_task, when=10)
 
         self.application.run_polling()
 
