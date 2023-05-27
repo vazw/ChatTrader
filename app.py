@@ -2428,7 +2428,6 @@ Leverage : X{self.trade_order['lev']}\n\
                 InlineKeyboardButton(
                     "❌ กลับ",
                     callback_data="{'M': 'PNLC', 'H' :'BACK_TO_MENU'}",
-                    ## Chnage back to JSONDict
                 )
             ]
         ]
@@ -3211,9 +3210,7 @@ Leverage : X{self.trade_order['lev']}\n\
     async def delete_unig_messages(self, context) -> None:
         if len(self.uniq_msg_id) > 0:
             tasks = [
-                asyncio.create_task(
-                    context.bot.delete_message(chat_id=self.chat_id, message_id=cid)
-                )
+                asyncio.create_task(self.delete_messages(cid, context))
                 for cid in self.uniq_msg_id
             ]
             await asyncio.gather(*tasks)
@@ -3221,12 +3218,17 @@ Leverage : X{self.trade_order['lev']}\n\
     async def delete_ask_messages(self, context) -> None:
         if len(self.ask_msg_id) > 0:
             tasks = [
-                asyncio.create_task(
-                    context.bot.delete_message(chat_id=self.chat_id, message_id=cid)
-                )
+                asyncio.create_task(self.delete_messages(cid, context))
                 for cid in self.ask_msg_id
             ]
             await asyncio.gather(*tasks)
+
+    async def delete_messages(self, cid, context: ContextTypes.DEFAULT_TYPE):
+        try:
+            await context.bot.delete_message(chat_id=self.chat_id, message_id=cid)
+            self.msg_id.remove(cid)
+        except Exception:
+            pass
 
     ## Customs Tasks to run once
     async def clear_task(self, context: ContextTypes.DEFAULT_TYPE):
