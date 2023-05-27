@@ -2420,7 +2420,7 @@ Leverage : X{self.trade_order['lev']}\n\
             self.uniq_msg_id.append(msgs.message_id)
             return
 
-        await query.edit_message_text("กำลังโหลดข้อมูลแท่งเทียน โปรดรอซักครู่")
+        await query.edit_message_text("โปรดรอซักครู่..")
         await self.binance_.update_balance()
         await self.binance_.disconnect()
         pnl_back_button = [
