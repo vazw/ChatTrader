@@ -70,7 +70,6 @@ class Telegram:
         self.ask_msg_id = []
         self.uniq_msg_id = []
         self.position_tp_sl_order = []
-        self.bot_trade = BotTrade(self.chat_id, self.status_bot, self.status_scan)
         self.status_bot = False
         self.status_scan = False
 
@@ -94,6 +93,7 @@ class Telegram:
         self.vxma_settings = vxma_settings
         self.dynamic_reply_markup = {}
         self.reply_markup = REPLY_MARKUP
+        self.bot_trade = BotTrade(self.chat_id, self.status_bot, self.status_scan)
 
         # Buttons at the bottom
         self.reply_key = ReplyKeyboardMarkup(
@@ -3312,9 +3312,6 @@ Leverage : X{self.trade_order['lev']}\n\
 def main():
     while True:
         try:
-            from dotenv import load_dotenv
-
-            load_dotenv()
             app = Telegram(f"{os.environ['TelegramToken']}")
             app.setup_bot()
         except KeyboardInterrupt:
