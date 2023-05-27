@@ -2200,6 +2200,7 @@ Leverage : X{self.trade_order['lev']}\n\
         query = update.callback_query
         await query.answer()
         callback = eval(query.data)
+        text2 = ""
         if callback["D"] != 0:
             price = callback["D"].split("|")
             self.trade_order["sl_id"], self.trade_order["sl_price"] = price
