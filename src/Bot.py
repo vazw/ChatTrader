@@ -776,11 +776,6 @@ class BotTrade:
                 print(e)
                 lastUpdate.status = "Sleep Mode"
                 await asyncio.sleep(10)
-                tasks = asyncio.current_task()
-                clearconsol()
-                tasks.cancel()
-                raise
-
             finally:
                 await binance_i.disconnect()
 
