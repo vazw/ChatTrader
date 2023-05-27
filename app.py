@@ -2071,7 +2071,7 @@ Leverage : X{self.trade_order['lev']}\n\
             else ""
         )
         msg = await query.edit_message_text(
-            text=f"{self.trade_order['symbol']} {self.trade_order['type']}\n{text}\n\
+            text=f"{self.trade_order['symbol']} {self.trade_order['type'].upper()}\n{text}\n\
 ราคาเปิด Position นี้คือ : {self.trade_order['price']}\n\
 โปรดใส่ราคา Take Profit หากต้องการแก้ไข \n\
 หรือหากต้องการใช้ % คำนวนให้พิมพ์ ลงท้ายด้วย % เช่น 5%{text2}\n\n กด /cancel เพื่อยกเลิก"
@@ -2127,7 +2127,7 @@ Leverage : X{self.trade_order['lev']}\n\
         async def open_tp(side: str = "buy", position_side: str = "BOTH"):
             orderid = get_order_id()
             try:
-                orderTP = await exchange.create_order(
+                order = await exchange.create_order(
                     self.trade_order["symbol"],
                     "TAKE_PROFIT_MARKET",
                     side,
@@ -2144,10 +2144,10 @@ Leverage : X{self.trade_order['lev']}\n\
                     {
                         "type": "tp",
                         "price": self.trade_order["new_tp_price"],
-                        "id": orderTP["orderId"],
+                        "id": order["id"],
                     }
                 )
-                return f"\n{orderTP['status']} -> ส่งคำสั่ง Take Profit ที่ {self.trade_order['new_tp_price']} เรียบร้อยแล้ว"
+                return f"\n{order['status']} -> ส่งคำสั่ง Take Profit ที่ {self.trade_order['new_tp_price']} เรียบร้อยแล้ว"
 
             except Exception as e:
                 return f"\nเกิดข้อผิดพลาดตอนส่งคำสั่ง Take Profit :{e}"
@@ -2211,7 +2211,7 @@ Leverage : X{self.trade_order['lev']}\n\
             else ""
         )
         msg = await query.edit_message_text(
-            text=f"{self.trade_order['type']} {self.trade_order['symbol']}\n{text}\n\
+            text=f"{self.trade_order['type'].upper()} {self.trade_order['symbol']}\n{text}\n\
 ราคาเปิด Position นี้คือ : {self.trade_order['price']}\n\
 โปรดใส่ราคา Stop-Loss ใหม่หากต้องการแก้ไข\n\
 หรือหากต้องการใช้ % คำนวนให้พิมพ์ ลงท้ายด้วย % เช่น 5%{text2}\n\n กด /cancel เพื่อยกเลิก"
@@ -2268,7 +2268,7 @@ Leverage : X{self.trade_order['lev']}\n\
         async def open_sl(side: str = "buy", position_side: str = "BOTH"):
             orderid = get_order_id()
             try:
-                orderTP = await exchange.create_order(
+                order = await exchange.create_order(
                     self.trade_order["symbol"],
                     "stop_market",
                     side,
@@ -2283,10 +2283,10 @@ Leverage : X{self.trade_order['lev']}\n\
                     {
                         "type": "sl",
                         "price": self.trade_order["new_sl_price"],
-                        "id": orderTP["orderId"],
+                        "id": order["id"],
                     }
                 )
-                return f"\n{orderTP['status']} -> ส่งคำสั่ง Stop-Loss ที่ {self.trade_order['new_sl_price']} เรียบร้อยแล้ว"
+                return f"\n{order['status']} -> ส่งคำสั่ง Stop-Loss ที่ {self.trade_order['new_sl_price']} เรียบร้อยแล้ว"
 
             except Exception as e:
                 return f"\nเกิดข้อผิดพลาดตอนส่งคำสั่ง Stop-Loss :{e}"
