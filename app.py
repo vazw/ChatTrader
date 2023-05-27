@@ -3334,7 +3334,7 @@ Leverage : X{self.trade_order['lev']}\n\
         while True:
             if self.status_bot:
                 try:
-                    await self.bot_trade.run_bot()
+                    await asyncio.shield(self.bot_trade.run_bot())
                 except Exception as e:
                     print(e)
                     continue
