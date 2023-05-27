@@ -633,17 +633,7 @@ class BotTrade:
 
     async def waiting(self):
         time_now = lastUpdate.candle
-        balance = binance_i.balance
-        positions = balance["info"]["positions"]
-        status = pd.DataFrame(
-            [position for position in positions if float(position["positionAmt"]) != 0],
-            columns=statcln,
-        )
-        status["unrealizedProfit"] = (
-            (status["unrealizedProfit"]).astype("float64").round(2)
-        )
-
-        status["initialMargin"] = (status["initialMargin"]).astype("float64")
+        status = binance_i.position_data
         netunpl = float((status["unrealizedProfit"]).astype("float64").sum())
         status.rename(columns=common_names, errors="ignore", inplace=True)
         print(tabulate(status, showindex=False, headers="keys"))
@@ -730,7 +720,6 @@ class BotTrade:
                     for i in symbolist.index
                 ]
 
-                all_symbols = await binance_i.getAllsymbol()
                 configed_symbol = symbolist["symbol"].tolist()
                 self.watchlist = [
                     (
@@ -741,6 +730,7 @@ class BotTrade:
                     for i in range(len(symbolist.index))
                 ]
                 if self.status_scan:
+                    all_symbols = await binance_i.getAllsymbol()
                     tasks2 = [
                         asyncio.create_task(self.main_bot_no_setting(symbol))
                         for symbol in all_symbols

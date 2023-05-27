@@ -3086,12 +3086,12 @@ Leverage : X{self.trade_order['lev']}\n\
         else:
             try:
                 configs = bot_setting()
-                self.vxma_settings["id"] = f"A{len(configs.index)+1}"
+                self.vxma_settings["id"] = len(configs.index) + 1
                 config = pd.DataFrame(
                     data=[vxma_settings.values()], columns=vxma_settings.keys()
                 )
                 config = config.set_index("id")
-                configs = pd.concat([configs, config], axis=0, ignore_index=False)
+                configs = pd.concat([configs, config], axis=0, ignore_index=True)
                 configs.to_csv("bot_config.csv", index=True)
                 text = f"\n\nได้บันทึกข้อมูลเหรียญ {self.vxma_settings['symbol']} สำหรับบอทเรียบร้อยแล้วค่ะ"
                 self.bot_trade.update_watchlist()
