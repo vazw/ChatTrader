@@ -2843,6 +2843,7 @@ Leverage : X{self.trade_order['lev']}\n\
         elif callback["H"] == "TRADE":
             self.trade_menu_selected = "vxma_settings_1"
             exchange = await self.binance_.get_exchange()
+            self.trade_order["symbol"] = self.vxma_settings["symbol"]
             self.trade_order["price"] = await self.binance_.get_bidask(
                 self.trade_order["symbol"], "bid"
             )
