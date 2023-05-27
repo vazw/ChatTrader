@@ -13,6 +13,7 @@ from .AppData import (
     notify_history,
     colorCS,
     lastUpdate,
+    retry,
     timer,
     candle_ohlc,
 )
@@ -1489,16 +1490,12 @@ class BotTrade:
             )
             return
 
+    @retry(10, lambda e: print(f"get_currentmode found error : {e}"))
     async def get_currentmode(self):
         exchange = await binance_i.get_exchange()
-        try:
-            data = await exchange.fetch_account_positions(["BTCUSDT"])
-        except Exception as e:
-            lastUpdate.status = f"{e}"
-            await binance_i.connect_loads()
-            data = await exchange.fetch_account_positions(["BTCUSDT"])
+        data = await exchange.fapiPrivateGetPositionSideDual()
         await binance_i.disconnect()
-        self.currentMode.dualSidePosition = data[0]["hedged"]
+        self.currentMode.dualSidePosition = data["dualSidePosition"]
         if self.currentMode.dualSidePosition:
             self.currentMode.Sside = "SHORT"
             self.currentMode.Lside = "LONG"

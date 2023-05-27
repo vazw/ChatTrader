@@ -2518,9 +2518,8 @@ Leverage : X{self.trade_order['lev']}\n\
                         f"{x}",
                         callback_data=f"{i}",
                     )
-                    for i, x in symbol_list
                 ]
-                for symbol_list in split_list(positiondata, 3)
+                for i, x in positiondata
             ]
             coins_key = InlineKeyboardMarkup(coins + self.pnl_back_button)
             text = [
