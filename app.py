@@ -1225,6 +1225,7 @@ method to make great profit in Cryptocurrency Markets",
         this is nested Method respon for CheckBalance"""
         query = update.callback_query
         await query.answer()
+        await query.edit_message_text("กำลังโหลดข้อมูล...")
         callback = eval(query.data)
         fiat_balance = self.binance_.fiat_balance
         status = self.binance_.position_data
@@ -2483,6 +2484,8 @@ Leverage : X{self.trade_order['lev']}\n\
             )
         elif "Side" not in callback.keys():
             symbol = callback["H"]
+            await self.binance_.update_balance()
+            await self.binance_.disconnect()
             status = self.binance_.position_data
             status = status[status["symbol"] == symbol]
             positiondata = [
