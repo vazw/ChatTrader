@@ -2140,6 +2140,13 @@ Leverage : X{self.trade_order['lev']}\n\
                         "newClientOrderId": orderid,
                     },
                 )
+                self.position_tp_sl_order.append(
+                    {
+                        "type": "tp",
+                        "price": self.trade_order["new_tp_price"],
+                        "id": orderTP["orderId"],
+                    }
+                )
                 return f"\n{orderTP['status']} -> ส่งคำสั่ง Take Profit ที่ {self.trade_order['new_tp_price']} เรียบร้อยแล้ว"
 
             except Exception as e:
@@ -2270,6 +2277,13 @@ Leverage : X{self.trade_order['lev']}\n\
                         "positionSide": position_side,
                         "newClientOrderId": orderid,
                     },
+                )
+                self.position_tp_sl_order.append(
+                    {
+                        "type": "sl",
+                        "price": self.trade_order["new_sl_price"],
+                        "id": orderTP["orderId"],
+                    }
                 )
                 return f"\n{orderTP['status']} -> ส่งคำสั่ง Stop-Loss ที่ {self.trade_order['new_sl_price']} เรียบร้อยแล้ว"
 
@@ -2463,6 +2477,7 @@ Leverage : X{self.trade_order['lev']}\n\
         else:
             ## TODO EDIT POSITION
             self.reset_trade_order_data()
+            await query.edit_message_text("กำลังโหลดข้อมูลออเดอร์...")
             symbol = str(callback["H"]).upper()
             if ":" in symbol:
                 self.trade_order["symbol"] = symbol
