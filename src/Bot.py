@@ -716,7 +716,7 @@ class BotTrade:
                 lastUpdate.status = "Creating Tasks"
 
                 tasks = [
-                    asyncio.create_task(self.main_bot(symbolist.loc[i,]))
+                    asyncio.create_task(self.main_bot(symbolist.iloc[i,]))
                     for i in symbolist.index
                 ]
 

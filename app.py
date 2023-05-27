@@ -2484,10 +2484,14 @@ Leverage : X{self.trade_order['lev']}\n\
             )
         elif "Side" not in callback.keys():
             symbol = callback["H"]
+            if "/" in symbol:
+                posim = symbol[:-5].replace("/", "")
+            else:
+                posim = symbol
             await self.binance_.update_balance()
             await self.binance_.disconnect()
             status = self.binance_.position_data
-            status = status[status["symbol"] == symbol]
+            status = status[status["symbol"] == posim]
             positiondata = [
                 (
                     json.dumps(
@@ -2648,7 +2652,7 @@ Leverage : X{self.trade_order['lev']}\n\
                 [
                     InlineKeyboardButton(
                         f"{symbol[:-5]} {tf}".replace("/", ""),
-                        callback_data=json.dumps({"M": "COINS", "H": cid}),
+                        callback_data=json.dumps({"M": "COINS", "H": f"{cid}"}),
                     )
                     for cid, symbol, tf in symbol_list
                 ]
@@ -2809,8 +2813,8 @@ Leverage : X{self.trade_order['lev']}\n\
             await query.edit_message_text("กำลังโหลดข้อมูลแท่งเทียน โปรดรอซักครู่")
             self.vxma_menu_selected_state = "vxma_settings"
             configs = bot_setting()
-            self.vxma_settings["id"] = callback["H"]
-            config = configs.loc[self.vxma_settings["id"],]
+            self.vxma_settings["id"] = int(callback["H"])
+            config = configs.iloc[self.vxma_settings["id"]]
 
             for x, y in config.items():
                 self.vxma_settings[x] = y
