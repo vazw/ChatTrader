@@ -154,8 +154,16 @@ method to make great profit in Cryptocurrency Markets",
             ],
             [
                 InlineKeyboardButton(
+                    "-",
+                    callback_data='{"M": "trade", "H": "-"}',
+                ),
+                InlineKeyboardButton(
                     f"จำนวน : {self.trade_order['amt'] if self.trade_order['amt'] > 0.0 else '--.--'}",
                     callback_data='{"M": "trade", "H": "Amt"}',
+                ),
+                InlineKeyboardButton(
+                    "+",
+                    callback_data='{"M": "trade", "H": "+"}',
                 ),
             ],
             [
@@ -194,13 +202,11 @@ method to make great profit in Cryptocurrency Markets",
         position = [
             [
                 InlineKeyboardButton(
-                    f"TP : {self.trade_order['tp_price'] if self.trade_order['tp_price'] > 0.0 else '--.--'}",
+                    "เพิ่ม TP 🚀",
                     callback_data='{"M": "position", "H": "TP", "D": 0}',
                 ),
-            ],
-            [
                 InlineKeyboardButton(
-                    f"SL : {self.trade_order['sl_price'] if self.trade_order['sl_price'] > 0.0 else '--.--'}",
+                    "⏹เพิ่ม SL",
                     callback_data='{"M": "position", "H": "SL", "D": 0}',
                 ),
             ],
@@ -815,6 +821,13 @@ method to make great profit in Cryptocurrency Markets",
             CallbackQueryHandler(
                 self.back_from_trade_menu,
                 lambda x: (eval(x))["M"] == "trade" and (eval(x))["H"] == "BACK",
+            ),
+            # + - buttons
+            CallbackQueryHandler(
+                self.trade_amount_plus_minus,
+                lambda x: (eval(x))["M"] == "trade"
+                and (eval(x))["H"] == "+"
+                or (eval(x))["H"] == "-",
             ),
         ]
 
@@ -1851,6 +1864,30 @@ Margin : {self.trade_order['margin']}"
         await query.edit_message_text(
             self.trade_reply_text + text,
             reply_markup=self.reply_markup["menu"],
+        )
+
+    async def trade_amount_plus_minus(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+    ):
+        query = update.callback_query
+        await query.answer()
+        callback = eval(query.data)
+        if callback["H"] == "+":
+            self.trade_order["amt"] += float(self.trade_order["min_amt"])
+        if callback["H"] == "-":
+            self.trade_order["amt"] -= float(self.trade_order["min_amt"])
+        self.update_inline_keyboard()
+        margin = caculate_margin(
+            self.trade_order["price"],
+            self.trade_order["amt"],
+            self.trade_order["lev"],
+        )
+
+        text = f"\n\nOrder นี้จะใช้ Margin ทั้งหมด: {round(margin, 3)}$"
+        self.trade_reply_margin = text
+        await query.edit_message_text(
+            self.trade_reply_text + self.trade_reply_margin,
+            reply_markup=self.dynamic_reply_markup["trade"],
         )
 
     async def back_from_trade_menu(
