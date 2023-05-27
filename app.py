@@ -959,10 +959,10 @@ method to make great profit in Cryptocurrency Markets",
                 self.edit_config_per_coin,
                 lambda x: (eval(x))["M"] == "COINS",
             ),
-            CallbackQueryHandler(
-                self.vxma_settings_handler,
-                lambda x: (eval(x))["M"] == "vxma_settings",
-            ),
+            # CallbackQueryHandler(
+            #     self.vxma_settings_handler,
+            #     lambda x: (eval(x))["M"] == "vxma_settings",
+            # ),
             CallbackQueryHandler(
                 self.vxma_save_settings_confirm,
                 lambda x: (eval(x))["M"] == "vxma_settings_confirm_save",
@@ -975,11 +975,17 @@ method to make great profit in Cryptocurrency Markets",
                 self.vxma_del_settings_confirm,
                 lambda x: (eval(x))["M"] == "vxma_settings_confirm_del",
             ),
+            # entry_points=[
+            #     CallbackQueryHandler(
+            #         self.vxma_edit_settings_confirm,
+            #         lambda x: (eval(x))["M"] == "vxma_settings_confirm",
+            #     )
+            # ],
             ConversationHandler(
                 entry_points=[
                     CallbackQueryHandler(
-                        self.vxma_edit_settings_confirm,
-                        lambda x: (eval(x))["M"] == "vxma_settings_confirm",
+                        self.vxma_settings_handler,
+                        lambda x: (eval(x))["M"] == "vxma_settings",
                     )
                 ],
                 states={
@@ -1629,8 +1635,9 @@ Margin : {self.trade_order['margin']}"
                 return f"\nเกิดข้อผิดพลาดในการปิด Order เดิม :{e}"
 
         query = update.callback_query
-        text_repons = ["", "", "", ""]
         await query.answer()
+        text_repons = ["", "", "", ""]
+        await query.edit_message_text("กำลังส่งข้อมูลไปยัง Exchange โปรดรอซักครู่")
         exchange = await self.binance_.get_exchange()
         await self.binance_.connect_loads()
         try:
@@ -1779,8 +1786,9 @@ Margin : {self.trade_order['margin']}"
                 return f"\nเกิดข้อผิดพลาดในการปิด Order เดิม :{e}"
 
         query = update.callback_query
-        text_repons = ["", "", "", ""]
         await query.answer()
+        text_repons = ["", "", "", ""]
+        await query.edit_message_text("กำลังส่งข้อมูลไปยัง Exchange โปรดรอซักครู่")
         exchange = await self.binance_.get_exchange()
         await self.binance_.connect_loads()
         try:
@@ -2052,9 +2060,11 @@ Leverage : X{self.trade_order['lev']}\n\
         query = update.callback_query
         await query.answer()
         callback = eval(query.data)
+        text2 = ""
         if callback["D"] != 0:
             price = callback["D"].split("|")
             self.trade_order["tp_id"], self.trade_order["tp_price"] = price
+            text2 = "\nใส่ 0 หากต้องการส่งคำสั่งยกเลิก Order นี้"
         text = (
             f"ราคา Take Profit เดิมของท่านคือ : {self.trade_order['tp_price']}"
             if self.trade_order["tp_price"] != 0.0
@@ -2064,7 +2074,7 @@ Leverage : X{self.trade_order['lev']}\n\
             text=f"{self.trade_order['symbol']} {self.trade_order['type']}\n{text}\n\
 ราคาเปิด Position นี้คือ : {self.trade_order['price']}\n\
 โปรดใส่ราคา Take Profit หากต้องการแก้ไข \n\
-หรือหากต้องการใช้ % คำนวนให้พิมพ์ ลงท้ายด้วย % เช่น 5% \n\n กด /cancel เพื่อยกเลิก"
+หรือหากต้องการใช้ % คำนวนให้พิมพ์ ลงท้ายด้วย % เช่น 5%{text2}\n\n กด /cancel เพื่อยกเลิก"
         )
         self.ask_msg_id.append(msg.message_id)
         return P_TP
@@ -2094,7 +2104,8 @@ Leverage : X{self.trade_order['lev']}\n\
                 else "เพิ่มราคา Take Profit "
             )
 
-            text = f"ท่านต้องการ{text_} {self.trade_order['new_tp_price']}\n\
+            text = f"ท่านต้องการ{text_}\
+{'ยกเลิก' if self.trade_order['new_tp_price'] == 0.0 else self.trade_order['new_tp_price']}\n\
 \nหากถูกต้องกด \"ยืนยัน\" เพื่อส่งคำสั่ง"
             msg = await update.message.reply_text(
                 text,
@@ -2143,21 +2154,29 @@ Leverage : X{self.trade_order['lev']}\n\
                 reply_markup=self.dynamic_reply_markup["position"],
             )
         elif callback["H"] == "OK":
+            await query.edit_message_text("กำลังส่งข้อมูลไปยัง Exchange โปรดรอซักครู่")
+            text = ""
             exchange = await self.binance_.get_exchange()
             await self.binance_.connect_loads()
             if self.trade_order["tp_id"] != 0:
                 self.binance_.cancel_order(
                     self.trade_order["symbol"], self.trade_order["tp_id"]
                 )
-            self.trade_order["new_tp_price"] = exchange.price_to_precision(
-                self.trade_order["symbol"], self.trade_order["new_tp_price"]
-            )
-            if self.trade_order["type"] == "long":
-                text = await open_tp("sell", self.bot_trade.currentMode.Lside)
-            elif self.trade_order["type"] == "short":
-                text = await open_tp("buy", self.bot_trade.currentMode.Sside)
+                self.position_tp_sl_order = [
+                    i
+                    for i in self.position_tp_sl_order
+                    if i["id"] != self.trade_order["tp_id"]
+                ]
+            if self.trade_order["new_tp_price"] != 0.0:
+                self.trade_order["new_tp_price"] = exchange.price_to_precision(
+                    self.trade_order["symbol"], self.trade_order["new_tp_price"]
+                )
+                if self.trade_order["type"] == "long":
+                    text += await open_tp("sell", self.bot_trade.currentMode.Lside)
+                elif self.trade_order["type"] == "short":
+                    text += await open_tp("buy", self.bot_trade.currentMode.Sside)
+                self.trade_order["tp_price"] = float(self.trade_order["new_tp_price"])
             await self.binance_.disconnect()
-            self.trade_order["tp_price"] = float(self.trade_order["new_tp_price"])
 
             self.update_inline_keyboard()
             msgs = await query.edit_message_text(
@@ -2177,6 +2196,7 @@ Leverage : X{self.trade_order['lev']}\n\
         if callback["D"] != 0:
             price = callback["D"].split("|")
             self.trade_order["sl_id"], self.trade_order["sl_price"] = price
+            text2 = "\nใส่ 0 หากต้องการส่งคำสั่งยกเลิก Order นี้"
         text = (
             f"ราคา Stop-Loss เดิมของท่านคือ : {self.trade_order['sl_price']}"
             if self.trade_order["sl_price"] != 0.0
@@ -2186,7 +2206,7 @@ Leverage : X{self.trade_order['lev']}\n\
             text=f"{self.trade_order['type']} {self.trade_order['symbol']}\n{text}\n\
 ราคาเปิด Position นี้คือ : {self.trade_order['price']}\n\
 โปรดใส่ราคา Stop-Loss ใหม่หากต้องการแก้ไข\n\
-หรือหากต้องการใช้ % คำนวนให้พิมพ์ ลงท้ายด้วย % เช่น 5% \n\n กด /cancel เพื่อยกเลิก"
+หรือหากต้องการใช้ % คำนวนให้พิมพ์ ลงท้ายด้วย % เช่น 5%{text2}\n\n กด /cancel เพื่อยกเลิก"
         )
         self.ask_msg_id.append(msg.message_id)
         return P_SL
@@ -2215,7 +2235,8 @@ Leverage : X{self.trade_order['lev']}\n\
                 if self.trade_order["sl_price"] != 0.0
                 else "เพิ่มราคา Stop-Loss เท่ากับ"
             )
-            text = f"\n\nท่านต้องการ{text_} {self.trade_order['new_sl_price']}\n\
+            text = f"ท่านต้องการ{text_}\
+{'ยกเลิก' if self.trade_order['new_sl_price'] == 0.0 else self.trade_order['new_sl_price']}\n\
 \nหากถูกต้องกด \"ยืนยัน\" เพื่อส่งคำสั่ง"
 
             msg = await update.message.reply_text(
@@ -2264,21 +2285,29 @@ Leverage : X{self.trade_order['lev']}\n\
                 reply_markup=self.dynamic_reply_markup["position"],
             )
         elif callback["H"] == "OK":
+            await query.edit_message_text("กำลังส่งข้อมูลไปยัง Exchange โปรดรอซักครู่")
             exchange = await self.binance_.get_exchange()
             await self.binance_.connect_loads()
+            text = ""
             if self.trade_order["sl_id"] != 0:
                 self.binance_.cancel_order(
                     self.trade_order["symbol"], self.trade_order["sl_id"]
                 )
-            self.trade_order["new_sl_price"] = exchange.price_to_precision(
-                self.trade_order["symbol"], self.trade_order["new_sl_price"]
-            )
-            if self.trade_order["type"] == "long":
-                text = await open_sl("sell", self.bot_trade.currentMode.Lside)
-            elif self.trade_order["type"] == "short":
-                text = await open_sl("buy", self.bot_trade.currentMode.Sside)
+                self.position_tp_sl_order = [
+                    i
+                    for i in self.position_tp_sl_order
+                    if i["id"] != self.trade_order["sl_id"]
+                ]
+            if self.trade_order["new_sl_price"] != 0.0:
+                self.trade_order["new_sl_price"] = exchange.price_to_precision(
+                    self.trade_order["symbol"], self.trade_order["new_sl_price"]
+                )
+                if self.trade_order["type"] == "long":
+                    text += await open_sl("sell", self.bot_trade.currentMode.Lside)
+                elif self.trade_order["type"] == "short":
+                    text += await open_sl("buy", self.bot_trade.currentMode.Sside)
+                self.trade_order["sl_price"] = float(self.trade_order["new_sl_price"])
             await self.binance_.disconnect()
-            self.trade_order["sl_price"] = float(self.trade_order["new_sl_price"])
 
             self.update_inline_keyboard()
             msgs = await query.edit_message_text(
@@ -2311,6 +2340,7 @@ Leverage : X{self.trade_order['lev']}\n\
 
         query = update.callback_query
         await query.answer()
+        await query.edit_message_text("กำลังส่งข้อมูลไปยัง Exchange โปรดรอซักครู่")
         exchange = await self.binance_.get_exchange()
         await self.binance_.connect_loads()
         if self.trade_order["type"] == "long":
@@ -2738,7 +2768,32 @@ Leverage : X{self.trade_order['lev']}\n\
         query = update.callback_query
         await query.answer()
         callback = eval(query.data)
-        if callback["H"] == "BACK":
+        if callback["H"] in self.vxma_settings.keys():
+            self.vxma_settings_selected_state = callback["H"]
+            self.vxma_selected_state_type = callback["Type"]
+            if self.vxma_selected_state_type == "bool":
+                self.vxma_settings[self.vxma_settings_selected_state] = (
+                    False
+                    if self.vxma_settings[self.vxma_settings_selected_state]
+                    else True
+                )
+                self.update_inline_keyboard()
+                msgs = await query.edit_message_text(
+                    text=self.text_reply_bot_setting
+                    + f"\n\n{vxma_settings_info[self.vxma_settings_selected_state]} สำเร็จ",
+                    reply_markup=self.dynamic_reply_markup[
+                        self.vxma_menu_selected_state
+                    ],
+                )
+            else:
+                msg = await query.edit_message_text(
+                    text=f"ท่านได้เลือกเมนู {vxma_settings_info[self.vxma_settings_selected_state]}\
+    \n\n\nค่าปัจจุบันคือ {self.vxma_settings[self.vxma_settings_selected_state]}\
+     โปรดกรอกข้อมูลเพื่อทำการแก้ไข\n\nกด /cancel เพื่อยกเลิก"
+                )
+                self.ask_msg_id.append(msg.message_id)
+                return SETTING_STATE
+        elif callback["H"] == "BACK":
             if self.vxma_menu_selected_state == "vxma_settings":
                 msgs = await query.edit_message_text(
                     text="โปรดเลือกเหรียญดังนี้:", reply_markup=self.coins_settings_key
@@ -2838,52 +2893,30 @@ Leverage : X{self.trade_order['lev']}\n\
                 text=f"โปรดยืนยัน หากต้องการลบข้อมูลเหรียญ {self.vxma_settings['symbol']}",
                 reply_markup=self.reply_markup["vxma_settings_confirm_del"],
             )
-        elif callback["H"] in self.vxma_settings.keys():
-            self.vxma_settings_selected_state = callback["H"]
-            self.vxma_selected_state_type = callback["Type"]
-            if self.vxma_selected_state_type == "bool":
-                self.vxma_settings[self.vxma_settings_selected_state] = (
-                    False
-                    if self.vxma_settings[self.vxma_settings_selected_state]
-                    else True
-                )
-                self.update_inline_keyboard()
-                msgs = await query.edit_message_text(
-                    text=self.text_reply_bot_setting
-                    + f"\n\n{vxma_settings_info[self.vxma_settings_selected_state]} สำเร็จ",
-                    reply_markup=self.dynamic_reply_markup[
-                        self.vxma_menu_selected_state
-                    ],
-                )
-            else:
-                text = f"ท่านได้เลือกเมนู {vxma_settings_info[self.vxma_settings_selected_state]} \n\nท่านต้องการแก้ไขใช่หรือไม่?"
-                msgs = await query.edit_message_text(
-                    text=self.text_reply_bot_setting + f"\n\n{text}",
-                    reply_markup=self.reply_markup["vxma_settings_confirm"],
-                )
         self.uniq_msg_id.append(msgs.message_id)
+        return ConversationHandler.END
 
-    async def vxma_edit_settings_confirm(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
-    ):
-        query = update.callback_query
-        await query.answer()
-        callback = eval(query.data)
-        if callback["H"] == "BACK":
-            msgs = await query.edit_message_text(
-                text=self.text_reply_bot_setting,
-                reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
-            )
-            self.uniq_msg_id.append(msgs.message_id)
-            return ConversationHandler.END
-        else:
-            msg = await query.edit_message_text(
-                text=f"ท่านได้เลือกเมนู {vxma_settings_info[self.vxma_settings_selected_state]}\
-\n\n\nค่าปัจจุบันคือ {self.vxma_settings[self.vxma_settings_selected_state]}\
- โปรดกรอกข้อมูลเพื่อทำการแก้ไข\n\nกด /cancel เพื่อยกเลิก"
-            )
-            self.ask_msg_id.append(msg.message_id)
-            return SETTING_STATE
+    #     async def vxma_edit_settings_confirm(
+    #         self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+    #     ):
+    #         query = update.callback_query
+    #         await query.answer()
+    #         callback = eval(query.data)
+    #         if callback["H"] == "BACK":
+    #             msgs = await query.edit_message_text(
+    #                 text=self.text_reply_bot_setting,
+    #                 reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
+    #             )
+    #             self.uniq_msg_id.append(msgs.message_id)
+    # return ConversationHandler.END
+    #         else:
+    #             msg = await query.edit_message_text(
+    #                 text=f"ท่านได้เลือกเมนู {vxma_settings_info[self.vxma_settings_selected_state]}\
+    # \n\n\nค่าปัจจุบันคือ {self.vxma_settings[self.vxma_settings_selected_state]}\
+    #  โปรดกรอกข้อมูลเพื่อทำการแก้ไข\n\nกด /cancel เพื่อยกเลิก"
+    #             )
+    #             self.ask_msg_id.append(msg.message_id)
+    #             return SETTING_STATE
 
     async def vxma_get_settings(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
@@ -3151,6 +3184,7 @@ Leverage : X{self.trade_order['lev']}\n\
 
     async def delete_unig_messages(self, context) -> None:
         if len(self.uniq_msg_id) > 0:
+            self.uniq_msg_id.reverse()
             for id in self.uniq_msg_id:
                 try:
                     await context.bot.delete_message(
