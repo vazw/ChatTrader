@@ -2159,7 +2159,7 @@ Leverage : X{self.trade_order['lev']}\n\
             exchange = await self.binance_.get_exchange()
             await self.binance_.connect_loads()
             if self.trade_order["tp_id"] != 0:
-                self.binance_.cancel_order(
+                await self.binance_.cancel_order(
                     self.trade_order["symbol"], self.trade_order["tp_id"]
                 )
                 self.position_tp_sl_order = [
@@ -2290,7 +2290,7 @@ Leverage : X{self.trade_order['lev']}\n\
             await self.binance_.connect_loads()
             text = ""
             if self.trade_order["sl_id"] != 0:
-                self.binance_.cancel_order(
+                await self.binance_.cancel_order(
                     self.trade_order["symbol"], self.trade_order["sl_id"]
                 )
                 self.position_tp_sl_order = [
