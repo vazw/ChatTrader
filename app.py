@@ -3170,7 +3170,8 @@ Leverage : X{self.trade_order['lev']}\n\
             try:
                 configs = bot_setting()
                 configs = configs.drop(self.vxma_settings["id"])
-                configs.to_csv("bot_config.csv", index=True)
+                configs.reset_index(drop=True, inplace=True)
+                configs.to_csv("bot_config.csv", index=True, index_label="id")
                 text = f"\n\nได้ลบข้อมูลเหรียญ {self.vxma_settings['symbol']} สำหรับบอทเรียบร้อยแล้วค่ะ"
                 self.bot_trade.update_watchlist()
                 msg = f"{self.watchlist_reply_text}" + text
