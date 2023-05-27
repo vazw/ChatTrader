@@ -270,19 +270,25 @@ method to make great profit in Cryptocurrency Markets",
                     ],
                     [
                         InlineKeyboardButton(
-                            "ตั้งค่าความเสี่ยง",
-                            callback_data='{"M": "setting", "H": "RISK"}',
-                        ),
-                        InlineKeyboardButton(
-                            "ตั้งค่ารายเหรียญ",
+                            "ตั้งค่ากลยุทธ์/เหรียญ",
                             callback_data='{"M": "setting", "H": "COINS"}',
                         ),
-                    ],
-                    [
                         InlineKeyboardButton(
                             f"SCAN : {'ON 🟢' if self.status_scan else 'OFF 🔴'}",
                             callback_data='{"M": "setting", "H": "SCAN"}',
                         ),
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            "ตั้งค่าความเสี่ยง",
+                            callback_data='{"M": "setting", "H": "RISK"}',
+                        ),
+                        InlineKeyboardButton(
+                            "⚙️ตั้งค่า API",
+                            callback_data='{"M": "secure", "H": "API"}',
+                        ),
+                    ],
+                    [
                         InlineKeyboardButton(
                             "❌ กลับ",
                             callback_data='{"M": "setting", "H": "BACK"}',
@@ -1189,11 +1195,11 @@ method to make great profit in Cryptocurrency Markets",
                 text=f"{self.watchlist_reply_text}",
                 reply_markup=self.dynamic_reply_markup["setting"],
             )
-        elif callback["H"] == "apiSetting":
-            msgs = await query.edit_message_text(
-                text="โปรดเลือกการตั้งค่า",
-                reply_markup=self.reply_markup["secure"],
-            )
+        # elif callback["H"] == "apiSetting":
+        #     msgs = await query.edit_message_text(
+        #         text="โปรดเลือกการตั้งค่า",
+        #         reply_markup=self.reply_markup["secure"],
+        #     )
         elif callback["H"] == "X":
             await query.delete_message()
         else:
@@ -1249,6 +1255,28 @@ method to make great profit in Cryptocurrency Markets",
         )
 
         if callback["H"] == "ALL":
+            msg = (
+                "BUSD"
+                + f"\nFree   : {round(fiat_balance['BUSD']['free'],2)}$"
+                + f"\nMargin : {round(fiat_balance['BUSD']['used'],2)}$"
+                + f"\nTotal  : {round(fiat_balance['BUSD']['total'],2)}$\nUSDT"
+                + f"\nFree   : {round(fiat_balance['USDT']['free'],2)}$"
+                + f"\nMargin : {round(fiat_balance['USDT']['used'],2)}$"
+                + f"\nTotal  : {round(fiat_balance['USDT']['total'],2)}$"
+                + f"\nกำไร/ขาดทุน  : {round(netunpl,2)}$"
+            )
+        elif callback["H"] == "RE":
+            await query.edit_message_text("กำลัง Refresh ข้อมูลจาก Exchange")
+            await asyncio.gather(
+                self.binance_.update_balance(True), self.bot_trade.get_currentmode()
+            )
+            fiat_balance = self.binance_.fiat_balance
+            status = self.binance_.position_data
+            netunpl = float(
+                status["unrealizedProfit"].astype("float64").sum()
+                if not status.empty
+                else 0.0
+            )
             msg = (
                 "BUSD"
                 + f"\nFree   : {round(fiat_balance['BUSD']['free'],2)}$"
@@ -1663,6 +1691,7 @@ Margin : {self.trade_order['margin']}"
         await query.edit_message_text("กำลังส่งข้อมูลไปยัง Exchange โปรดรอซักครู่")
         exchange = await self.binance_.get_exchange()
         await self.binance_.connect_loads()
+        await self.bot_trade.get_currentmode()
         try:
             self.trade_order["amt"] = exchange.amount_to_precision(
                 self.trade_order["symbol"], self.trade_order["amt"]
@@ -1814,6 +1843,7 @@ Margin : {self.trade_order['margin']}"
         await query.edit_message_text("กำลังส่งข้อมูลไปยัง Exchange โปรดรอซักครู่")
         exchange = await self.binance_.get_exchange()
         await self.binance_.connect_loads()
+        await self.bot_trade.get_currentmode()
         try:
             self.trade_order["amt"] = exchange.amount_to_precision(
                 self.trade_order["symbol"], self.trade_order["amt"]
@@ -2600,9 +2630,14 @@ Leverage : X{self.trade_order['lev']}\n\
             position_data = await self.bot_trade.check_current_position(
                 self.trade_order["symbol"], self.binance_.position_data.copy()
             )
+            if (
+                callback["Side"].upper() != "BOTH"
+                and not self.bot_trade.currentMode.dualSidePosition
+            ):
+                await self.bot_trade.get_currentmode()
             self.trade_order["type"] = (
                 f"{callback['Side']}".lower()
-                if callback["Side"] != "BOTH"
+                if self.bot_trade.currentMode.dualSidePosition
                 else "long"
                 if position_data["long"]["position"]
                 else "short"
@@ -3277,8 +3312,8 @@ Leverage : X{self.trade_order['lev']}\n\
             # For Back Buttons
             await query.answer()
             msgs = await query.edit_message_text(
-                text="โปรดเลือกการตั้งค่า",
-                reply_markup=self.reply_markup["secure"],
+                text=f"{self.watchlist_reply_text}",
+                reply_markup=self.dynamic_reply_markup["setting"],
             )
             self.uniq_msg_id.append(msgs.message_id)
         else:
@@ -3286,8 +3321,8 @@ Leverage : X{self.trade_order['lev']}\n\
             self.msg_id.append(update.message.message_id)
             await self.delete_unig_messages(context)
             msgs = await update.message.reply_text(
-                text="โปรดเลือกการตั้งค่า",
-                reply_markup=self.reply_markup["secure"],
+                text=f"{self.watchlist_reply_text}",
+                reply_markup=self.dynamic_reply_markup["setting"],
             )
             self.uniq_msg_id.append(msgs.message_id)
             return ConversationHandler.END

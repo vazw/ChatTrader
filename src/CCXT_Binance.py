@@ -99,7 +99,7 @@ class Binance:
 
     @retry(5, lambda e: print(f"ERROR in update_balance: {e}"))
     async def update_balance(self, force: bool = False):
-        if time() - self.update_time > 600 or force:
+        if time() - self.update_time > 60 or force:
             exchange = await self.get_exchange()
             balance = await exchange.fetch_balance()
             self.update_time = time()

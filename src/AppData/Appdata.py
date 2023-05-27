@@ -682,10 +682,11 @@ REPLY_MARKUP = {
                     "🤖บอท",
                     callback_data='{"M": "menu", "H": "BotSetting"}',
                 ),
-                InlineKeyboardButton(
-                    "⚙️ตั้งค่า",
-                    callback_data='{"M": "menu", "H": "apiSetting"}',
-                ),
+                # ย้ายไปยังเมนูบอท
+                # InlineKeyboardButton(
+                #     "⚙️ตั้งค่า",
+                #     callback_data='{"M": "menu", "H": "apiSetting"}',
+                # ),
                 InlineKeyboardButton(
                     "❌ปิดเมนู",
                     callback_data='{"M": "menu", "H": "X"}',
@@ -702,10 +703,13 @@ REPLY_MARKUP = {
                 InlineKeyboardButton(
                     "BUSD", callback_data='{"M": "fiat", "H": "BUSD"}'
                 ),
+                InlineKeyboardButton(
+                    "ทั้งหมด", callback_data='{"M": "fiat", "H": "ALL"}'
+                ),
             ],
             [
                 InlineKeyboardButton(
-                    "ทั้งหมด", callback_data='{"M": "fiat", "H": "ALL"}'
+                    "บังคับอัพเดตข้อมูล", callback_data='{"M": "fiat", "H": "RE"}'
                 ),
                 InlineKeyboardButton(
                     "❌ กลับ", callback_data='{"M": "fiat", "H": "BACK"}'
@@ -713,28 +717,28 @@ REPLY_MARKUP = {
             ],
         ]
     ),
-    "secure": InlineKeyboardMarkup(
-        [
-            [
-                InlineKeyboardButton(
-                    "⚙️ตั้งค่า API",
-                    callback_data='{"M": "secure", "H": "API"}',
-                ),
-            ],
-            # [
-            #     InlineKeyboardButton(
-            #         "⚙️ตั้งค่ารหัสผ่าน",
-            #         callback_data='{"M": "secure", "H": "PASS"}',
-            #     ),
-            # ],
-            [
-                InlineKeyboardButton(
-                    "❌ กลับ",
-                    callback_data='{"M": "secure", "H": "BACK"}',
-                ),
-            ],
-        ]
-    ),
+    # "secure": InlineKeyboardMarkup(
+    #     [
+    #         [
+    #             InlineKeyboardButton(
+    #                 "⚙️ตั้งค่า API",
+    #                 callback_data='{"M": "secure", "H": "API"}',
+    #             ),
+    #         ],
+    #         # [
+    #         #     InlineKeyboardButton(
+    #         #         "⚙️ตั้งค่ารหัสผ่าน",
+    #         #         callback_data='{"M": "secure", "H": "PASS"}',
+    #         #     ),
+    #         # ],
+    #         [
+    #             InlineKeyboardButton(
+    #                 "❌ กลับ",
+    #                 callback_data='{"M": "secure", "H": "BACK"}',
+    #             ),
+    #         ],
+    #     ]
+    # ),
     "analyse": InlineKeyboardMarkup(
         [
             [
