@@ -203,11 +203,11 @@ method to make great profit in Cryptocurrency Markets",
             [
                 InlineKeyboardButton(
                     "เพิ่ม TP 🚀",
-                    callback_data='{"M": "position", "H": "TP", "D": 0}',
+                    callback_data='{"M": "pos", "H": "TP", "D": 0}',
                 ),
                 InlineKeyboardButton(
                     "⏹เพิ่ม SL",
-                    callback_data='{"M": "position", "H": "SL", "D": 0}',
+                    callback_data='{"M": "pos", "H": "SL", "D": 0}',
                 ),
             ],
             [
@@ -219,7 +219,7 @@ method to make great profit in Cryptocurrency Markets",
             [
                 InlineKeyboardButton(
                     f"Leverage: X{self.trade_order['lev']}",
-                    callback_data='{"M": "position", "H": "Lev"}',
+                    callback_data='{"M": "pos", "H": "Lev"}',
                 ),
                 InlineKeyboardButton(
                     "❌ กลับ",
@@ -248,7 +248,7 @@ method to make great profit in Cryptocurrency Markets",
                         f"{i['type'].upper()} : {i['price']}",
                         callback_data=json.dumps(
                             {
-                                "M": "position",
+                                "M": "pos",
                                 "H": f"{i['type']}".upper(),
                                 "D": f"{i['id']}|{i['price']}",
                             }
@@ -876,8 +876,7 @@ method to make great profit in Cryptocurrency Markets",
                 entry_points=[
                     CallbackQueryHandler(
                         self.position_get_tp_price_handler,
-                        lambda x: (eval(x))["M"] == "position"
-                        and (eval(x))["H"] == "TP",
+                        lambda x: (eval(x))["M"] == "pos" and (eval(x))["H"] == "TP",
                     )
                 ],
                 states={
@@ -896,8 +895,7 @@ method to make great profit in Cryptocurrency Markets",
                 entry_points=[
                     CallbackQueryHandler(
                         self.position_get_sl_price_handler,
-                        lambda x: (eval(x))["M"] == "position"
-                        and (eval(x))["H"] == "SL",
+                        lambda x: (eval(x))["M"] == "pos" and (eval(x))["H"] == "SL",
                     )
                 ],
                 states={
@@ -916,8 +914,7 @@ method to make great profit in Cryptocurrency Markets",
                 entry_points=[
                     CallbackQueryHandler(
                         self.position_get_lev_handler,
-                        lambda x: (eval(x))["M"] == "position"
-                        and (eval(x))["H"] == "Lev",
+                        lambda x: (eval(x))["M"] == "pos" and (eval(x))["H"] == "Lev",
                     )
                 ],
                 states={
