@@ -1390,7 +1390,7 @@ method to make great profit in Cryptocurrency Markets",
 ใช้ Margin  {round(currnet_position['long']['margin'], 3)}$\n\
 กำไร/ขาดทุน {round(currnet_position['long']['pnl'], 3)}$"
 
-            elif currnet_position["short"]["position"]:
+            if currnet_position["short"]["position"]:
                 self.trade_order["pnl"] = currnet_position["short"]["pnl"]
                 self.trade_order["side"] = "SHORT"
                 text += f"\n\n และท่านยังมี Position Short ของ เหรียญนี้อยู่ในมือ\n\
