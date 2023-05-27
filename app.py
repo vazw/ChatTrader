@@ -1129,6 +1129,7 @@ method to make great profit in Cryptocurrency Markets",
                 reply_markup=self.reply_markup["analyse"],
             )
         elif callback["H"] == "PositionData":
+            msgs = await query.edit_message_text(text="โปรดรอซักครู่...")
             await self.binance_.update_balance()
             await self.binance_.disconnect()
             self.trade_menu_selected = "pnl"
@@ -1286,6 +1287,8 @@ method to make great profit in Cryptocurrency Markets",
         """Handler that received trade symbol (STEP1)"""
         respon = update.message.text
         self.msg_id.append(update.message.message_id)
+        msg0 = await update.message.reply_text("กำลังโหลดข้อมูลเหรียญ โปรดรอซักครู่")
+        self.ask_msg_id.append(msg0.message_id)
         self.reset_trade_order_data()
         self.trade_menu_selected = "trade"
         symbol = respon.upper()
@@ -1918,6 +1921,8 @@ Margin : {self.trade_order['margin']}"
     ):
         respon = update.message.text
         self.msg_id.append(update.message.message_id)
+        msg0 = await update.message.reply_text("กำลังโหลดข้อมูลเหรียญ โปรดรอซักครู่")
+        self.ask_msg_id.append(msg0.message_id)
         try:
             symbol = str(respon).upper()
             if symbol.endswith("BUSD") or symbol.endswith("USDT"):
@@ -2353,7 +2358,7 @@ Leverage : X{self.trade_order['lev']}\n\
     ):
         query = update.callback_query
         await query.answer()
-        if self.trade_menu_selected == "trade":
+        if self.trade_menu_selected != "pnl":
             self.reset_trade_order_data()
             self.update_inline_keyboard()
             msgs = await query.edit_message_text(
@@ -2363,6 +2368,7 @@ Leverage : X{self.trade_order['lev']}\n\
             self.uniq_msg_id.append(msgs.message_id)
             return
 
+        await query.edit_message_text("กำลังโหลดข้อมูลแท่งเทียน โปรดรอซักครู่")
         await self.binance_.update_balance()
         await self.binance_.disconnect()
         pnl_back_button = [
@@ -2705,14 +2711,14 @@ Leverage : X{self.trade_order['lev']}\n\
                 reply_markup=self.dynamic_reply_markup["setting"],
             )
         else:
+            await query.edit_message_text("กำลังโหลดข้อมูลแท่งเทียน โปรดรอซักครู่")
             self.vxma_menu_selected_state = "vxma_settings"
             configs = bot_setting()
             self.vxma_settings["id"] = callback["H"]
             config = configs.loc[self.vxma_settings["id"],]
 
-            for config_ in split_list(config.items(), 2):
-                for x, y in config_:
-                    self.vxma_settings[x] = y
+            for x, y in config.items():
+                self.vxma_settings[x] = y
             symbol = self.vxma_settings["symbol"]
             self.update_inline_keyboard()
             await self.vxma_send_candle_pic(query)
@@ -2804,26 +2810,24 @@ Leverage : X{self.trade_order['lev']}\n\
             await self.binance_.disconnect()
             if currnet_position["leverage"] > 0:
                 self.trade_order["lev"] = currnet_position["leverage"]
-            self.update_inline_keyboard()
             text = f"คู่เหรียญ  {self.trade_order['symbol']}\nราคาปัจจุบัน : {self.trade_order['price']}$"
             if currnet_position["long"]["position"]:
                 pnl_t = "ขาดทุน" if currnet_position["long"]["pnl"] < 0.0 else "กำไร"
-                text = (
-                    text
-                    + f"\n\n ท่านมี Position Long ของ เหรียญนี้อยู่ในมือ\n\
+                self.trade_order["pnl"] = currnet_position["long"]["pnl"]
+                text += f"\n\n ท่านมี Position Long ของ เหรียญนี้อยู่ในมือ\n\
 เป็นจำนวน  {round(currnet_position['long']['amount'], 3)} เหรียญ\n\
 ใช้ Margin  {round(currnet_position['long']['margin'], 3)}$\n\
  {pnl_t} {round(currnet_position['long']['pnl'], 3)}$"
-                )
-            elif currnet_position["short"]["position"]:
+
+            if currnet_position["short"]["position"]:
                 pnl_t = "ขาดทุน" if currnet_position["short"]["pnl"] < 0.0 else "กำไร"
-                text = (
-                    text
-                    + f"\n\n ท่านมี Position Short ของ เหรียญนี้อยู่ในมือ\n\
+                self.trade_order["pnl"] = currnet_position["short"]["pnl"]
+                text += f"\n\n ท่านมี Position Short ของ เหรียญนี้อยู่ในมือ\n\
 เป็นจำนวน  {round(currnet_position['short']['amount'], 3)} เหรียญ\n\
 ใช้ Margin  {round(currnet_position['short']['margin'], 3)}$\n\
 {pnl_t} {round(currnet_position['short']['pnl'], 3)}$"
-                )
+
+            self.update_inline_keyboard()
             self.trade_reply_text = text
             msgs = await query.edit_message_text(
                 text=self.trade_reply_text,
@@ -2896,6 +2900,10 @@ Leverage : X{self.trade_order['lev']}\n\
             elif self.vxma_selected_state_type == "str":
                 self.vxma_settings[self.vxma_settings_selected_state] = str(respon)
             if self.vxma_settings_selected_state in TA_TYPE:
+                msg0 = await update.message.reply_text(
+                    "กำลังโหลดข้อมูลแท่งเทียน โปรดรอซักครู่"
+                )
+                self.ask_msg_id.append(msg0.message_id)
                 await self.vxma_send_candle_pic(update)
 
         except Exception as e:
