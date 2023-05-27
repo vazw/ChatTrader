@@ -70,7 +70,7 @@ class Telegram:
         self.ask_msg_id = []
         self.uniq_msg_id = []
         self.position_tp_sl_order = []
-        self.bot_trade = ""
+        self.bot_trade = BotTrade(self.chat_id, self.status_bot, self.status_scan)
         self.status_bot = False
         self.status_scan = False
 
@@ -3286,9 +3286,7 @@ Leverage : X{self.trade_order['lev']}\n\
             await asyncio.sleep(5)
 
     async def make_bot_task(self, context: ContextTypes.DEFAULT_TYPE):
-        self.bot_trade = BotTrade(
-            context, self.chat_id, self.status_bot, self.status_scan
-        )
+        self.bot_trade.add_app_context(context)
         while True:
             if self.status_bot:
                 try:

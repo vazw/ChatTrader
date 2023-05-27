@@ -149,14 +149,13 @@ async def split_list(input_list, chunk_size):
 class BotTrade:
     def __init__(
         self,
-        context: ContextTypes.DEFAULT_TYPE,
         chat_id: int = 0,
         status_bot: bool = False,
         status_scan: bool = False,
     ):
         self.status_bot = status_bot
         self.status_scan = status_scan
-        self.context = context
+        self.context = ""
         self.chat_id = chat_id
         self.watchlist = []
         self.currentMode = PositionMode()
@@ -175,6 +174,9 @@ class BotTrade:
 
     def update_chat_id(self, chat_id: int):
         self.chat_id = chat_id
+
+    def add_app_context(self, context: ContextTypes.DEFAULT_TYPE) -> None:
+        self.context = context
 
     async def run_bot(self):
         print(f"{colorCS.CBOLD}{colorCS.CGREEN}{bot_name}{colorCS.CEND}")
