@@ -3327,7 +3327,7 @@ Leverage : X{self.trade_order['lev']}\n\
                     except Exception:
                         continue
                 self.msg_id.clear()
-            await asyncio.sleep(5)
+            await asyncio.sleep(1)
 
     async def make_bot_task(self, context: ContextTypes.DEFAULT_TYPE):
         self.bot_trade.add_app_context(context)
