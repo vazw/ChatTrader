@@ -2504,10 +2504,20 @@ Leverage : X{self.trade_order['lev']}\n\
                         f"{x}",
                         callback_data=f"{i}",
                     )
-                    for i, x in positiondata
                 ]
+                for i, x in positiondata
             ]
-            coins_key = InlineKeyboardMarkup(coins + self.pnl_back_button)
+            coins_key = InlineKeyboardMarkup(
+                coins
+                + [
+                    [
+                        InlineKeyboardButton(
+                            "❌ กลับ",
+                            callback_data="{'M': 'position_', 'H' :'BACK'}",
+                        )
+                    ]
+                ]
+            )
             msgs = await query.edit_message_text(
                 "โปรดเลือก Position ที่ต้องการตรวจสอบ", reply_markup=coins_key
             )
