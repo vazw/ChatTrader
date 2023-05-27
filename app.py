@@ -106,6 +106,14 @@ class Telegram:
             ],
             resize_keyboard=True,
         )
+        self.pnl_back_button = [
+            [
+                InlineKeyboardButton(
+                    "❌ กลับ",
+                    callback_data="{'M': 'PNLC', 'H' :'BACK_TO_MENU'}",
+                )
+            ]
+        ]
         self.load_database()
 
     def reset_conversation(self):
@@ -222,7 +230,6 @@ method to make great profit in Cryptocurrency Markets",
                             {
                                 "M": "PNLC",
                                 "H": self.trade_order["symbol"],
-                                "Side": self.trade_order["side"],
                             }
                         ),
                     ),
@@ -2412,6 +2419,7 @@ Leverage : X{self.trade_order['lev']}\n\
                 self.trade_order["symbol"], "bid"
             )
             self.trade_order["type"] = "MARKET"
+            self.trade_order["amt"] = 0.0
             self.update_inline_keyboard()
             msgs = await query.edit_message_text(
                 self.trade_reply_text,
@@ -2423,14 +2431,6 @@ Leverage : X{self.trade_order['lev']}\n\
         await query.edit_message_text("โปรดรอซักครู่..")
         await self.binance_.update_balance()
         await self.binance_.disconnect()
-        pnl_back_button = [
-            [
-                InlineKeyboardButton(
-                    "❌ กลับ",
-                    callback_data="{'M': 'PNLC', 'H' :'BACK_TO_MENU'}",
-                )
-            ]
-        ]
         status = self.binance_.position_data
         if len(status.index) > 0:
             positiondata = [
@@ -2457,14 +2457,14 @@ Leverage : X{self.trade_order['lev']}\n\
                 ]
                 for symbol_list in split_list(positiondata, 3)
             ]
-            coins_key = InlineKeyboardMarkup(coins + pnl_back_button)
+            coins_key = InlineKeyboardMarkup(coins + self.pnl_back_button)
             text = [
                 f"{status['symbol'][i]} จำนวน {status['positionAmt'][i]} P/L {round(status['unrealizedProfit'][i], 3)}$\n"
                 for i in range(len(status.index))
             ]
             self.pnl_reply = "Postion ที่มีการเปิดอยู่\n" + "".join(text)
         else:
-            coins_key = InlineKeyboardMarkup(pnl_back_button)
+            coins_key = InlineKeyboardMarkup(self.pnl_back_button)
             self.pnl_reply = "หากคุณมีความรู้ แต่ยังขาดทุนอยู่ นั่นแสดงว่า คุณยังควบคุมความโลภ และความกลัว ไม่ได้"
             msg = "ท่านไม่มี Position ใด ๆ อยู่ในขณะนี้"
         msgs = await query.edit_message_text(text=msg, reply_markup=coins_key)
@@ -2480,6 +2480,36 @@ Leverage : X{self.trade_order['lev']}\n\
             msgs = await query.edit_message_text(
                 text=f"{self.pnl_reply}",
                 reply_markup=self.reply_markup["pnl"],
+            )
+        elif "Side" not in callback.keys():
+            symbol = callback["H"]
+            status = self.binance_.position_data
+            status = status[status["symbol"] == symbol]
+            positiondata = [
+                (
+                    json.dumps(
+                        {
+                            "M": "PNLC",
+                            "H": status["symbol"][i],
+                            "Side": status["positionSide"][i],
+                        }
+                    ),
+                    f"{status['positionSide'][i] if status['positionSide'][i] != 'BOTH' else ''} {status['symbol'][i]} P/L {round(status['unrealizedProfit'][i], 3)}$",
+                )
+                for i in range(len(status.index))
+            ]
+            coins = [
+                [
+                    InlineKeyboardButton(
+                        f"{x}",
+                        callback_data=f"{i}",
+                    )
+                    for i, x in positiondata
+                ]
+            ]
+            coins_key = InlineKeyboardMarkup(coins + self.pnl_back_button)
+            msgs = await query.edit_message_text(
+                "โปรดเลือก Position ที่ต้องการตรวจสอบ", reply_markup=coins_key
             )
         else:
             ## TODO EDIT POSITION
