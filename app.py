@@ -2182,7 +2182,7 @@ Leverage : X{self.trade_order['lev']}\n\
                     text += await open_tp("sell", self.bot_trade.currentMode.Lside)
                 elif self.trade_order["type"] == "short":
                     text += await open_tp("buy", self.bot_trade.currentMode.Sside)
-            self.trade_order["tp_price"] = float(self.trade_order["new_tp_price"])
+            # self.trade_order["tp_price"] = float(self.trade_order["new_tp_price"])
             await self.binance_.disconnect()
 
             self.update_inline_keyboard()
@@ -2321,7 +2321,6 @@ Leverage : X{self.trade_order['lev']}\n\
                     text += await open_sl("sell", self.bot_trade.currentMode.Lside)
                 elif self.trade_order["type"] == "short":
                     text += await open_sl("buy", self.bot_trade.currentMode.Sside)
-            self.trade_order["sl_price"] = float(self.trade_order["new_sl_price"])
             await self.binance_.disconnect()
 
             self.update_inline_keyboard()
