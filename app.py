@@ -1306,7 +1306,9 @@ method to make great profit in Cryptocurrency Markets",
             else:
                 quote = "USDT"
                 base = symbol
-            self.trade_order["symbol"] = f"{base}/{quote}:{quote}"
+            self.trade_order["symbol"] = self.vxma_settings[
+                "symbol"
+            ] = f"{base}/{quote}:{quote}"
             exchange = await self.binance_.get_exchange()
             self.trade_order["price"] = await self.binance_.get_bidask(
                 self.trade_order["symbol"], "bid"
@@ -2174,6 +2176,7 @@ Leverage : X{self.trade_order['lev']}\n\
                     for i in self.position_tp_sl_order
                     if i["id"] != self.trade_order["tp_id"]
                 ]
+                self.trade_order["tp_price"] = 0.0
             if self.trade_order["new_tp_price"] != 0.0:
                 self.trade_order["new_tp_price"] = exchange.price_to_precision(
                     self.trade_order["symbol"], self.trade_order["new_tp_price"]
@@ -2308,6 +2311,7 @@ Leverage : X{self.trade_order['lev']}\n\
                 await self.binance_.cancel_order(
                     self.trade_order["symbol"], self.trade_order["sl_id"]
                 )
+                self.trade_order["sl_price"] = 0.0
                 self.position_tp_sl_order = [
                     i
                     for i in self.position_tp_sl_order
@@ -2403,7 +2407,11 @@ Leverage : X{self.trade_order['lev']}\n\
         query = update.callback_query
         await query.answer()
         if self.trade_menu_selected != "pnl":
-            self.reset_trade_order_data()
+            await query.edit_message_text("กำลังอัพเดตราคาเหรียญ โปรดรอซักครู่")
+            self.trade_order["price"] = await self.binance_.get_bidask(
+                self.trade_order["symbol"], "bid"
+            )
+            self.trade_order["type"] = "MARKET"
             self.update_inline_keyboard()
             msgs = await query.edit_message_text(
                 self.trade_reply_text,
@@ -2856,6 +2864,7 @@ Leverage : X{self.trade_order['lev']}\n\
                 reply_markup=self.reply_markup["vxma_settings_confirm_save_2"],
             )
         elif callback["H"] == "TRADE":
+            await query.edit_message_text("กำลังอัพเดตราคาเหรียญ โปรดรอซักครู่")
             self.trade_menu_selected = "vxma_settings_1"
             exchange = await self.binance_.get_exchange()
             self.trade_order["symbol"] = self.vxma_settings["symbol"]
@@ -3126,7 +3135,8 @@ Leverage : X{self.trade_order['lev']}\n\
         respon = update.message.text
         self.msg_id.append(update.message.message_id)
         self.sec_info["API_SEC"] = str(respon)
-        """TODO ACTIVE API AND FETCH BALANCE BEFORE SAVED"""
+        msg0 = await update.message.reply_text("กำลังทดสอบ API โปรดรอซักครู่.....")
+        self.ask_msg_id.append(msg0.message_id)
         try:
             binance_test = Binance(
                 api=self.sec_info["API_KEY"], sapi=self.sec_info["API_SEC"]
@@ -3200,24 +3210,23 @@ Leverage : X{self.trade_order['lev']}\n\
 
     async def delete_unig_messages(self, context) -> None:
         if len(self.uniq_msg_id) > 0:
-            self.uniq_msg_id.reverse()
-            for id in self.uniq_msg_id:
-                try:
-                    await context.bot.delete_message(
-                        chat_id=self.chat_id, message_id=id
-                    )
-                except Exception:
-                    continue
+            tasks = [
+                asyncio.create_task(
+                    context.bot.delete_message(chat_id=self.chat_id, message_id=cid)
+                )
+                for cid in self.uniq_msg_id
+            ]
+            await asyncio.gather(*tasks)
 
     async def delete_ask_messages(self, context) -> None:
         if len(self.ask_msg_id) > 0:
-            for id in self.ask_msg_id:
-                try:
-                    await context.bot.delete_message(
-                        chat_id=self.chat_id, message_id=id
-                    )
-                except Exception:
-                    continue
+            tasks = [
+                asyncio.create_task(
+                    context.bot.delete_message(chat_id=self.chat_id, message_id=cid)
+                )
+                for cid in self.ask_msg_id
+            ]
+            await asyncio.gather(*tasks)
 
     ## Customs Tasks to run once
     async def clear_task(self, context: ContextTypes.DEFAULT_TYPE):
