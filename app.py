@@ -3072,7 +3072,7 @@ Leverage : X{self.trade_order['lev']}\n\
                 self.vxma_settings[self.vxma_settings_selected_state] = float(respon)
             elif self.vxma_selected_state_type == "str":
                 if self.vxma_settings_selected_state == "symbol":
-                    symbol = str(respon)
+                    symbol = str(respon).upper()
                     if ":" in symbol:
                         self.vxma_settings[self.vxma_settings_selected_state] = symbol
                     else:
