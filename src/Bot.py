@@ -280,7 +280,7 @@ class BotTrade:
             return data3
         except Exception as e:
             lastUpdate.status = f"{e}"
-            return self.bot_2(symbol, ta_data, tf)
+            return self.bot_3(symbol, ta_data, tf)
 
     async def scaning_method(self, symbol: str, ta_data: TATable, symbols: list):
         try:

@@ -1346,15 +1346,16 @@ method to make great profit in Cryptocurrency Markets",
         symbol = respon.upper()
         """TODO"""
         try:
-            if symbol.endswith("BUSD") or symbol.endswith("USDT"):
-                quote = "BUSD" if symbol.endswith("BUSD") else "USDT"
-                base = symbol[:-4]
+            if ":" in symbol:
+                self.trade_order["symbol"] = symbol
             else:
-                quote = "USDT"
-                base = symbol
-            self.trade_order["symbol"] = self.vxma_settings[
-                "symbol"
-            ] = f"{base}/{quote}:{quote}"
+                if symbol.endswith("BUSD") or symbol.endswith("USDT"):
+                    quote = "BUSD" if symbol.endswith("BUSD") else "USDT"
+                    base = symbol[:-4]
+                else:
+                    quote = "USDT"
+                    base = symbol
+                self.trade_order["symbol"] = f"{base}/{quote}:{quote}"
             exchange = await self.binance_.get_exchange()
             self.trade_order["price"] = await self.binance_.get_bidask(
                 self.trade_order["symbol"], "bid"
@@ -3070,7 +3071,22 @@ Leverage : X{self.trade_order['lev']}\n\
             elif self.vxma_selected_state_type == "float":
                 self.vxma_settings[self.vxma_settings_selected_state] = float(respon)
             elif self.vxma_selected_state_type == "str":
-                self.vxma_settings[self.vxma_settings_selected_state] = str(respon)
+                if self.vxma_settings_selected_state == "symbol":
+                    symbol = str(respon)
+                    if ":" in symbol:
+                        self.vxma_settings[self.vxma_settings_selected_state] = symbol
+                    else:
+                        if symbol.endswith("BUSD") or symbol.endswith("USDT"):
+                            quote = "BUSD" if symbol.endswith("BUSD") else "USDT"
+                            base = symbol[:-4]
+                        else:
+                            quote = "USDT"
+                            base = symbol
+                        self.vxma_settings[
+                            self.vxma_settings_selected_state
+                        ] = f"{base}/{quote}:{quote}"
+                else:
+                    self.vxma_settings[self.vxma_settings_selected_state] = str(respon)
             if self.vxma_settings_selected_state in TA_TYPE:
                 msg0 = await update.message.reply_text(
                     "กำลังโหลดข้อมูลแท่งเทียน โปรดรอซักครู่"
