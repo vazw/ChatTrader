@@ -110,7 +110,7 @@ class Telegram:
             [
                 InlineKeyboardButton(
                     "❌ กลับ",
-                    callback_data="{'M': 'PNLC', 'H' :'BACK_TO_MENU'}",
+                    callback_data='{"M": "PNLC", "H" :"BACK_TO_MENU"}',
                 )
             ]
         ]
@@ -1604,7 +1604,7 @@ method to make great profit in Cryptocurrency Markets",
                 reply_markup=self.dynamic_reply_markup["trade"],
             )
         else:
-            self.trade_order["type"] = f"{callback['H']}"
+            self.trade_order["type"] = f'{callback["H"]}'
             self.update_inline_keyboard()
             msgs = await query.edit_message_text(
                 text=self.trade_reply_text + self.trade_reply_margin,
@@ -2606,7 +2606,7 @@ Leverage : X{self.trade_order['lev']}\n\
                     [
                         InlineKeyboardButton(
                             "❌ กลับ",
-                            callback_data="{'M': 'position_', 'H' :'BACK'}",
+                            callback_data='{"M": "position_", "H" :"BACK"}',
                         )
                     ]
                 ]
@@ -2752,7 +2752,7 @@ Leverage : X{self.trade_order['lev']}\n\
                 [
                     InlineKeyboardButton(
                         "❌ กลับ",
-                        callback_data="{'M': 'COINS', 'H': 'BACK_TO_MENU'}",
+                        callback_data='{"M": "COINS", "H": "BACK_TO_MENU"}',
                     )
                 ]
             ]
