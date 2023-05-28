@@ -669,22 +669,27 @@ method to make great profit in Cryptocurrency Markets",
             # Handler for Back to menu for all menu
             CallbackQueryHandler(
                 self.back_to_menu,
-                lambda x: (eval(x))["M"] in ["fiat", "pnl", "setting", "secure"]
-                and (eval(x))["H"] == "BACK",
+                lambda x: (json.loads(x))["M"] in ["fiat", "pnl", "setting", "secure"]
+                and (json.loads(x))["H"] == "BACK",
             ),
         ]
 
         main_menu_handlers = [
             # Handlers set for buttons workarounds.
-            CallbackQueryHandler(self.button_menu, lambda x: (eval(x))["M"] == "menu"),
-            CallbackQueryHandler(self.fiat_handler, lambda x: (eval(x))["M"] == "fiat"),
             CallbackQueryHandler(
-                self.setting_handler, lambda x: (eval(x))["M"] == "setting"
+                self.button_menu, lambda x: (json.loads(x))["M"] == "menu"
+            ),
+            CallbackQueryHandler(
+                self.fiat_handler, lambda x: (json.loads(x))["M"] == "fiat"
+            ),
+            CallbackQueryHandler(
+                self.setting_handler, lambda x: (json.loads(x))["M"] == "setting"
             ),
             ConversationHandler(
                 entry_points=[
                     CallbackQueryHandler(
-                        self.analyse_handler, lambda x: (eval(x))["M"] == "analyse"
+                        self.analyse_handler,
+                        lambda x: (json.loads(x))["M"] == "analyse",
                     )
                 ],
                 states={
@@ -706,8 +711,8 @@ method to make great profit in Cryptocurrency Markets",
                 entry_points=[
                     CallbackQueryHandler(
                         self.get_symbol_handler,
-                        lambda x: (eval(x))["M"] == "menuex"
-                        and (eval(x))["H"] == "Trade",
+                        lambda x: (json.loads(x))["M"] == "menuex"
+                        and (json.loads(x))["H"] == "Trade",
                     )
                 ],
                 states={
@@ -724,8 +729,8 @@ method to make great profit in Cryptocurrency Markets",
                 entry_points=[
                     CallbackQueryHandler(
                         self.get_symbol_handler,
-                        lambda x: (eval(x))["M"] == "trade"
-                        and (eval(x))["H"] == "Change",
+                        lambda x: (json.loads(x))["M"] == "trade"
+                        and (json.loads(x))["H"] == "Change",
                     )
                 ],
                 states={
@@ -742,7 +747,8 @@ method to make great profit in Cryptocurrency Markets",
                 entry_points=[
                     CallbackQueryHandler(
                         self.get_lev_handler,
-                        lambda x: (eval(x))["M"] == "trade" and (eval(x))["H"] == "Lev",
+                        lambda x: (json.loads(x))["M"] == "trade"
+                        and (json.loads(x))["H"] == "Lev",
                     )
                 ],
                 states={
@@ -759,7 +765,8 @@ method to make great profit in Cryptocurrency Markets",
                 entry_points=[
                     CallbackQueryHandler(
                         self.get_amount_handler,
-                        lambda x: (eval(x))["M"] == "trade" and (eval(x))["H"] == "Amt",
+                        lambda x: (json.loads(x))["M"] == "trade"
+                        and (json.loads(x))["H"] == "Amt",
                     )
                 ],
                 states={
@@ -776,7 +783,8 @@ method to make great profit in Cryptocurrency Markets",
                 entry_points=[
                     CallbackQueryHandler(
                         self.get_tp_price_handler,
-                        lambda x: (eval(x))["M"] == "trade" and (eval(x))["H"] == "TP",
+                        lambda x: (json.loads(x))["M"] == "trade"
+                        and (json.loads(x))["H"] == "TP",
                     )
                 ],
                 states={
@@ -793,7 +801,8 @@ method to make great profit in Cryptocurrency Markets",
                 entry_points=[
                     CallbackQueryHandler(
                         self.get_sl_price_handler,
-                        lambda x: (eval(x))["M"] == "trade" and (eval(x))["H"] == "SL",
+                        lambda x: (json.loads(x))["M"] == "trade"
+                        and (json.loads(x))["H"] == "SL",
                     )
                 ],
                 states={
@@ -807,33 +816,37 @@ method to make great profit in Cryptocurrency Markets",
             ),
             CallbackQueryHandler(
                 self.trade_order_type,
-                lambda x: (eval(x))["M"] == "trade" and (eval(x))["H"] == "Type",
+                lambda x: (json.loads(x))["M"] == "trade"
+                and (json.loads(x))["H"] == "Type",
             ),
             CallbackQueryHandler(
                 self.trade_order_type_handler,
-                lambda x: (eval(x))["M"] == "order_type",
+                lambda x: (json.loads(x))["M"] == "order_type",
             ),
             # Long Buttons
             CallbackQueryHandler(
                 self.trade_long_button,
-                lambda x: (eval(x))["M"] == "trade" and (eval(x))["H"] == "LONG",
+                lambda x: (json.loads(x))["M"] == "trade"
+                and (json.loads(x))["H"] == "LONG",
             ),
             # # Short Buttons
             CallbackQueryHandler(
                 self.trade_short_button,
-                lambda x: (eval(x))["M"] == "trade" and (eval(x))["H"] == "SHORT",
+                lambda x: (json.loads(x))["M"] == "trade"
+                and (json.loads(x))["H"] == "SHORT",
             ),
             # BACK
             CallbackQueryHandler(
                 self.back_from_trade_menu,
-                lambda x: (eval(x))["M"] == "trade" and (eval(x))["H"] == "BACK",
+                lambda x: (json.loads(x))["M"] == "trade"
+                and (json.loads(x))["H"] == "BACK",
             ),
             # + - buttons
             CallbackQueryHandler(
                 self.trade_amount_plus_minus,
-                lambda x: (eval(x))["M"] == "trade"
-                and (eval(x))["H"] == "+"
-                or (eval(x))["H"] == "-",
+                lambda x: (json.loads(x))["M"] == "trade"
+                and (json.loads(x))["H"] == "+"
+                or (json.loads(x))["H"] == "-",
             ),
         ]
 
@@ -841,42 +854,46 @@ method to make great profit in Cryptocurrency Markets",
             # confirm buttons
             CallbackQueryHandler(
                 self.position_confirm_lev,
-                lambda x: (eval(x))["M"] == "position_confirm_lev",
+                lambda x: (json.loads(x))["M"] == "position_confirm_lev",
             ),
             CallbackQueryHandler(
                 self.position_confirm_sl,
-                lambda x: (eval(x))["M"] == "position_confirm_sl",
+                lambda x: (json.loads(x))["M"] == "position_confirm_sl",
             ),
             CallbackQueryHandler(
                 self.position_confirm_tp,
-                lambda x: (eval(x))["M"] == "position_confirm_tp",
+                lambda x: (json.loads(x))["M"] == "position_confirm_tp",
             ),
             # Symbols
             CallbackQueryHandler(
                 self.info_pnl_per_coin,
-                lambda x: (eval(x))["M"] == "PNLC",
+                lambda x: (json.loads(x))["M"] == "PNLC",
             ),
             # back from info_pnl_per_coin
             CallbackQueryHandler(
                 self.show_position_coins_menu,
-                lambda x: (eval(x))["M"] == "position_" and (eval(x))["H"] == "BACK",
+                lambda x: (json.loads(x))["M"] == "position_"
+                and (json.loads(x))["H"] == "BACK",
             ),
             # edit symbol fot pnl
             CallbackQueryHandler(
                 self.show_position_coins_menu,
-                lambda x: (eval(x))["M"] == "pnl" and (eval(x))["H"] == "COINS",
+                lambda x: (json.loads(x))["M"] == "pnl"
+                and (json.loads(x))["H"] == "COINS",
             ),
             # ClosePosition
             CallbackQueryHandler(
                 self.position_close_handler,
-                lambda x: (eval(x))["M"] == "position_" and (eval(x))["H"] == "Close",
+                lambda x: (json.loads(x))["M"] == "position_"
+                and (json.loads(x))["H"] == "Close",
             ),
             # edit TP,SL,Leverage Handlers
             ConversationHandler(
                 entry_points=[
                     CallbackQueryHandler(
                         self.position_get_tp_price_handler,
-                        lambda x: (eval(x))["M"] == "pos" and (eval(x))["H"] == "TP",
+                        lambda x: (json.loads(x))["M"] == "pos"
+                        and (json.loads(x))["H"] == "TP",
                     )
                 ],
                 states={
@@ -895,7 +912,8 @@ method to make great profit in Cryptocurrency Markets",
                 entry_points=[
                     CallbackQueryHandler(
                         self.position_get_sl_price_handler,
-                        lambda x: (eval(x))["M"] == "pos" and (eval(x))["H"] == "SL",
+                        lambda x: (json.loads(x))["M"] == "pos"
+                        and (json.loads(x))["H"] == "SL",
                     )
                 ],
                 states={
@@ -914,7 +932,8 @@ method to make great profit in Cryptocurrency Markets",
                 entry_points=[
                     CallbackQueryHandler(
                         self.position_get_lev_handler,
-                        lambda x: (eval(x))["M"] == "pos" and (eval(x))["H"] == "Lev",
+                        lambda x: (json.loads(x))["M"] == "pos"
+                        and (json.loads(x))["H"] == "Lev",
                     )
                 ],
                 states={
@@ -938,8 +957,8 @@ method to make great profit in Cryptocurrency Markets",
                 entry_points=[
                     CallbackQueryHandler(
                         self.get_max_risk_handler,
-                        lambda x: (eval(x))["M"] == "risk"
-                        and (eval(x))["H"] == "MAX_RISK",
+                        lambda x: (json.loads(x))["M"] == "risk"
+                        and (json.loads(x))["H"] == "MAX_RISK",
                     )
                 ],
                 states={
@@ -955,8 +974,8 @@ method to make great profit in Cryptocurrency Markets",
                 entry_points=[
                     CallbackQueryHandler(
                         self.get_min_balance_handler,
-                        lambda x: (eval(x))["M"] == "risk"
-                        and (eval(x))["H"] == "MIN_BALANCE",
+                        lambda x: (json.loads(x))["M"] == "risk"
+                        and (json.loads(x))["H"] == "MIN_BALANCE",
                     )
                 ],
                 states={
@@ -970,45 +989,48 @@ method to make great profit in Cryptocurrency Markets",
             ),
             CallbackQueryHandler(
                 self.save_risk_to_db,
-                lambda x: (eval(x))["M"] == "risk" and (eval(x))["H"] == "SAVE",
+                lambda x: (json.loads(x))["M"] == "risk"
+                and (json.loads(x))["H"] == "SAVE",
             ),
             CallbackQueryHandler(
                 self.back_from_risk_menu,
-                lambda x: ((eval(x))["M"] == "risk" or (eval(x))["M"] == "COINS")
-                and (eval(x))["H"] == "BACK",
+                lambda x: (
+                    (json.loads(x))["M"] == "risk" or (json.loads(x))["M"] == "COINS"
+                )
+                and (json.loads(x))["H"] == "BACK",
             ),
             ## TODO add symbols handler for setting
             CallbackQueryHandler(
                 self.edit_config_per_coin,
-                lambda x: (eval(x))["M"] == "COINS",
+                lambda x: (json.loads(x))["M"] == "COINS",
             ),
             # CallbackQueryHandler(
             #     self.vxma_settings_handler,
-            #     lambda x: (eval(x))["M"] == "vxma_settings",
+            #     lambda x: (json.loads(x))["M"] == "vxma_settings",
             # ),
             CallbackQueryHandler(
                 self.vxma_save_settings_confirm,
-                lambda x: (eval(x))["M"] == "vxma_settings_confirm_save",
+                lambda x: (json.loads(x))["M"] == "vxma_settings_confirm_save",
             ),
             CallbackQueryHandler(
                 self.vxma_save_settings_confirm_2,
-                lambda x: (eval(x))["M"] == "vxma_settings_confirm_save_2",
+                lambda x: (json.loads(x))["M"] == "vxma_settings_confirm_save_2",
             ),
             CallbackQueryHandler(
                 self.vxma_del_settings_confirm,
-                lambda x: (eval(x))["M"] == "vxma_settings_confirm_del",
+                lambda x: (json.loads(x))["M"] == "vxma_settings_confirm_del",
             ),
             # entry_points=[
             #     CallbackQueryHandler(
             #         self.vxma_edit_settings_confirm,
-            #         lambda x: (eval(x))["M"] == "vxma_settings_confirm",
+            #         lambda x: (json.loads(x))["M"] == "vxma_settings_confirm",
             #     )
             # ],
             ConversationHandler(
                 entry_points=[
                     CallbackQueryHandler(
                         self.vxma_settings_handler,
-                        lambda x: (eval(x))["M"] == "vxma_settings",
+                        lambda x: (json.loads(x))["M"] == "vxma_settings",
                     )
                 ],
                 states={
@@ -1029,8 +1051,8 @@ method to make great profit in Cryptocurrency Markets",
                 entry_points=[
                     CallbackQueryHandler(
                         self.set_api_handler,
-                        lambda x: (eval(x))["M"] == "secure"
-                        and (eval(x))["H"] == "API",
+                        lambda x: (json.loads(x))["M"] == "secure"
+                        and (json.loads(x))["H"] == "API",
                     )
                 ],
                 states={
@@ -1137,7 +1159,7 @@ method to make great profit in Cryptocurrency Markets",
         query = update.callback_query
 
         await query.answer()
-        callback = eval(query.data)
+        callback = json.loads(query.data)
         ## Main menu will be here
         if callback["H"] == "CheckBalance":
             msgs = await query.edit_message_text(
@@ -1242,7 +1264,7 @@ method to make great profit in Cryptocurrency Markets",
         query = update.callback_query
         await query.answer()
         await query.edit_message_text("กำลังโหลดข้อมูล...")
-        callback = eval(query.data)
+        callback = json.loads(query.data)
         fiat_balance = self.binance_.fiat_balance
         status = self.binance_.position_data
         netunpl = float(
@@ -1575,7 +1597,7 @@ method to make great profit in Cryptocurrency Markets",
     ):
         query = update.callback_query
         await query.answer()
-        callback = eval(query.data)
+        callback = json.loads(query.data)
         if callback["H"] == "BACK":
             msgs = await query.edit_message_text(
                 text=self.trade_reply_text + self.trade_reply_margin,
@@ -1899,7 +1921,7 @@ Margin : {self.trade_order['margin']}"
     ):
         query = update.callback_query
         await query.answer()
-        callback = eval(query.data)
+        callback = json.loads(query.data)
         if callback["H"] == "+":
             self.trade_order["amt"] += float(self.trade_order["min_amt"])
         if callback["H"] == "-":
@@ -1965,7 +1987,7 @@ Margin : {self.trade_order['margin']}"
     ) -> None:
         query = update.callback_query
         await query.answer()
-        callback = eval(query.data)
+        callback = json.loads(query.data)
         if callback["H"] == "BACK":
             msgs = await query.edit_message_text(
                 text=choice(EGGS), reply_markup=self.reply_markup["menu"]
@@ -2089,7 +2111,7 @@ Order นี้จะใช้ Margin จะปรับเป็น: {round(mar
     ):
         query = update.callback_query
         await query.answer()
-        callback = eval(query.data)
+        callback = json.loads(query.data)
         if callback["H"] == "BACK":
             msgs = await query.edit_message_text(
                 text=self.coin_pnl_reply_text,
@@ -2134,7 +2156,7 @@ Leverage : X{self.trade_order['lev']}\n\
         """Handler to asks for trade TP Price"""
         query = update.callback_query
         await query.answer()
-        callback = eval(query.data)
+        callback = json.loads(query.data)
         text2 = ""
         if callback["D"] != 0:
             price = callback["D"].split("|")
@@ -2229,7 +2251,7 @@ Leverage : X{self.trade_order['lev']}\n\
 
         query = update.callback_query
         await query.answer()
-        callback = eval(query.data)
+        callback = json.loads(query.data)
         if callback["H"] == "BACK":
             msgs = await query.edit_message_text(
                 text=self.coin_pnl_reply_text,
@@ -2275,7 +2297,7 @@ Leverage : X{self.trade_order['lev']}\n\
         """Handler to asks for trade SL Price"""
         query = update.callback_query
         await query.answer()
-        callback = eval(query.data)
+        callback = json.loads(query.data)
         text2 = ""
         if callback["D"] != 0:
             price = callback["D"].split("|")
@@ -2369,7 +2391,7 @@ Leverage : X{self.trade_order['lev']}\n\
 
         query = update.callback_query
         await query.answer()
-        callback = eval(query.data)
+        callback = json.loads(query.data)
         if callback["H"] == "BACK":
             msgs = await query.edit_message_text(
                 text=self.coin_pnl_reply_text,
@@ -2540,7 +2562,7 @@ Leverage : X{self.trade_order['lev']}\n\
     ):
         query = update.callback_query
         await query.answer()
-        callback = eval(query.data)
+        callback = json.loads(query.data)
         if callback["H"] == "BACK_TO_MENU":
             msgs = await query.edit_message_text(
                 text=f"{self.pnl_reply}",
@@ -2681,7 +2703,7 @@ Leverage : X{self.trade_order['lev']}\n\
     ) -> None:
         query = update.callback_query
         await query.answer()
-        callback = eval(query.data)
+        callback = json.loads(query.data)
         if callback["H"] == "BOT":
             if self.status_bot:
                 self.status_bot = False
@@ -2872,7 +2894,7 @@ Leverage : X{self.trade_order['lev']}\n\
     ):
         query = update.callback_query
         await query.answer()
-        callback = eval(query.data)
+        callback = json.loads(query.data)
         if callback["H"] == "BACK_TO_MENU":
             msgs = await query.edit_message_text(
                 text=f"{self.watchlist_reply_text}",
@@ -2905,7 +2927,7 @@ Leverage : X{self.trade_order['lev']}\n\
     ) -> None:
         query = update.callback_query
         await query.answer()
-        callback = eval(query.data)
+        callback = json.loads(query.data)
         if callback["H"] in self.vxma_settings.keys():
             self.vxma_settings_selected_state = callback["H"]
             self.vxma_selected_state_type = callback["Type"]
@@ -3041,7 +3063,7 @@ Leverage : X{self.trade_order['lev']}\n\
     #     ):
     #         query = update.callback_query
     #         await query.answer()
-    #         callback = eval(query.data)
+    #         callback = json.loads(query.data)
     #         if callback["H"] == "BACK":
     #             msgs = await query.edit_message_text(
     #                 text=self.text_reply_bot_setting,
@@ -3136,7 +3158,7 @@ Leverage : X{self.trade_order['lev']}\n\
     ):
         query = update.callback_query
         await query.answer()
-        callback = eval(query.data)
+        callback = json.loads(query.data)
         if callback["H"] == "BACK":
             msgs = await query.edit_message_text(
                 text=self.text_reply_bot_setting,
@@ -3171,7 +3193,7 @@ Leverage : X{self.trade_order['lev']}\n\
     ):
         query = update.callback_query
         await query.answer()
-        callback = eval(query.data)
+        callback = json.loads(query.data)
         if callback["H"] == "BACK":
             msgs = await query.edit_message_text(
                 text=self.text_reply_bot_setting,
@@ -3210,7 +3232,7 @@ Leverage : X{self.trade_order['lev']}\n\
     ):
         query = update.callback_query
         await query.answer()
-        callback = eval(query.data)
+        callback = json.loads(query.data)
         if callback["H"] == "BACK":
             msgs = await query.edit_message_text(
                 text=self.text_reply_bot_setting,
