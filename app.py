@@ -3087,6 +3087,9 @@ Leverage : X{self.trade_order['lev']}\n\
                         ] = f"{base}/{quote}:{quote}"
                 else:
                     self.vxma_settings[self.vxma_settings_selected_state] = str(respon)
+                self.text_reply_bot_setting = (
+                    f"รายการตั้งค่ากลยุทธ์สำหรับ {self.vxma_settings['symbol']}"
+                )
             if self.vxma_settings_selected_state in TA_TYPE:
                 msg0 = await update.message.reply_text(
                     "กำลังโหลดข้อมูลแท่งเทียน โปรดรอซักครู่"
