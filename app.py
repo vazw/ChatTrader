@@ -2161,6 +2161,7 @@ Leverage : X{self.trade_order['lev']}\n\
         if callback["D"] != 0:
             price = callback["D"].split("|")
             self.trade_order["tp_id"], self.trade_order["tp_price"] = price
+            self.trade_order["tp_price"] = float(self.trade_order["tp_price"])
             text2 = "\nใส่ 0 หากต้องการส่งคำสั่งยกเลิก Order นี้"
         text = (
             f"ราคา Take Profit เดิมของท่านคือ : {self.trade_order['tp_price']}"
@@ -2302,6 +2303,7 @@ Leverage : X{self.trade_order['lev']}\n\
         if callback["D"] != 0:
             price = callback["D"].split("|")
             self.trade_order["sl_id"], self.trade_order["sl_price"] = price
+            self.trade_order["sl_price"] = float(self.trade_order["sl_price"])
             text2 = "\nใส่ 0 หากต้องการส่งคำสั่งยกเลิก Order นี้"
         text = (
             f"ราคา Stop-Loss เดิมของท่านคือ : {self.trade_order['sl_price']}"
