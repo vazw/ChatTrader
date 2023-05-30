@@ -2580,6 +2580,7 @@ Leverage : X{self.trade_order['lev']}\n\
             await self.binance_.disconnect()
             status = self.binance_.position_data
             status = status[status["symbol"] == posim]
+            status.reset_index(drop=True, inplace=True)
             positiondata = [
                 (
                     json.dumps(
