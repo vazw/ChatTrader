@@ -21,5 +21,16 @@ you may be able to start you chat with bot on Telegram.
 
 ## Screenshot
 
+**later
 
 
+## Todo
+
+1. Edit download ohlc candle data to save into a file with specified symbols name and timeframe.
+2. Add customs strategy and implements strategy files loader.
+3. Seperate Thread for 
+  - Data loading
+  - Signal generator from strategy
+  - Telegram Callback
+  - Money-managements
+4. Implements more Exchange Post order Functions.
