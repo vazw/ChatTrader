@@ -264,7 +264,9 @@ class RiskManageTable:
         self.use_sl = self.check_bool(symbolist["UseSL"])
         self.use_tailing = self.check_bool(symbolist["Tail_SL"])
         self.free_balance = float(balance["free"][self.quote])
-        self.max_size = max_margin_size(str(symbolist["maxMargin"]), self.free_balance)
+        self.max_size = max_margin_size(
+            str(symbolist["maxMargin"]), self.free_balance
+        )
         self.risk_size = str(symbolist["Risk"])
         self.tp_percent = symbolist["TP1"]
         self.tp_percent_2 = symbolist["TP2"]
@@ -544,13 +546,19 @@ def write_tp_record(
 
             if order_history["Position"][id] == "Long":
                 order_history["PNL$"][id] = round(
-                    (order_history["ClosePrice"][id] - order_history["EntryPrice"][id])
+                    (
+                        order_history["ClosePrice"][id]
+                        - order_history["EntryPrice"][id]
+                    )
                     * order_history["Amount"][id],
                     3,
                 )
             else:
                 order_history["PNL$"][id] = round(
-                    (order_history["EntryPrice"][id] - order_history["ClosePrice"][id])
+                    (
+                        order_history["EntryPrice"][id]
+                        - order_history["ClosePrice"][id]
+                    )
                     * order_history["Amount"][id],
                     3,
                 )
@@ -603,13 +611,19 @@ def edit_trade_record(
 
             if order_history["Position"][id] == "Long":
                 order_history["PNL$"][id] = round(
-                    (order_history["ClosePrice"][id] - order_history["EntryPrice"][id])
+                    (
+                        order_history["ClosePrice"][id]
+                        - order_history["EntryPrice"][id]
+                    )
                     * order_history["Amount"][id],
                     3,
                 )
             else:
                 order_history["PNL$"][id] = round(
-                    (order_history["EntryPrice"][id] - order_history["ClosePrice"][id])
+                    (
+                        order_history["EntryPrice"][id]
+                        - order_history["ClosePrice"][id]
+                    )
                     * order_history["Amount"][id],
                     3,
                 )
@@ -640,13 +654,19 @@ def edit_all_trade_record(
 
             if order_history["Position"][id] == "Long":
                 order_history["PNL$"][id] = round(
-                    (order_history["ClosePrice"][id] - order_history["EntryPrice"][id])
+                    (
+                        order_history["ClosePrice"][id]
+                        - order_history["EntryPrice"][id]
+                    )
                     * order_history["Amount"][id],
                     3,
                 )
             else:
                 order_history["PNL$"][id] = round(
-                    (order_history["EntryPrice"][id] - order_history["ClosePrice"][id])
+                    (
+                        order_history["EntryPrice"][id]
+                        - order_history["ClosePrice"][id]
+                    )
                     * order_history["Amount"][id],
                     3,
                 )
@@ -709,7 +729,8 @@ REPLY_MARKUP = {
             ],
             [
                 InlineKeyboardButton(
-                    "บังคับอัพเดตข้อมูล", callback_data='{"M": "fiat", "H": "RE"}'
+                    "บังคับอัพเดตข้อมูล",
+                    callback_data='{"M": "fiat", "H": "RE"}',
                 ),
                 InlineKeyboardButton(
                     "❌ กลับ", callback_data='{"M": "fiat", "H": "BACK"}'
@@ -717,28 +738,28 @@ REPLY_MARKUP = {
             ],
         ]
     ),
-    # "secure": InlineKeyboardMarkup(
-    #     [
-    #         [
-    #             InlineKeyboardButton(
-    #                 "⚙️ตั้งค่า API",
-    #                 callback_data='{"M": "secure", "H": "API"}',
-    #             ),
-    #         ],
-    #         # [
-    #         #     InlineKeyboardButton(
-    #         #         "⚙️ตั้งค่ารหัสผ่าน",
-    #         #         callback_data='{"M": "secure", "H": "PASS"}',
-    #         #     ),
-    #         # ],
-    #         [
-    #             InlineKeyboardButton(
-    #                 "❌ กลับ",
-    #                 callback_data='{"M": "secure", "H": "BACK"}',
-    #             ),
-    #         ],
-    #     ]
-    # ),
+    "secure": InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    "⚙️ตั้งค่า API",
+                    callback_data='{"M": "secure", "H": "API"}',
+                ),
+            ],
+            # [
+            #     InlineKeyboardButton(
+            #         "⚙️ตั้งค่ารหัสผ่าน",
+            #         callback_data='{"M": "secure", "H": "PASS"}',
+            #     ),
+            # ],
+            [
+                InlineKeyboardButton(
+                    "❌ กลับ",
+                    callback_data='{"M": "secure", "H": "BACK"}',
+                ),
+            ],
+        ]
+    ),
     "analyse": InlineKeyboardMarkup(
         [
             [
