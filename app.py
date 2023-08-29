@@ -3334,12 +3334,12 @@ Leverage : X{self.trade_order['lev']}\n\
             )
             msg = await update.message.reply_text(
                 f"ตั้งค่า API {self.sec_info['API_KEY'][:10]} สำเร็จ\n{text}",
-                reply_markup=self.reply_markup["secure"],
+                reply_markup=self.dynamic_reply_markup["setting"],
             )
         except Exception as e:
             msg = await update.message.reply_text(
                 f"ตั้งค่า API {self.sec_info['API_KEY'][:10]} เกิดข้อผิดพลาด\n{e}",
-                reply_markup=self.reply_markup["secure"],
+                reply_markup=self.dynamic_reply_markup["setting"],
             )
         self.uniq_msg_id.append(msg.message_id)
         await self.delete_ask_messages(context)
