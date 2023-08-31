@@ -25,7 +25,6 @@ from .AppData.Appdata import (
     TATable,
     bot_setting,
     candle,
-    clearconsol,
     write_trade_record,
     write_tp_record,
     edit_trade_record,
@@ -186,8 +185,11 @@ class BotTrade:
             try:
                 if not self.status_bot:
                     return
+                print("updating balance")
                 await binance_i.update_balance()
+                print("get_currentmode")
                 await self.get_currentmode()
+                print("get_waiting_time")
                 await self.get_waiting_time()
                 await self.waiting()
                 await asyncio.gather(self.warper_fn())
@@ -199,10 +201,14 @@ class BotTrade:
                 await binance_i.disconnect()
 
     async def notify_send(self, message: str):
-        return await self.context.bot.send_message(chat_id=self.chat_id, text=message)
+        return await self.context.bot.send_message(
+            chat_id=self.chat_id, text=message
+        )
 
     async def notify_send_pic(self, path: str):
-        return await self.context.bot.send_photo(chat_id=self.chat_id, photo=path)
+        return await self.context.bot.send_photo(
+            chat_id=self.chat_id, photo=path
+        )
 
     def update_watchlist(self) -> None:
         symbolist = bot_setting()
@@ -220,7 +226,9 @@ class BotTrade:
             timenow = time.time()
             update_tasks = [
                 asyncio.create_task(binance_i.fetchbars(symbol, tf))
-                for symbol, tf in [str(i).split("_") for i in candle_ohlc.keys()]
+                for symbol, tf in [
+                    str(i).split("_") for i in candle_ohlc.keys()
+                ]
                 if timenow
                 > candle_ohlc[f"{symbol}_{tf}"]["cTime"] + TIMEFRAME_SECONDS[tf]
             ]
@@ -282,7 +290,9 @@ class BotTrade:
             lastUpdate.status = f"{e}"
             return self.bot_3(symbol, ta_data, tf)
 
-    async def scaning_method(self, symbol: str, ta_data: TATable, symbols: list):
+    async def scaning_method(
+        self, symbol: str, ta_data: TATable, symbols: list
+    ):
         try:
             df1, df2, df3 = await asyncio.gather(
                 self.bot_1(symbol, ta_data.__dict__, "1d"),
@@ -298,11 +308,18 @@ class BotTrade:
                 mid_term_score = mid_term.benchmarking()
                 short_term_score = short_term.benchmarking()
                 if (
-                    (long_term_score == "Side-Way" and mid_term_score == "Side-Way")
-                    or (
-                        long_term_score == "Side-Way" and short_term_score == "Side-Way"
+                    (
+                        long_term_score == "Side-Way"
+                        and mid_term_score == "Side-Way"
                     )
-                    or (mid_term_score == "Side-Way" and short_term_score == "Side-Way")
+                    or (
+                        long_term_score == "Side-Way"
+                        and short_term_score == "Side-Way"
+                    )
+                    or (
+                        mid_term_score == "Side-Way"
+                        and short_term_score == "Side-Way"
+                    )
                 ):
                     pass
                 else:
@@ -328,7 +345,13 @@ class BotTrade:
         return symbols
 
     async def get_dailytasks(self):
-        daycollum = ["Symbol", "LastPirce", "Long-Term", "Mid-Term", "Short-Term"]
+        daycollum = [
+            "Symbol",
+            "LastPirce",
+            "Long-Term",
+            "Mid-Term",
+            "Short-Term",
+        ]
         symbolist = await binance_i.get_symbol()
         ta_data = TATable()
         for symbol in symbolist:
@@ -342,7 +365,9 @@ class BotTrade:
                 # candle(df3, symbol, "1h")
                 if df1 is not None:
                     time_now = lastUpdate.candle
-                    await self.notify_send_pic(candle(df1, symbol, f"1d {time_now}"))
+                    await self.notify_send_pic(
+                        candle(df1, symbol, f"1d {time_now}")
+                    )
                     long_term = ta_score(df1)
                     mid_term = ta_score(df2)
                     short_term = ta_score(df3)
@@ -362,7 +387,9 @@ class BotTrade:
 
     async def write_daily_balance(self):
         fiat_balance = binance_i.fiat_balance
-        total_balance = fiat_balance["BUSD"]["total"] + fiat_balance["USDT"]["total"]
+        total_balance = (
+            fiat_balance["BUSD"]["total"] + fiat_balance["USDT"]["total"]
+        )
         local_time = time.ctime(time.time())
         df = pd.DataFrame(
             {
@@ -406,7 +433,9 @@ class BotTrade:
             )
             async for line in self.get_dailytasks():
                 msg1 = remove_last_line_from_string(str(line))
-                await self.context.bot.send_message(chat_id=self.chat_id, text=msg1)
+                await self.context.bot.send_message(
+                    chat_id=self.chat_id, text=msg1
+                )
             balance = binance_i.balance
             positions = balance["info"]["positions"]
             status = pd.DataFrame(
@@ -418,15 +447,23 @@ class BotTrade:
                 columns=statcln,
             )
             margin = float((status["initialMargin"]).astype("float64").sum())
-            netunpl = float((status["unrealizedProfit"]).astype("float64").sum())
-            status = status.sort_values(by=["unrealizedProfit"], ascending=False)
+            netunpl = float(
+                (status["unrealizedProfit"]).astype("float64").sum()
+            )
+            status = status.sort_values(
+                by=["unrealizedProfit"], ascending=False
+            )
             status = status.head(1)
             firstline = (status.index)[0]
-            upnl = round(float((status["unrealizedProfit"]).astype("float64").sum()), 2)
+            upnl = round(
+                float((status["unrealizedProfit"]).astype("float64").sum()), 2
+            )
             symbol = status["symbol"][firstline]
             entryP = status["entryPrice"][firstline]
             metthod = status["positionSide"][firstline]
-            msg2 = f"{symbol} > {metthod} at {entryP} \nunrealizedProfit : {upnl}$"
+            msg2 = (
+                f"{symbol} > {metthod} at {entryP} \nunrealizedProfit : {upnl}$"
+            )
             message = (
                 f"Top Performance\n{msg2}\n-----\n"
                 + f"Net Margin Used : {round(float(margin),2)}$"
@@ -511,7 +548,9 @@ class BotTrade:
                 columns=statcln,
             )
 
-            mm_permission = self.check_moneymanagment(status, risk_manage_data.quote)
+            mm_permission = self.check_moneymanagment(
+                status, risk_manage_data.quote
+            )
 
             if df_hedge is not None:
                 await asyncio.gather(
@@ -597,7 +636,9 @@ class BotTrade:
                 columns=statcln,
             )
 
-            mm_permission = self.check_moneymanagment(status, risk_manage_data.quote)
+            mm_permission = self.check_moneymanagment(
+                status, risk_manage_data.quote
+            )
 
             if df_hedge is not None:
                 await asyncio.gather(
@@ -675,7 +716,9 @@ class BotTrade:
                 timer.min_timewait = 1800
                 all_timeframes.append("30m")
             timer.min_timeframe = next(
-                i for i in all_timeframes if TIMEFRAME_SECONDS[i] == timer.min_timewait
+                i
+                for i in all_timeframes
+                if TIMEFRAME_SECONDS[i] == timer.min_timewait
             )
             timer.get_time = True
             lastUpdate.candle = datetime.now()
@@ -699,7 +742,8 @@ class BotTrade:
                     return
 
                 all_timeframes = (
-                    symbolist["timeframe"].tolist() + symbolist["hedgeTF"].tolist()
+                    symbolist["timeframe"].tolist()
+                    + symbolist["hedgeTF"].tolist()
                 )
 
                 tf_secconds = [TIMEFRAME_SECONDS[x] for x in all_timeframes]
@@ -708,7 +752,10 @@ class BotTrade:
                     print("detected new settings")
                     await self.get_waiting_time()
 
-                if str(local_time[14:-9]) == "1" or str(local_time[14:-9]) == "3":
+                if (
+                    str(local_time[14:-9]) == "1"
+                    or str(local_time[14:-9]) == "3"
+                ):
                     insession["day"] = False
                     insession["hour"] = False
 
@@ -749,18 +796,25 @@ class BotTrade:
                     async for task in split_list(tasks, 10):
                         await asyncio.gather(*task)
                     await asyncio.sleep(0.5)
-                    if str(local_time[11:-9]) == "07:0" and not insession["day"]:
+                    if (
+                        str(local_time[11:-9]) == "07:0"
+                        and not insession["day"]
+                    ):
                         insession["day"] = True
                         insession["hour"] = True
                         # await asyncio.wait_for(dailyreport())
                         sub_tasks.append(
                             asyncio.create_task(self.write_daily_balance())
                         )
-                        sub_tasks.append(asyncio.create_task(self.hourly_report()))
+                        sub_tasks.append(
+                            asyncio.create_task(self.hourly_report())
+                        )
                         sub_tasks.append(asyncio.create_task(self.waiting()))
                     if str(local_time[14:-9]) == "0" and not insession["hour"]:
                         insession["hour"] = True
-                        sub_tasks.append(asyncio.create_task(self.hourly_report()))
+                        sub_tasks.append(
+                            asyncio.create_task(self.hourly_report())
+                        )
                         sub_tasks.append(asyncio.create_task(self.waiting()))
                     if len(sub_tasks) > 0:
                         await asyncio.gather(*sub_tasks)
@@ -780,7 +834,9 @@ class BotTrade:
             finally:
                 await binance_i.disconnect()
 
-    async def TailingLongOrder(self, df, symbol, exchange, ask, amount, low, side):
+    async def TailingLongOrder(
+        self, df, symbol, exchange, ask, amount, low, side
+    ):
         try:
             orderid = get_order_id()
             triggerPrice = binance_i.RR1(low, True, ask, symbol, exchange)
@@ -829,7 +885,9 @@ class BotTrade:
                 f"เกิดความผิดพลาดในการเข้า Order : Tailing Stop\n{lastUpdate.status}\n{e}"
             )
 
-    async def TailingShortOrder(self, df, symbol, exchange, bid, amount, high, Sside):
+    async def TailingShortOrder(
+        self, df, symbol, exchange, bid, amount, high, Sside
+    ):
         try:
             orderid = get_order_id()
             triggerPrice = binance_i.RR1(high, False, bid, symbol, exchange)
@@ -919,7 +977,9 @@ class BotTrade:
             )
             return 0.0
 
-    async def USESLLONG(self, symbol, exchange: ccxt.binance, amount, low, side):
+    async def USESLLONG(
+        self, symbol, exchange: ccxt.binance, amount, low, side
+    ):
         try:
             orderid = get_order_id()
             if self.currentMode.dualSidePosition:
@@ -959,7 +1019,17 @@ class BotTrade:
             return 0.0
 
     async def USETPLONG(
-        self, symbol, df, exchange, ask, TPRR1, TPRR2, Lside, amttp1, amttp2, USETP2
+        self,
+        symbol,
+        df,
+        exchange,
+        ask,
+        TPRR1,
+        TPRR2,
+        Lside,
+        amttp1,
+        amttp2,
+        USETP2,
     ):
         try:
             stop_price = exchange.price_to_precision(
@@ -1043,7 +1113,14 @@ class BotTrade:
 
     # OpenLong=Buy
     async def OpenLong(
-        self, df, balance, risk_manage, Lside, min_balance, tf, clearorder: bool = True
+        self,
+        df,
+        balance,
+        risk_manage,
+        Lside,
+        min_balance,
+        tf,
+        clearorder: bool = True,
     ):
         exchange = await binance_i.get_exchange()
         await binance_i.connect_loads()
@@ -1082,7 +1159,9 @@ class BotTrade:
                     )
                     new_lots = min_amount
                 amount = float(
-                    exchange.amount_to_precision(risk_manage["symbol"], new_lots)
+                    exchange.amount_to_precision(
+                        risk_manage["symbol"], new_lots
+                    )
                 )
             free = float(risk_manage["free_balance"])
             amttp1 = amount * (risk_manage["tp_percent"] / 100)
@@ -1181,7 +1260,17 @@ class BotTrade:
             return
 
     async def USETPSHORT(
-        self, symbol, df, exchange, bid, TPRR1, TPRR2, Sside, amttp1, amttp2, USETP2
+        self,
+        symbol,
+        df,
+        exchange,
+        bid,
+        TPRR1,
+        TPRR2,
+        Sside,
+        amttp1,
+        amttp2,
+        USETP2,
     ):
         try:
             triggerPrice = exchange.price_to_precision(
@@ -1232,7 +1321,14 @@ class BotTrade:
 
     # OpenShort=Sell
     async def OpenShort(
-        self, df, balance, risk_manage, Sside, min_balance, tf, clearorder: bool = True
+        self,
+        df,
+        balance,
+        risk_manage,
+        Sside,
+        min_balance,
+        tf,
+        clearorder: bool = True,
     ):
         exchange = await binance_i.get_exchange()
         await binance_i.connect_loads()
@@ -1271,7 +1367,9 @@ class BotTrade:
                     )
                     new_lots = min_amount
                 amount = float(
-                    exchange.amount_to_precision(risk_manage["symbol"], new_lots)
+                    exchange.amount_to_precision(
+                        risk_manage["symbol"], new_lots
+                    )
                 )
             free = float(risk_manage["free_balance"])
             amttp1 = amount * (risk_manage["tp_percent"] / 100)
@@ -1500,7 +1598,9 @@ class BotTrade:
             self.currentMode.Sside = "SHORT"
             self.currentMode.Lside = "LONG"
 
-    async def check_current_position(self, symbol: str, status: pd.DataFrame) -> dict:
+    async def check_current_position(
+        self, symbol: str, status: pd.DataFrame
+    ) -> dict:
         if "/" in symbol:
             posim = symbol[:-5].replace("/", "")
         else:
@@ -1676,7 +1776,9 @@ class BotTrade:
         """
         check if open position still exits
         """
-        saved_position = read_one_open_trade_record(symbol, timeframe, direction)
+        saved_position = read_one_open_trade_record(
+            symbol, timeframe, direction
+        )
         if saved_position is None:
             del status
             return
@@ -1697,7 +1799,9 @@ class BotTrade:
                 0.0,
                 isSl=True,
             )
-            await self.notify_send_pic(candle(df, symbol, f"{timeframe} {time_now}"))
+            await self.notify_send_pic(
+                candle(df, symbol, f"{timeframe} {time_now}")
+            )
             del status
             return
 
@@ -1764,7 +1868,9 @@ class BotTrade:
             del status
             return
 
-    async def notify_signal(self, df, risk_manage, mm_permission, signal: str = ""):
+    async def notify_signal(
+        self, df, risk_manage, mm_permission, signal: str = ""
+    ):
         timeframe = risk_manage["timeframe"]
         if f"{risk_manage['symbol']}_{timeframe}" not in notify_history.keys():
             notify_history[f"{risk_manage['symbol']}_{timeframe}"] = 0
@@ -1782,10 +1888,12 @@ class BotTrade:
                 + f"\nRisk ทั้งหมด : {round(mm_permission['risk'],3)} $\n"
                 + f"Risk สูงสุดที่กำหนดไว้ : {round(mm_permission['max_margin'],3)} $"
             )
-            await self.notify_send_pic(candle(df, risk_manage["symbol"], timeframe))
-            notify_history[f"{risk_manage['symbol']}_{timeframe}"] = candle_ohlc[
+            await self.notify_send_pic(
+                candle(df, risk_manage["symbol"], timeframe)
+            )
+            notify_history[
                 f"{risk_manage['symbol']}_{timeframe}"
-            ]["cTime"]
+            ] = candle_ohlc[f"{risk_manage['symbol']}_{timeframe}"]["cTime"]
 
     async def feed(
         self,
@@ -1842,7 +1950,9 @@ class BotTrade:
                         )
                         await binance_i.update_balance(force=True)
                     else:
-                        await self.notify_signal(df, risk_manage, mm_permission, "Long")
+                        await self.notify_signal(
+                            df, risk_manage, mm_permission, "Long"
+                        )
                 else:
                     print("No permission for excute order : Do nothing")
 
@@ -1859,7 +1969,9 @@ class BotTrade:
                         )
                         await binance_i.update_balance(force=True)
                     else:
-                        await self.notify_signal(df, risk_manage, mm_permission, "Long")
+                        await self.notify_signal(
+                            df, risk_manage, mm_permission, "Long"
+                        )
                 else:
                     print("No permission for excute order : Do nothing")
 

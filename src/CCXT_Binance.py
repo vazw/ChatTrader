@@ -105,6 +105,7 @@ class Binance:
             self.update_time = time()
             self.balance = balance
             self.fiat_balance = {x: y for x, y in balance.items() if "USD" in x[-4:]}
+            print(self.fiat_balance)
             positions = self.balance["info"]["positions"]
             status = pd.DataFrame(
                 [

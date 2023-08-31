@@ -23,7 +23,7 @@ from telegram.ext import (
     filters,
 )
 
-from src.AppData import HELP_MESSAGE, WELCOME_MESSAGE, split_list
+from src.AppData import HELP_MESSAGE, WELCOME_MESSAGE, ResetDatabase, split_list
 from src.AppData.Appdata import (
     REPLY_MARKUP,
     TA_TYPE,
@@ -1285,7 +1285,10 @@ method to make great profit in Cryptocurrency Markets",
                 + f"\nกำไร/ขาดทุน  : {round(netunpl,2)}$"
             )
         elif callback["H"] == "RE":
-            await query.edit_message_text("กำลัง Refresh ข้อมูลจาก Exchange")
+            await asyncio.gather(
+                query.edit_message_text("กำลัง Refresh ข้อมูลจาก Exchange"),
+                self.binance_.disconnect()
+            )
             await asyncio.gather(
                 self.binance_.update_balance(True), self.bot_trade.get_currentmode()
             )
@@ -3311,8 +3314,15 @@ Leverage : X{self.trade_order['lev']}\n\
                 config = pd.read_sql("SELECT * FROM key", con=con)
                 # Edit able
                 # apikey freeB minB apisec notify
-                config["apikey"][0] = self.sec_info["API_KEY"]
-                config["apisec"][0] = self.sec_info["API_SEC"]
+                if len(config.index) != 0:
+                    config["apikey"][0] = self.sec_info["API_KEY"]
+                    config["apisec"][0] = self.sec_info["API_SEC"]
+                else:
+                    config["freeB"][0] = ""
+                    config["minB"][0] = ""
+                    config["apikey"][0] = self.sec_info["API_KEY"]
+                    config["apisec"][0] = self.sec_info["API_SEC"]
+                    config["notify"][0] = ""
                 # Save
                 config = config.set_index("apikey")
                 config.to_sql(
@@ -3435,6 +3445,8 @@ def main():
     while True:
         try:
             app = Telegram(f"{os.environ['TelegramToken']}")
+            if not os.path.isfile("vxma.db"):
+                ResetDatabase.resetdata()
             app.setup_bot()
         except KeyboardInterrupt:
             return

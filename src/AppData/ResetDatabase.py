@@ -107,17 +107,18 @@ def cBot():
 def newUser():
     try:
         with sqlite3.connect("vxma.db", check_same_thread=False) as con:
-            data = pd.DataFrame(columns=["id", "pass"])
-            cook = cooking(id, pwd)
-            compo = [id, cook]
+            data = pd.DataFrame(
+                columns=["apikey", "freeB", "minB", "apisec", "notify"]
+            )
+            compo = ["1", "1", "1", "1", "1"]
             data.loc[1] = compo
-            data = data.set_index("id")
+            data = data.set_index("apikey")
             data.to_sql(
-                "user",
+                "key",
                 con=con,
                 if_exists="replace",
                 index=True,
-                index_label="id",
+                index_label="apikey",
             )
             print("success : RESET")
     except sqlite3.Error as e:
