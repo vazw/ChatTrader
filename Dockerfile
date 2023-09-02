@@ -1,22 +1,20 @@
 FROM zasoliton/python-talib As builder
 
-RUN python -m venv /env
-
-ENV PATH="/env/bin:$PATH"
-
 COPY requirements.txt .
 
-RUN python3 -m pip install -r requirements.txt --no-clean --disable-pip-version-check
+# install dependencies to the local user directory (eg. /root/.local)
+RUN pip install --user -r requirements.txt
 
+# second unnamed stage
 FROM python:3.11-slim
+WORKDIR /code
 
-COPY . ./
-COPY --from=builder . ./
+# copy only the dependencies installation from the 1st stage image
+COPY --from=builder /root/.local /root/.local
+COPY . .
 
-ENV PATH="/env/bin:$PATH"
-ENV TZ="Asia/Bangkok"
-ENV TERM=xterm
-EXPOSE 8050
-# run app
+# update PATH environment variable
+ENV PATH=/root/.local:$PATH
+
 CMD ["python", "app.py"]
 
