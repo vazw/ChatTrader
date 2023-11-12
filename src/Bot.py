@@ -487,7 +487,7 @@ class BotTrade:
         max_margin = config.max_margin
         min_balance = config.min_balance
         fiat_balance = binance_i.fiat_balance
-        free = fiat_balance[quote]["free"]
+        free = float(fiat_balance[quote]["free"])
         risk = float(
             (
                 status["initialMargin"].astype("float64")
@@ -502,8 +502,7 @@ class BotTrade:
             "free": free,
             "min_balance": min_balance,
             "can_trade": False
-            if margin > max_margin or free < min_balance or risk > (free * 10)
-            else True,
+            if margin > max_margin or free < min_balance or risk > (free * 10) else True,
         }
 
     async def main_bot_no_setting(self, symbol: str) -> None:
