@@ -387,14 +387,11 @@ class BotTrade:
 
     async def write_daily_balance(self):
         fiat_balance = binance_i.fiat_balance
-        total_balance = (
-            fiat_balance["BUSD"]["total"] + fiat_balance["USDT"]["total"]
-        )
         local_time = time.ctime(time.time())
         df = pd.DataFrame(
             {
                 "DateTime": [local_time],
-                "Total": [total_balance],
+                "Total": [fiat_balance["USDT"]["total"]],
             }
         )
 
@@ -416,10 +413,7 @@ class BotTrade:
             "Balance Report\n USDT"
             + f"\nFree   : {round(fiat_balance['USDT']['free'],2)}$"
             + f"\nMargin : {round(fiat_balance['USDT']['used'],2)}$"
-            + f"\nTotal  : {round(fiat_balance['USDT']['total'],2)}$\nBUSD"
-            + f"\nFree   : {round(fiat_balance['BUSD']['free'],2)}$"
-            + f"\nMargin : {round(fiat_balance['BUSD']['used'],2)}$"
-            + f"\nTotal  : {round(fiat_balance['BUSD']['total'],2)}$"
+            + f"\nTotal  : {round(fiat_balance['USDT']['total'],2)}$"
             + f"\nNet Profit/Loss  : {round(netunpl,2)}$"
         )
         await self.context.bot.send_message(chat_id=self.chat_id, text=msg)
@@ -502,7 +496,8 @@ class BotTrade:
             "free": free,
             "min_balance": min_balance,
             "can_trade": False
-            if margin > max_margin or free < min_balance or risk > (free * 10) else True,
+            if margin > max_margin or free < min_balance or risk > (free * 10)
+            else True,
         }
 
     async def main_bot_no_setting(self, symbol: str) -> None:
@@ -681,11 +676,7 @@ class BotTrade:
         fiat_balance = binance_i.fiat_balance
         lastUpdate.balance = fiat_balance
         print(
-            "\n BUSD"
-            + f"\nFree   : {round(fiat_balance['BUSD']['free'],2)}$"
-            + f"\nMargin : {round(fiat_balance['BUSD']['used'],2)}$"
-            + f"\nTotal  : {round(fiat_balance['BUSD']['total'],2)}$\nUSDT"
-            + f"\nFree   : {round(fiat_balance['USDT']['free'],2)}$"
+            f"USDT:\nFree   : {round(fiat_balance['USDT']['free'],2)}$"
             + f"\nMargin : {round(fiat_balance['USDT']['used'],2)}$"
             + f"\nTotal  : {round(fiat_balance['USDT']['total'],2)}$"
             + f"\nNet Profit/Loss  : {round(netunpl,2)}$"

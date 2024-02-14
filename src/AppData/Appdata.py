@@ -9,7 +9,8 @@
 
 from datetime import datetime
 import os
-import openai
+
+# import openai
 import sqlite3
 import bcrypt
 from dataclasses import dataclass
@@ -721,9 +722,6 @@ REPLY_MARKUP = {
                     "USDT", callback_data='{"M": "fiat", "H": "USDT"}'
                 ),
                 InlineKeyboardButton(
-                    "BUSD", callback_data='{"M": "fiat", "H": "BUSD"}'
-                ),
-                InlineKeyboardButton(
                     "ทั้งหมด", callback_data='{"M": "fiat", "H": "ALL"}'
                 ),
             ],
@@ -922,11 +920,11 @@ REPLY_MARKUP = {
 }
 
 
-openai.api_key = os.environ["OpenAiToken"]
-
-
-def chat(messages):
-    return openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=messages,
-    )
+# openai.api_key = os.environ["OpenAiToken"]
+#
+#
+# def chat(messages):
+#     return openai.ChatCompletion.create(
+#         model="gpt-3.5-turbo",
+         messages=messages,
+#     )
