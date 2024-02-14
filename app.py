@@ -683,7 +683,8 @@ method to make great profit in Cryptocurrency Markets",
                 self.fiat_handler, lambda x: (json.loads(x))["M"] == "fiat"
             ),
             CallbackQueryHandler(
-                self.setting_handler, lambda x: (json.loads(x))["M"] == "setting"
+                self.setting_handler,
+                lambda x: (json.loads(x))["M"] == "setting",
             ),
             ConversationHandler(
                 entry_points=[
@@ -718,7 +719,8 @@ method to make great profit in Cryptocurrency Markets",
                 states={
                     T_SYMBOL: [
                         MessageHandler(
-                            filters.TEXT & ~filters.COMMAND, self.update_trade_symbol
+                            filters.TEXT & ~filters.COMMAND,
+                            self.update_trade_symbol,
                         )
                     ],
                 },
@@ -736,7 +738,8 @@ method to make great profit in Cryptocurrency Markets",
                 states={
                     T_SYMBOL: [
                         MessageHandler(
-                            filters.TEXT & ~filters.COMMAND, self.update_trade_symbol
+                            filters.TEXT & ~filters.COMMAND,
+                            self.update_trade_symbol,
                         )
                     ],
                 },
@@ -754,7 +757,8 @@ method to make great profit in Cryptocurrency Markets",
                 states={
                     T_LEV: [
                         MessageHandler(
-                            filters.TEXT & ~filters.COMMAND, self.update_trade_lev
+                            filters.TEXT & ~filters.COMMAND,
+                            self.update_trade_lev,
                         )
                     ],
                 },
@@ -772,7 +776,8 @@ method to make great profit in Cryptocurrency Markets",
                 states={
                     T_AMT: [
                         MessageHandler(
-                            filters.TEXT & ~filters.COMMAND, self.update_trade_amt
+                            filters.TEXT & ~filters.COMMAND,
+                            self.update_trade_amt,
                         )
                     ],
                 },
@@ -790,7 +795,8 @@ method to make great profit in Cryptocurrency Markets",
                 states={
                     T_TP: [
                         MessageHandler(
-                            filters.TEXT & ~filters.COMMAND, self.update_trade_tp_price
+                            filters.TEXT & ~filters.COMMAND,
+                            self.update_trade_tp_price,
                         )
                     ],
                 },
@@ -808,7 +814,8 @@ method to make great profit in Cryptocurrency Markets",
                 states={
                     T_SL: [
                         MessageHandler(
-                            filters.TEXT & ~filters.COMMAND, self.update_trade_sl_price
+                            filters.TEXT & ~filters.COMMAND,
+                            self.update_trade_sl_price,
                         )
                     ],
                 },
@@ -964,7 +971,8 @@ method to make great profit in Cryptocurrency Markets",
                 states={
                     B_RISK: [
                         MessageHandler(
-                            filters.TEXT & ~filters.COMMAND, self.update_max_risk
+                            filters.TEXT & ~filters.COMMAND,
+                            self.update_max_risk,
                         )
                     ],
                 },
@@ -981,7 +989,8 @@ method to make great profit in Cryptocurrency Markets",
                 states={
                     B_MIN_BL: [
                         MessageHandler(
-                            filters.TEXT & ~filters.COMMAND, self.update_min_balance
+                            filters.TEXT & ~filters.COMMAND,
+                            self.update_min_balance,
                         )
                     ],
                 },
@@ -1036,7 +1045,8 @@ method to make great profit in Cryptocurrency Markets",
                 states={
                     SETTING_STATE: [
                         MessageHandler(
-                            filters.TEXT & ~filters.COMMAND, self.vxma_get_settings
+                            filters.TEXT & ~filters.COMMAND,
+                            self.vxma_get_settings,
                         )
                     ],
                 },
@@ -1080,9 +1090,9 @@ method to make great profit in Cryptocurrency Markets",
         self.application.add_handlers(api_setting_handlers)
 
         # Talking bot.
-        self.application.add_handler(
-            MessageHandler(filters.TEXT & ~filters.COMMAND, self.echo)
-        )
+        # self.application.add_handler(
+        #     MessageHandler(filters.TEXT & ~filters.COMMAND, self.echo)
+        # )
         # Handler for unknown commands at the last handler
         self.application.add_handler(MessageHandler(filters.COMMAND, self.unknown))
 
@@ -1124,7 +1134,9 @@ method to make great profit in Cryptocurrency Markets",
         self.msg_id.append(msg.message_id)
 
     async def help_command(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,  # pyright: ignore
     ) -> None:
         """Displays info on how to use the bot."""
         msg = await update.message.reply_text(HELP_MESSAGE)
@@ -1153,7 +1165,9 @@ method to make great profit in Cryptocurrency Markets",
         self.uniq_msg_id.append(msg.message_id)
 
     async def button_menu(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,  # pyright: ignore
     ) -> None:
         """nested respons for each Method on main menu"""
         query = update.callback_query
@@ -1202,11 +1216,7 @@ method to make great profit in Cryptocurrency Markets",
                 f"{symbol[:-5]} {tf}\n"
                 for id, symbol, tf in self.bot_trade.watchlist  # pyright: ignore
             ]
-            text0 = (
-                "เหรียญที่ดูอยู่ :\n"
-                if len(text) > 0
-                else "กดเปิดบอทเพื่อโหลดลิสต์เหรียญ"
-            )
+            text0 = "เหรียญที่ดูอยู่ :\n" if len(text) > 0 else "กดเปิดบอทเพื่อโหลดลิสต์เหรียญ"
             self.watchlist_reply_text = (
                 f"{text0}" + "".join(text) + "\n\nโปรดเลือกการตั้งค่า"
             )
@@ -1257,7 +1267,9 @@ method to make great profit in Cryptocurrency Markets",
 
     ## Fiat Balance menu
     async def fiat_handler(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,  # pyright: ignore
     ):
         """If received CheckBalance Mode
         this is nested Method respon for CheckBalance"""
@@ -1275,11 +1287,7 @@ method to make great profit in Cryptocurrency Markets",
 
         if callback["H"] == "ALL":
             msg = (
-                "BUSD"
-                + f"\nFree   : {round(fiat_balance['BUSD']['free'],2)}$"
-                + f"\nMargin : {round(fiat_balance['BUSD']['used'],2)}$"
-                + f"\nTotal  : {round(fiat_balance['BUSD']['total'],2)}$\nUSDT"
-                + f"\nFree   : {round(fiat_balance['USDT']['free'],2)}$"
+                f"USDT:\nFree   : {round(fiat_balance['USDT']['free'],2)}$"
                 + f"\nMargin : {round(fiat_balance['USDT']['used'],2)}$"
                 + f"\nTotal  : {round(fiat_balance['USDT']['total'],2)}$"
                 + f"\nกำไร/ขาดทุน  : {round(netunpl,2)}$"
@@ -1287,10 +1295,11 @@ method to make great profit in Cryptocurrency Markets",
         elif callback["H"] == "RE":
             await asyncio.gather(
                 query.edit_message_text("กำลัง Refresh ข้อมูลจาก Exchange"),
-                self.binance_.disconnect()
+                self.binance_.disconnect(),
             )
             await asyncio.gather(
-                self.binance_.update_balance(True), self.bot_trade.get_currentmode()
+                self.binance_.update_balance(True),
+                self.bot_trade.get_currentmode(),
             )
             fiat_balance = self.binance_.fiat_balance
             status = self.binance_.position_data
@@ -1300,21 +1309,9 @@ method to make great profit in Cryptocurrency Markets",
                 else 0.0
             )
             msg = (
-                "BUSD"
-                + f"\nFree   : {round(fiat_balance['BUSD']['free'],2)}$"
-                + f"\nMargin : {round(fiat_balance['BUSD']['used'],2)}$"
-                + f"\nTotal  : {round(fiat_balance['BUSD']['total'],2)}$\nUSDT"
-                + f"\nFree   : {round(fiat_balance['USDT']['free'],2)}$"
+                f"USDT:\nFree   : {round(fiat_balance['USDT']['free'],2)}$"
                 + f"\nMargin : {round(fiat_balance['USDT']['used'],2)}$"
                 + f"\nTotal  : {round(fiat_balance['USDT']['total'],2)}$"
-                + f"\nกำไร/ขาดทุน  : {round(netunpl,2)}$"
-            )
-        elif callback["H"] == "BUSD":
-            msg = (
-                "BUSD"
-                + f"\nFree   : {round(fiat_balance['BUSD']['free'],2)}$"
-                + f"\nMargin : {round(fiat_balance['BUSD']['used'],2)}$"
-                + f"\nTotal  : {round(fiat_balance['BUSD']['total'],2)}$"
                 + f"\nกำไร/ขาดทุน  : {round(netunpl,2)}$"
             )
         elif callback["H"] == "USDT":
@@ -1347,7 +1344,9 @@ method to make great profit in Cryptocurrency Markets",
         return ConversationHandler.END
 
     async def get_symbol_handler(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,  # pyright: ignore
     ):
         """Handler to asks for trade symbol"""
         query = update.callback_query
@@ -1435,7 +1434,9 @@ method to make great profit in Cryptocurrency Markets",
         return ConversationHandler.END
 
     async def get_lev_handler(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,  # pyright: ignore
     ):
         """Handler to asks for trade Leverage"""
         query = update.callback_query
@@ -1465,7 +1466,9 @@ method to make great profit in Cryptocurrency Markets",
             self.trade_reply_margin = text
 
         except Exception as e:
-            text = f"\n\nเกิดข้อผิดพลาด {e}\nLeverage ต้องเป็นตัวเลขเท่านั้น โปรดทำรายการใหม่อีกครั้งค่ะ"
+            text = (
+                f"\n\nเกิดข้อผิดพลาด {e}\nLeverage ต้องเป็นตัวเลขเท่านั้น โปรดทำรายการใหม่อีกครั้งค่ะ"
+            )
         msg = await update.message.reply_text(
             self.trade_reply_text + self.trade_reply_margin + text,
             reply_markup=self.dynamic_reply_markup["trade"],
@@ -1475,7 +1478,9 @@ method to make great profit in Cryptocurrency Markets",
         return ConversationHandler.END
 
     async def get_amount_handler(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,  # pyright: ignore
     ):
         """Handler to asks for trade amount"""
         query = update.callback_query
@@ -1514,7 +1519,9 @@ method to make great profit in Cryptocurrency Markets",
         return ConversationHandler.END
 
     async def get_tp_price_handler(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,  # pyright: ignore
     ):
         """Handler to asks for trade TP Price"""
         query = update.callback_query
@@ -1535,9 +1542,7 @@ method to make great profit in Cryptocurrency Markets",
             self.trade_order["tp_price"] = float(respon)
             self.trade_order["tp"] = True
             self.update_inline_keyboard()
-            text = (
-                f"\n\nทำการเพิ่มราคา Take Profit สำเร็จ: {self.trade_order['tp_price']}"
-            )
+            text = f"\n\nทำการเพิ่มราคา Take Profit สำเร็จ: {self.trade_order['tp_price']}"
         except Exception as e:
             text = f"เกิดข้อผิดพลาด {e}\nโปรดตรวจสอบเลขทศนิยม หรือราคาเหรียญให้ถูกต้องแล้วทำรายการใหม่ค่ะ"
         msg = await update.message.reply_text(
@@ -1549,7 +1554,9 @@ method to make great profit in Cryptocurrency Markets",
         return ConversationHandler.END
 
     async def get_sl_price_handler(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,  # pyright: ignore
     ):
         """Handler to asks for trade SL Price"""
         query = update.callback_query
@@ -1570,9 +1577,7 @@ method to make great profit in Cryptocurrency Markets",
             self.trade_order["sl_price"] = float(respon)
             self.trade_order["sl"] = True
             self.update_inline_keyboard()
-            text = (
-                f"\n\nทำการเพิ่มราคา Stop-Loss สำเร็จ: {self.trade_order['sl_price']}"
-            )
+            text = f"\n\nทำการเพิ่มราคา Stop-Loss สำเร็จ: {self.trade_order['sl_price']}"
         except Exception as e:
             text = f"\nเกิดข้อผิดพลาด {e}\nโปรดตรวจสอบเลขทศนิยม หรือราคาเหรียญให้ถูกต้องแล้วทำรายการใหม่ค่ะ"
 
@@ -1585,7 +1590,9 @@ method to make great profit in Cryptocurrency Markets",
         return ConversationHandler.END
 
     async def trade_order_type(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,  # pyright: ignore
     ):
         query = update.callback_query
         await query.answer()
@@ -1596,7 +1603,9 @@ method to make great profit in Cryptocurrency Markets",
         self.uniq_msg_id.append(msgs.message_id)
 
     async def trade_order_type_handler(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,  # pyright: ignore
     ):
         query = update.callback_query
         await query.answer()
@@ -1616,7 +1625,9 @@ method to make great profit in Cryptocurrency Markets",
         self.uniq_msg_id.append(msgs.message_id)
 
     async def trade_long_button(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,  # pyright: ignore
     ):
         async def open_long():
             orderid = get_order_id()
@@ -1768,7 +1779,9 @@ Margin : {self.trade_order['margin']}"
         )
 
     async def trade_short_button(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,  # pyright: ignore
     ):
         async def open_short():
             orderid = get_order_id()
@@ -1920,7 +1933,9 @@ Margin : {self.trade_order['margin']}"
         )
 
     async def trade_amount_plus_minus(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,  # pyright: ignore
     ):
         query = update.callback_query
         await query.answer()
@@ -1944,7 +1959,9 @@ Margin : {self.trade_order['margin']}"
         )
 
     async def back_from_trade_menu(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,  # pyright: ignore
     ):
         query = update.callback_query
         await query.answer()
@@ -1986,7 +2003,9 @@ Margin : {self.trade_order['margin']}"
             return ConversationHandler.END
 
     async def analyse_handler(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,  # pyright: ignore
     ) -> None:
         query = update.callback_query
         await query.answer()
@@ -2064,7 +2083,9 @@ Margin : {self.trade_order['margin']}"
 
     ## Position PNL Handlers
     async def position_get_lev_handler(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,  # pyright: ignore
     ):
         """Handler to asks for trade Leverage"""
         query = update.callback_query
@@ -2100,7 +2121,9 @@ Order นี้จะใช้ Margin จะปรับเป็น: {round(mar
                 reply_markup=self.reply_markup["position_confirm_lev"],
             )
         except Exception as e:
-            text = f"\n\nเกิดข้อผิดพลาด {e}\nLeverage ต้องเป็นตัวเลขเท่านั้น โปรดทำรายการใหม่อีกครั้งค่ะ"
+            text = (
+                f"\n\nเกิดข้อผิดพลาด {e}\nLeverage ต้องเป็นตัวเลขเท่านั้น โปรดทำรายการใหม่อีกครั้งค่ะ"
+            )
             msg = await update.message.reply_text(
                 self.coin_pnl_reply_text + text,
                 reply_markup=self.dynamic_reply_markup["position"],
@@ -2110,7 +2133,9 @@ Order นี้จะใช้ Margin จะปรับเป็น: {round(mar
         return ConversationHandler.END
 
     async def position_confirm_lev(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,  # pyright: ignore
     ):
         query = update.callback_query
         await query.answer()
@@ -2154,7 +2179,9 @@ Leverage : X{self.trade_order['lev']}\n\
         self.uniq_msg_id.append(msgs.message_id)
 
     async def position_get_tp_price_handler(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,  # pyright: ignore
     ):
         """Handler to asks for trade TP Price"""
         query = update.callback_query
@@ -2223,7 +2250,9 @@ Leverage : X{self.trade_order['lev']}\n\
         return ConversationHandler.END
 
     async def position_confirm_tp(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,  # pyright: ignore
     ):
         async def open_tp(side: str = "buy", position_side: str = "BOTH"):
             orderid = get_order_id()
@@ -2296,7 +2325,9 @@ Leverage : X{self.trade_order['lev']}\n\
         self.uniq_msg_id.append(msgs.message_id)
 
     async def position_get_sl_price_handler(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,  # pyright: ignore
     ):
         """Handler to asks for trade SL Price"""
         query = update.callback_query
@@ -2366,7 +2397,9 @@ Leverage : X{self.trade_order['lev']}\n\
         return ConversationHandler.END
 
     async def position_confirm_sl(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,  # pyright: ignore
     ):
         async def open_sl(side: str = "buy", position_side: str = "BOTH"):
             orderid = get_order_id()
@@ -2436,7 +2469,9 @@ Leverage : X{self.trade_order['lev']}\n\
         self.uniq_msg_id.append(msgs.message_id)
 
     async def position_close_handler(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,  # pyright: ignore
     ):
         async def close_order(side: str = "buy", position_side: str = "BOTH"):
             orderid = get_order_id()
@@ -2502,7 +2537,9 @@ Leverage : X{self.trade_order['lev']}\n\
             return ConversationHandler.END
 
     async def show_position_coins_menu(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,  # pyright: ignore
     ):
         query = update.callback_query
         await query.answer()
@@ -2559,13 +2596,17 @@ Leverage : X{self.trade_order['lev']}\n\
             self.pnl_reply = "Postion ที่มีการเปิดอยู่\n" + "".join(text)
         else:
             coins_key = InlineKeyboardMarkup(self.pnl_back_button)
-            self.pnl_reply = "หากคุณมีความรู้ แต่ยังขาดทุนอยู่ นั่นแสดงว่า คุณยังควบคุมความโลภ และความกลัว ไม่ได้"
+            self.pnl_reply = (
+                "หากคุณมีความรู้ แต่ยังขาดทุนอยู่ นั่นแสดงว่า คุณยังควบคุมความโลภ และความกลัว ไม่ได้"
+            )
             msg = "ท่านไม่มี Position ใด ๆ อยู่ในขณะนี้"
         msgs = await query.edit_message_text(text=msg, reply_markup=coins_key)
         self.uniq_msg_id.append(msgs.message_id)
 
     async def info_pnl_per_coin(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,  # pyright: ignore
     ):
         query = update.callback_query
         await query.answer()
@@ -2707,7 +2748,9 @@ Leverage : X{self.trade_order['lev']}\n\
 
     ## Settings menu
     async def setting_handler(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,  # pyright: ignore
     ) -> None:
         query = update.callback_query
         await query.answer()
@@ -2772,7 +2815,9 @@ Leverage : X{self.trade_order['lev']}\n\
 
     ## Risk Settings
     async def get_max_risk_handler(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,  # pyright: ignore
     ):
         query = update.callback_query
         await query.answer()
@@ -2785,7 +2830,9 @@ Leverage : X{self.trade_order['lev']}\n\
         return B_RISK
 
     async def update_max_risk(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,  # pyright: ignore
     ):
         respon = update.message.text
         self.msg_id.append(update.message.message_id)
@@ -2806,7 +2853,9 @@ Leverage : X{self.trade_order['lev']}\n\
         return ConversationHandler.END
 
     async def get_min_balance_handler(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,  # pyright: ignore
     ):
         query = update.callback_query
         await query.answer()
@@ -2818,7 +2867,9 @@ Leverage : X{self.trade_order['lev']}\n\
         return B_MIN_BL
 
     async def update_min_balance(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,  # pyright: ignore
     ):
         respon = update.message.text
         self.msg_id.append(update.message.message_id)
@@ -2842,7 +2893,9 @@ Leverage : X{self.trade_order['lev']}\n\
         return ConversationHandler.END
 
     async def save_risk_to_db(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,  # pyright: ignore
     ):
         query = update.callback_query
         await query.answer()
@@ -2865,16 +2918,16 @@ Leverage : X{self.trade_order['lev']}\n\
                 con.commit()
             text = "บันทึกข้อมูลสำเร็จแล้วค่ะ"
         except Exception as e:
-            text = (
-                f"เกิดข้อผิดพลาดขึ้นเนื่องจาก {e}\n\nโปรดทดลองทำรายการใหม่อีกครั้งค่ะ"
-            )
+            text = f"เกิดข้อผิดพลาดขึ้นเนื่องจาก {e}\n\nโปรดทดลองทำรายการใหม่อีกครั้งค่ะ"
         msgs = await query.edit_message_text(
             text=text, reply_markup=self.dynamic_reply_markup["risk"]
         )
         self.uniq_msg_id.append(msgs.message_id)
 
     async def back_from_risk_menu(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,  # pyright: ignore
     ) -> None:
         query = update.callback_query
         msg = self.risk_reply_text + f"{self.watchlist_reply_text}"
@@ -2898,7 +2951,9 @@ Leverage : X{self.trade_order['lev']}\n\
 
     # Coin config Setting
     async def edit_config_per_coin(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,  # pyright: ignore
     ):
         query = update.callback_query
         await query.answer()
@@ -2931,7 +2986,9 @@ Leverage : X{self.trade_order['lev']}\n\
         self.uniq_msg_id.append(msgs.message_id)
 
     async def vxma_settings_handler(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,  # pyright: ignore
     ) -> None:
         query = update.callback_query
         await query.answer()
@@ -2964,7 +3021,8 @@ Leverage : X{self.trade_order['lev']}\n\
         elif callback["H"] == "BACK":
             if self.vxma_menu_selected_state == "vxma_settings":
                 msgs = await query.edit_message_text(
-                    text="โปรดเลือกเหรียญดังนี้:", reply_markup=self.coins_settings_key
+                    text="โปรดเลือกเหรียญดังนี้:",
+                    reply_markup=self.coins_settings_key,
                 )
             elif self.vxma_menu_selected_state == "vxma_settings_1":
                 msgs = await query.edit_message_text(
@@ -3001,9 +3059,7 @@ Leverage : X{self.trade_order['lev']}\n\
                 for key, value in self.vxma_settings.items()
                 if key != "id"
             ]
-            text0 = "รายการ การตั้งค่าดังต่อไปนี้จะถูกเพิ่มไปยังฐานข้อมูล\n" + "".join(
-                text
-            )
+            text0 = "รายการ การตั้งค่าดังต่อไปนี้จะถูกเพิ่มไปยังฐานข้อมูล\n" + "".join(text)
             msgs = await query.edit_message_text(
                 text=f"{text0}\n\nโปรดยืนยัน หากต้องการบันทึกข้อมูลเหรียญ {self.vxma_settings['symbol']}",
                 reply_markup=self.reply_markup["vxma_settings_confirm_save_2"],
@@ -3121,9 +3177,7 @@ Leverage : X{self.trade_order['lev']}\n\
                     f"รายการตั้งค่ากลยุทธ์สำหรับ {self.vxma_settings['symbol']}"
                 )
             if self.vxma_settings_selected_state in TA_TYPE:
-                msg0 = await update.message.reply_text(
-                    "กำลังโหลดข้อมูลแท่งเทียน โปรดรอซักครู่"
-                )
+                msg0 = await update.message.reply_text("กำลังโหลดข้อมูลแท่งเทียน โปรดรอซักครู่")
                 self.ask_msg_id.append(msg0.message_id)
                 await self.vxma_send_candle_pic(update)
 
@@ -3162,7 +3216,9 @@ Leverage : X{self.trade_order['lev']}\n\
             return ConversationHandler.END
 
     async def vxma_save_settings_confirm(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,  # pyright: ignore
     ):
         query = update.callback_query
         await query.answer()
@@ -3197,7 +3253,9 @@ Leverage : X{self.trade_order['lev']}\n\
         self.uniq_msg_id.append(msgs.message_id)
 
     async def vxma_save_settings_confirm_2(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,  # pyright: ignore
     ):
         query = update.callback_query
         await query.answer()
@@ -3236,7 +3294,9 @@ Leverage : X{self.trade_order['lev']}\n\
         self.uniq_msg_id.append(msgs.message_id)
 
     async def vxma_del_settings_confirm(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,  # pyright: ignore
     ):
         query = update.callback_query
         await query.answer()
@@ -3271,7 +3331,9 @@ Leverage : X{self.trade_order['lev']}\n\
     ## Secure menu
     ## API
     async def set_api_handler(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,  # pyright: ignore
     ):
         """Handler to asks for API setting"""
         query = update.callback_query
@@ -3334,11 +3396,7 @@ Leverage : X{self.trade_order['lev']}\n\
                 )
                 con.commit()
             text = (
-                "BUSD"
-                + f"\nFree   : {round(fiat_balance['BUSD']['free'],2)}$"
-                + f"\nMargin : {round(fiat_balance['BUSD']['used'],2)}$"
-                + f"\nTotal  : {round(fiat_balance['BUSD']['total'],2)}$\nUSDT"
-                + f"\nFree   : {round(fiat_balance['USDT']['free'],2)}$"
+                f"USDT:\nFree   : {round(fiat_balance['USDT']['free'],2)}$"
                 + f"\nMargin : {round(fiat_balance['USDT']['used'],2)}$"
                 + f"\nTotal  : {round(fiat_balance['USDT']['total'],2)}$"
             )
@@ -3428,17 +3486,17 @@ Leverage : X{self.trade_order['lev']}\n\
                     continue
             await asyncio.sleep(1)
 
-    async def echo(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
-    ) -> None:
-        """Echo the user message."""
-        self.uniq_msg_id.append(update.message.message_id)
-        question = update.message.text
-        contents = {"role": "user", "content": f"{question}"}
-        self.conversation.append(contents)
-        text = chat(self.conversation)
-        msg = await update.message.reply_text(text["choices"][0]["message"]["content"])
-        self.uniq_msg_id.append(msg.message_id)
+    # async def echo(
+    #     self, update: Update, context: ContextTypes.DEFAULT_TYPE  # pyright: ignore
+    # ) -> None:
+    #     """Echo the user message."""
+    #     self.uniq_msg_id.append(update.message.message_id)
+    #     question = update.message.text
+    #     contents = {"role": "user", "content": f"{question}"}
+    #     self.conversation.append(contents)
+    #     text = chat(self.conversation)
+    #     msg = await update.message.reply_text(text["choices"][0]["message"]["content"])
+    #     self.uniq_msg_id.append(msg.message_id)
 
 
 def main():
