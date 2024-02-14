@@ -1,7 +1,6 @@
 bcrypt
 ccxt
 mplfinance
-openai
 pandas
 python-dotenv
 python-telegram-bot[job-queue]
