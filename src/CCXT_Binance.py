@@ -20,15 +20,15 @@ def callbackRate(data, direction):
             rate = round((100 - (lowest / close * 100)), 1)
         else:
             rate = round((100 - (close / highest * 100)), 1)
-        if rate > 5.0:
-            return 5.0
-        elif rate < 1.0:
-            return 1.0
+        if rate >= 9.99:
+            return 9.99
+        elif rate < 2.0:
+            return 2.0
         else:
             return rate
     except Exception as e:
         lastUpdate.status = f"callbackRate is error : {e}"
-        return 2.5
+        return 9.9
 
 
 def get_order_id() -> str:
