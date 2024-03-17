@@ -104,7 +104,9 @@ class Binance:
             balance = await exchange.fetch_balance()
             self.update_time = time()
             self.balance = balance
-            self.fiat_balance = {x: y for x, y in balance.items() if "USD" in x[-4:]}
+            self.fiat_balance = {
+                x: y for x, y in balance.items() if "USD" in x[-4:]
+            }
             print(self.fiat_balance)
             positions = self.balance["info"]["positions"]
             status = pd.DataFrame(
@@ -128,7 +130,9 @@ class Binance:
     async def get_bidask(self, symbol, bidask="ask"):
         exchange = await self.get_exchange()
         info = await exchange.fetch_bids_asks([symbol])
-        return float(next(y[bidask] for x, y in info.items()))  # pyright: ignore
+        return float(
+            next(y[bidask] for x, y in info.items())
+        )  # pyright: ignore
 
     async def get_symbol(self):
         """
@@ -142,7 +146,9 @@ class Binance:
         except Exception as e:
             print(f"{lastUpdate.status}\n{e}")
             market = await exchange.fetch_tickers(params={"type": "future"})
-        symbols = pd.DataFrame([y for x, y in market.items() if "USD" in x[-4:]])
+        symbols = pd.DataFrame(
+            [y for x, y in market.items() if "USD" in x[-4:]]
+        )
         symbols = symbols.sort_values(by=["quoteVolume"], ascending=False)
         symbols = symbols.head(10)
         newsym = [symbol for symbol in symbols["symbol"]]
@@ -163,7 +169,9 @@ class Binance:
         except Exception as e:
             print(f"{lastUpdate.status}\n{e}")
             market = await exchange.fetch_tickers(params={"type": "future"})
-        symbols = pd.DataFrame([y for x, y in market.items() if "USD" in x[-4:]])
+        symbols = pd.DataFrame(
+            [y for x, y in market.items() if "USD" in x[-4:]]
+        )
         symbols = symbols.sort_values(by=["quoteVolume"], ascending=False)
         return [symbol for symbol in symbols["symbol"]]
 
@@ -195,13 +203,15 @@ class Binance:
                 columns=["timestamp", "open", "high", "low", "close", "volume"],
             )
             if timer.get_time and timeframe == timer.min_timeframe:
-                timer.last_closed = int(df["timestamp"][len(df.index) - 1] / 1000)
+                timer.last_closed = int(
+                    df["timestamp"][len(df.index) - 1] / 1000
+                )
                 timer.get_time = False
 
             closed_time = int(df["timestamp"][len(df.index) - 1] / 1000)
-            df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms", utc=True).map(
-                lambda x: x.tz_convert("Asia/Bangkok")
-            )
+            df["timestamp"] = pd.to_datetime(
+                df["timestamp"], unit="ms", utc=True
+            ).map(lambda x: x.tz_convert("Asia/Bangkok"))
             df = df.set_index("timestamp")
             candle_ohlc.update(
                 {
@@ -220,13 +230,15 @@ class Binance:
             if bars is None:
                 return
             if timer.get_time and timeframe == timer.min_timeframe:
-                timer.last_closed = int(df["timestamp"][len(df.index) - 1] / 1000)
+                timer.last_closed = int(
+                    df["timestamp"][len(df.index) - 1] / 1000
+                )
                 timer.get_time = False
 
             closed_time = int(df["timestamp"][len(df.index) - 1] / 1000)
-            df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms", utc=True).map(
-                lambda x: x.tz_convert("Asia/Bangkok")
-            )
+            df["timestamp"] = pd.to_datetime(
+                df["timestamp"], unit="ms", utc=True
+            ).map(lambda x: x.tz_convert("Asia/Bangkok"))
             df = df.set_index("timestamp")
             df = pd.concat(
                 [candle_ohlc[f"{symbol}_{timeframe}"]["candle"], df],
@@ -265,7 +277,9 @@ class Binance:
         else:
             return None
 
-    async def get_tp_sl_price(self, symbol: str = "BTCUSDT", side: str = "BOTH"):
+    async def get_tp_sl_price(
+        self, symbol: str = "BTCUSDT", side: str = "BOTH"
+    ):
         exchange = await self.get_exchange()
         order_list = await exchange.fetch_orders(symbol, limit=10)
         result = []
