@@ -938,6 +938,7 @@ class BotTrade:
                     symbol,
                     "stop_market",
                     "buy",
+                    amount,
                     params={
                         "stopPrice": float(high),
                         "positionSide": Sside,
@@ -978,6 +979,7 @@ class BotTrade:
                     symbol,
                     "stop_market",
                     "sell",
+                    amount,
                     params={
                         "stopPrice": float(low),
                         "positionSide": side,
