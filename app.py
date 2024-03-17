@@ -93,9 +93,7 @@ class Telegram:
         self.vxma_settings = vxma_settings
         self.dynamic_reply_markup = {}
         self.reply_markup = REPLY_MARKUP
-        self.bot_trade = BotTrade(
-            self.chat_id, self.status_bot, self.status_scan
-        )
+        self.bot_trade = BotTrade(self.chat_id, self.status_bot, self.status_scan)
 
         # Buttons at the bottom
         self.reply_key = ReplyKeyboardMarkup(
@@ -118,24 +116,24 @@ class Telegram:
         ]
         self.load_database()
 
-    def reset_conversation(self):
-        self.conversation = [
-            {
-                "role": "system",
-                "content": "You're an Inverstor Expert who can always excute the right\
-method to make great profit in Cryptocurrency Markets",
-            },
-            {
-                "role": "user",
-                "content": "This is the list of BITCOIN  Daily Closed Price in Dollars in the past month\
-28286.7, 28395.9, 29459.0, 29300.0, 29212.7, 29223.0, 28054.4, 28656.5, \
-29018.4, 28826.0, 29491.5, 28837.8, 28419.4, 27659.8, 27610.2, 27582.9, \
-26956.4, 26785.1, 26762.7, 26901.9, 27152.5, 27024.8, 27395.8, 26809.3, \
-26870.1, 27089.5, 26732.8, 26840.2, 27209.9, 26313.8",
-            },
-            {"role": "user", "content": "BITCOIN now cost 26325.94$"},
-        ]
-
+    # def reset_conversation(self):
+    #         self.conversation = [
+    #             {
+    #                 "role": "system",
+    #                 "content": "You're an Inverstor Expert who can always excute the right\
+    # method to make great profit in Cryptocurrency Markets",
+    #             },
+    #             {
+    #                 "role": "user",
+    #                 "content": "This is the list of BITCOIN  Daily Closed Price in Dollars in the past month\
+    # 28286.7, 28395.9, 29459.0, 29300.0, 29212.7, 29223.0, 28054.4, 28656.5, \
+    # 29018.4, 28826.0, 29491.5, 28837.8, 28419.4, 27659.8, 27610.2, 27582.9, \
+    # 26956.4, 26785.1, 26762.7, 26901.9, 27152.5, 27024.8, 27395.8, 26809.3, \
+    # 26870.1, 27089.5, 26732.8, 26840.2, 27209.9, 26313.8",
+    #             },
+    #             {"role": "user", "content": "BITCOIN now cost 26325.94$"},
+    #         ]
+    #
     def update_inline_keyboard(self):
         trade = [
             [
@@ -659,7 +657,7 @@ method to make great profit in Cryptocurrency Markets",
 
     def setup_bot(self) -> None:
         # Basic Commands
-        self.reset_conversation()
+        # self.reset_conversation()
         self.reset_trade_order_data()
         self.update_inline_keyboard()
 
@@ -671,8 +669,7 @@ method to make great profit in Cryptocurrency Markets",
             # Handler for Back to menu for all menu
             CallbackQueryHandler(
                 self.back_to_menu,
-                lambda x: (json.loads(x))["M"]
-                in ["fiat", "pnl", "setting", "secure"]
+                lambda x: (json.loads(x))["M"] in ["fiat", "pnl", "setting", "secure"]
                 and (json.loads(x))["H"] == "BACK",
             ),
         ]
@@ -915,9 +912,7 @@ method to make great profit in Cryptocurrency Markets",
                     ],
                 },
                 fallbacks=[
-                    CommandHandler(
-                        "cancel", self.back_to_show_position_coins_menu
-                    )
+                    CommandHandler("cancel", self.back_to_show_position_coins_menu)
                 ],
             ),
             ConversationHandler(
@@ -937,9 +932,7 @@ method to make great profit in Cryptocurrency Markets",
                     ],
                 },
                 fallbacks=[
-                    CommandHandler(
-                        "cancel", self.back_to_show_position_coins_menu
-                    )
+                    CommandHandler("cancel", self.back_to_show_position_coins_menu)
                 ],
             ),
             ConversationHandler(
@@ -959,9 +952,7 @@ method to make great profit in Cryptocurrency Markets",
                     ],
                 },
                 fallbacks=[
-                    CommandHandler(
-                        "cancel", self.back_to_show_position_coins_menu
-                    )
+                    CommandHandler("cancel", self.back_to_show_position_coins_menu)
                 ],
             ),
         ]
@@ -1013,8 +1004,7 @@ method to make great profit in Cryptocurrency Markets",
             CallbackQueryHandler(
                 self.back_from_risk_menu,
                 lambda x: (
-                    (json.loads(x))["M"] == "risk"
-                    or (json.loads(x))["M"] == "COINS"
+                    (json.loads(x))["M"] == "risk" or (json.loads(x))["M"] == "COINS"
                 )
                 and (json.loads(x))["H"] == "BACK",
             ),
@@ -1033,8 +1023,7 @@ method to make great profit in Cryptocurrency Markets",
             ),
             CallbackQueryHandler(
                 self.vxma_save_settings_confirm_2,
-                lambda x: (json.loads(x))["M"]
-                == "vxma_settings_confirm_save_2",
+                lambda x: (json.loads(x))["M"] == "vxma_settings_confirm_save_2",
             ),
             CallbackQueryHandler(
                 self.vxma_del_settings_confirm,
@@ -1061,9 +1050,7 @@ method to make great profit in Cryptocurrency Markets",
                         )
                     ],
                 },
-                fallbacks=[
-                    CommandHandler("cancel", self.back_to_vxma_settings)
-                ],
+                fallbacks=[CommandHandler("cancel", self.back_to_vxma_settings)],
             ),
         ]
 
@@ -1107,9 +1094,7 @@ method to make great profit in Cryptocurrency Markets",
         #     MessageHandler(filters.TEXT & ~filters.COMMAND, self.echo)
         # )
         # Handler for unknown commands at the last handler
-        self.application.add_handler(
-            MessageHandler(filters.COMMAND, self.unknown)
-        )
+        self.application.add_handler(MessageHandler(filters.COMMAND, self.unknown))
 
         # Running Background job.
         self.application.job_queue.run_once(self.make_bot_task, when=5)
@@ -1125,15 +1110,13 @@ method to make great profit in Cryptocurrency Markets",
             chat_id=self.chat_id, message_id=update.message.message_id
         )
 
-        await update.message.reply_text(
-            WELCOME_MESSAGE, reply_markup=self.reply_key
-        )
+        await update.message.reply_text(WELCOME_MESSAGE, reply_markup=self.reply_key)
 
     async def clear_command(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
     ) -> None:
         self.msg_id.append(update.message.message_id)
-        self.reset_conversation()
+        # self.reset_conversation()
         delete_list = self.uniq_msg_id + self.msg_id + self.ask_msg_id
         if len(delete_list) > 0:
             for id in delete_list:
@@ -1170,9 +1153,7 @@ method to make great profit in Cryptocurrency Markets",
         self.uniq_msg_id.append(msg.message_id)
 
     ## Main Menu Nesting
-    async def menu_command(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE
-    ):
+    async def menu_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Sends a message with three inline buttons attached."""
         await context.bot.delete_message(
             chat_id=self.chat_id, message_id=update.message.message_id
@@ -1235,11 +1216,7 @@ method to make great profit in Cryptocurrency Markets",
                 f"{symbol[:-5]} {tf}\n"
                 for id, symbol, tf in self.bot_trade.watchlist  # pyright: ignore
             ]
-            text0 = (
-                "เหรียญที่ดูอยู่ :\n"
-                if len(text) > 0
-                else "กดเปิดบอทเพื่อโหลดลิสต์เหรียญ"
-            )
+            text0 = "เหรียญที่ดูอยู่ :\n" if len(text) > 0 else "กดเปิดบอทเพื่อโหลดลิสต์เหรียญ"
             self.watchlist_reply_text = (
                 f"{text0}" + "".join(text) + "\n\nโปรดเลือกการตั้งค่า"
             )
@@ -1386,9 +1363,7 @@ method to make great profit in Cryptocurrency Markets",
         """Handler that received trade symbol (STEP1)"""
         respon = update.message.text
         self.msg_id.append(update.message.message_id)
-        msg0 = await update.message.reply_text(
-            "กำลังโหลดข้อมูลเหรียญ โปรดรอซักครู่"
-        )
+        msg0 = await update.message.reply_text("กำลังโหลดข้อมูลเหรียญ โปรดรอซักครู่")
         self.ask_msg_id.append(msg0.message_id)
         self.reset_trade_order_data()
         self.trade_menu_selected = "trade"
@@ -1491,7 +1466,9 @@ method to make great profit in Cryptocurrency Markets",
             self.trade_reply_margin = text
 
         except Exception as e:
-            text = f"\n\nเกิดข้อผิดพลาด {e}\nLeverage ต้องเป็นตัวเลขเท่านั้น โปรดทำรายการใหม่อีกครั้งค่ะ"
+            text = (
+                f"\n\nเกิดข้อผิดพลาด {e}\nLeverage ต้องเป็นตัวเลขเท่านั้น โปรดทำรายการใหม่อีกครั้งค่ะ"
+            )
         msg = await update.message.reply_text(
             self.trade_reply_text + self.trade_reply_margin + text,
             reply_markup=self.dynamic_reply_markup["trade"],
@@ -1737,9 +1714,7 @@ Margin : {self.trade_order['margin']}"
                     },
                 )
                 await self.binance_.update_balance(force=True)
-                pnl = (
-                    "กำไร" if position_data["short"]["pnl"] > 0.0 else "ขาดทุน"
-                )
+                pnl = "กำไร" if position_data["short"]["pnl"] > 0.0 else "ขาดทุน"
                 return f"\n{order['status']} - ธุรกรรมที่ถูกปิดไป{pnl} : {position_data['short']['pnl']}$"
             except Exception as e:
                 return f"\nเกิดข้อผิดพลาดในการปิด Order เดิม :{e}"
@@ -1747,9 +1722,7 @@ Margin : {self.trade_order['margin']}"
         query = update.callback_query
         await query.answer()
         text_repons = ["", "", "", ""]
-        await query.edit_message_text(
-            "กำลังส่งข้อมูลไปยัง Exchange โปรดรอซักครู่"
-        )
+        await query.edit_message_text("กำลังส่งข้อมูลไปยัง Exchange โปรดรอซักครู่")
         exchange = await self.binance_.get_exchange()
         await self.binance_.connect_loads()
         await self.bot_trade.get_currentmode()
@@ -1794,12 +1767,8 @@ Margin : {self.trade_order['margin']}"
                 self.trade_order["amt"],
                 self.trade_order["price"],
                 "Long",
-                self.trade_order["tp_price"]
-                if self.trade_order["tp"]
-                else None,
-                self.trade_order["sl_price"]
-                if self.trade_order["sl"]
-                else None,
+                self.trade_order["tp_price"] if self.trade_order["tp"] else None,
+                self.trade_order["sl_price"] if self.trade_order["sl"] else None,
             )
         except Exception as e:
             text = f"\nเกิดข้อผิดพลาด {e}\n\nโปรดลองส่ง Order อีกครั้งค่ะ"
@@ -1907,9 +1876,7 @@ Margin : {self.trade_order['margin']}"
         query = update.callback_query
         await query.answer()
         text_repons = ["", "", "", ""]
-        await query.edit_message_text(
-            "กำลังส่งข้อมูลไปยัง Exchange โปรดรอซักครู่"
-        )
+        await query.edit_message_text("กำลังส่งข้อมูลไปยัง Exchange โปรดรอซักครู่")
         exchange = await self.binance_.get_exchange()
         await self.binance_.connect_loads()
         await self.bot_trade.get_currentmode()
@@ -1954,12 +1921,8 @@ Margin : {self.trade_order['margin']}"
                 self.trade_order["amt"],
                 self.trade_order["price"],
                 "Short",
-                self.trade_order["tp_price"]
-                if self.trade_order["tp"]
-                else None,
-                self.trade_order["sl_price"]
-                if self.trade_order["sl"]
-                else None,
+                self.trade_order["tp_price"] if self.trade_order["tp"] else None,
+                self.trade_order["sl_price"] if self.trade_order["sl"] else None,
             )
         except Exception as e:
             text = f"\nเกิดข้อผิดพลาด {e}\n\nโปรดลองส่ง Order อีกครั้งค่ะ"
@@ -2005,9 +1968,7 @@ Margin : {self.trade_order['margin']}"
         if self.trade_menu_selected == "vxma_settings_1":
             msgs = await query.edit_message_text(
                 text=self.text_reply_bot_setting,
-                reply_markup=self.dynamic_reply_markup[
-                    self.vxma_menu_selected_state
-                ],
+                reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
             )
         else:
             msgs = await query.edit_message_text(
@@ -2078,9 +2039,7 @@ Margin : {self.trade_order['margin']}"
             ta_data.__dict__,
             self.vxma_settings["timeframe"],
         )
-        path = candle(
-            df, self.vxma_settings["symbol"], self.vxma_settings["timeframe"]
-        )
+        path = candle(df, self.vxma_settings["symbol"], self.vxma_settings["timeframe"])
         msgs0 = await update.message.reply_photo(path)
         self.uniq_msg_id.append(msgs0.message_id)
 
@@ -2089,9 +2048,7 @@ Margin : {self.trade_order['margin']}"
     ):
         respon = update.message.text
         self.msg_id.append(update.message.message_id)
-        msg0 = await update.message.reply_text(
-            "กำลังโหลดข้อมูลเหรียญ โปรดรอซักครู่"
-        )
+        msg0 = await update.message.reply_text("กำลังโหลดข้อมูลเหรียญ โปรดรอซักครู่")
         self.ask_msg_id.append(msg0.message_id)
         try:
             symbol = str(respon).upper()
@@ -2112,9 +2069,7 @@ Margin : {self.trade_order['margin']}"
             self.text_reply_bot_setting = f"รายการตั้งค่ากลยุทธ์สำหรับ {symbol}"
             msgs = await update.message.reply_text(
                 text=self.text_reply_bot_setting,
-                reply_markup=self.dynamic_reply_markup[
-                    self.vxma_menu_selected_state
-                ],
+                reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
             )
         except Exception as e:
             text = f"เกิดข้อผิดพลาด :{e}\nโปรดตรวจสอบให้แน่ใจว่าเหรียญ {self.vxma_settings['symbol']} นั้นถูกต้อง\n\nโปรดทำรายการใหม่อีกครั้ง"
@@ -2166,7 +2121,9 @@ Order นี้จะใช้ Margin จะปรับเป็น: {round(mar
                 reply_markup=self.reply_markup["position_confirm_lev"],
             )
         except Exception as e:
-            text = f"\n\nเกิดข้อผิดพลาด {e}\nLeverage ต้องเป็นตัวเลขเท่านั้น โปรดทำรายการใหม่อีกครั้งค่ะ"
+            text = (
+                f"\n\nเกิดข้อผิดพลาด {e}\nLeverage ต้องเป็นตัวเลขเท่านั้น โปรดทำรายการใหม่อีกครั้งค่ะ"
+            )
             msg = await update.message.reply_text(
                 self.coin_pnl_reply_text + text,
                 reply_markup=self.dynamic_reply_markup["position"],
@@ -2198,12 +2155,10 @@ Order นี้จะใช้ Margin จะปรับเป็น: {round(mar
                 self.trade_order["symbol"], self.binance_.position_data.copy()
             )
             self.trade_order["lev"] = self.trade_order["new_lev"]
-            self.trade_order["pnl"] = position_data[self.trade_order["type"]][
-                "pnl"
+            self.trade_order["pnl"] = position_data[self.trade_order["type"]]["pnl"]
+            self.trade_order["margin"] = position_data[self.trade_order["type"]][
+                "margin"
             ]
-            self.trade_order["margin"] = position_data[
-                self.trade_order["type"]
-            ]["margin"]
             emoji = "📈" if self.trade_order["type"].upper() == "LONG" else "📉"
             pnl_t = "ขาดทุน" if self.trade_order["pnl"] < 0.0 else "กำไร"
 
@@ -2214,9 +2169,7 @@ Order นี้จะใช้ Margin จะปรับเป็น: {round(mar
 💰Margin ที่ใช้ : {self.trade_order['margin']}$\n\
 Leverage : X{self.trade_order['lev']}\n\
 💸{pnl_t} : {self.trade_order['pnl']}$"
-            self.coin_pnl_reply_text = (
-                f"เหรียญ {self.trade_order['symbol']}" + text
-            )
+            self.coin_pnl_reply_text = f"เหรียญ {self.trade_order['symbol']}" + text
             self.update_inline_keyboard()
             msgs = await query.edit_message_text(
                 text=self.coin_pnl_reply_text,
@@ -2264,15 +2217,11 @@ Leverage : X{self.trade_order['lev']}\n\
             if str(respon).endswith("%"):
                 if self.trade_order["type"] == "long":
                     self.trade_order["new_tp_price"] = (
-                        self.trade_order["e_price"]
-                        * (float(respon[:-1]) + 100)
-                        / 100
+                        self.trade_order["e_price"] * (float(respon[:-1]) + 100) / 100
                     )
                 elif self.trade_order["type"] == "short":
                     self.trade_order["new_tp_price"] = (
-                        self.trade_order["e_price"]
-                        * (float(respon[:-1]) - 100)
-                        / 100
+                        self.trade_order["e_price"] * (float(respon[:-1]) - 100) / 100
                     )
             else:
                 self.trade_order["new_tp_price"] = float(respon)
@@ -2342,9 +2291,7 @@ Leverage : X{self.trade_order['lev']}\n\
                 reply_markup=self.dynamic_reply_markup["position"],
             )
         elif callback["H"] == "OK":
-            await query.edit_message_text(
-                "กำลังส่งข้อมูลไปยัง Exchange โปรดรอซักครู่"
-            )
+            await query.edit_message_text("กำลังส่งข้อมูลไปยัง Exchange โปรดรอซักครู่")
             text = ""
             exchange = await self.binance_.get_exchange()
             await self.binance_.connect_loads()
@@ -2363,13 +2310,9 @@ Leverage : X{self.trade_order['lev']}\n\
                     self.trade_order["symbol"], self.trade_order["new_tp_price"]
                 )
                 if self.trade_order["type"] == "long":
-                    text += await open_tp(
-                        "sell", self.bot_trade.currentMode.Lside
-                    )
+                    text += await open_tp("sell", self.bot_trade.currentMode.Lside)
                 elif self.trade_order["type"] == "short":
-                    text += await open_tp(
-                        "buy", self.bot_trade.currentMode.Sside
-                    )
+                    text += await open_tp("buy", self.bot_trade.currentMode.Sside)
             # self.trade_order["tp_price"] = float(self.trade_order["new_tp_price"])
             await self.binance_.disconnect()
 
@@ -2420,15 +2363,11 @@ Leverage : X{self.trade_order['lev']}\n\
             if str(respon).endswith("%"):
                 if self.trade_order["type"] == "long":
                     self.trade_order["new_sl_price"] = (
-                        self.trade_order["e_price"]
-                        * (float(respon[:-1]) - 100)
-                        / 100
+                        self.trade_order["e_price"] * (float(respon[:-1]) - 100) / 100
                     )
                 elif self.trade_order["type"] == "short":
                     self.trade_order["new_sl_price"] = (
-                        self.trade_order["e_price"]
-                        * (float(respon[:-1]) + 100)
-                        / 100
+                        self.trade_order["e_price"] * (float(respon[:-1]) + 100) / 100
                     )
             else:
                 self.trade_order["new_sl_price"] = float(respon)
@@ -2497,9 +2436,7 @@ Leverage : X{self.trade_order['lev']}\n\
                 reply_markup=self.dynamic_reply_markup["position"],
             )
         elif callback["H"] == "OK":
-            await query.edit_message_text(
-                "กำลังส่งข้อมูลไปยัง Exchange โปรดรอซักครู่"
-            )
+            await query.edit_message_text("กำลังส่งข้อมูลไปยัง Exchange โปรดรอซักครู่")
             exchange = await self.binance_.get_exchange()
             await self.binance_.connect_loads()
             text = ""
@@ -2518,13 +2455,9 @@ Leverage : X{self.trade_order['lev']}\n\
                     self.trade_order["symbol"], self.trade_order["new_sl_price"]
                 )
                 if self.trade_order["type"] == "long":
-                    text += await open_sl(
-                        "sell", self.bot_trade.currentMode.Lside
-                    )
+                    text += await open_sl("sell", self.bot_trade.currentMode.Lside)
                 elif self.trade_order["type"] == "short":
-                    text += await open_sl(
-                        "buy", self.bot_trade.currentMode.Sside
-                    )
+                    text += await open_sl("buy", self.bot_trade.currentMode.Sside)
             await self.binance_.disconnect()
 
             self.update_inline_keyboard()
@@ -2560,9 +2493,7 @@ Leverage : X{self.trade_order['lev']}\n\
 
         query = update.callback_query
         await query.answer()
-        await query.edit_message_text(
-            "กำลังส่งข้อมูลไปยัง Exchange โปรดรอซักครู่"
-        )
+        await query.edit_message_text("กำลังส่งข้อมูลไปยัง Exchange โปรดรอซักครู่")
         exchange = await self.binance_.get_exchange()
         await self.binance_.connect_loads()
         if self.trade_order["type"] == "long":
@@ -2665,7 +2596,9 @@ Leverage : X{self.trade_order['lev']}\n\
             self.pnl_reply = "Postion ที่มีการเปิดอยู่\n" + "".join(text)
         else:
             coins_key = InlineKeyboardMarkup(self.pnl_back_button)
-            self.pnl_reply = "หากคุณมีความรู้ แต่ยังขาดทุนอยู่ นั่นแสดงว่า คุณยังควบคุมความโลภ และความกลัว ไม่ได้"
+            self.pnl_reply = (
+                "หากคุณมีความรู้ แต่ยังขาดทุนอยู่ นั่นแสดงว่า คุณยังควบคุมความโลภ และความกลัว ไม่ได้"
+            )
             msg = "ท่านไม่มี Position ใด ๆ อยู่ในขณะนี้"
         msgs = await query.edit_message_text(text=msg, reply_markup=coins_key)
         self.uniq_msg_id.append(msgs.message_id)
@@ -2787,15 +2720,13 @@ Leverage : X{self.trade_order['lev']}\n\
             self.trade_order["amt"] = abs(
                 position_data[self.trade_order["type"]]["amount"]
             )
-            self.trade_order["e_price"] = position_data[
-                self.trade_order["type"]
-            ]["price"]
-            self.trade_order["pnl"] = position_data[self.trade_order["type"]][
-                "pnl"
+            self.trade_order["e_price"] = position_data[self.trade_order["type"]][
+                "price"
             ]
-            self.trade_order["margin"] = position_data[
-                self.trade_order["type"]
-            ]["margin"]
+            self.trade_order["pnl"] = position_data[self.trade_order["type"]]["pnl"]
+            self.trade_order["margin"] = position_data[self.trade_order["type"]][
+                "margin"
+            ]
             pnl_t = "ขาดทุน" if self.trade_order["pnl"] < 0.0 else "กำไร"
             emoji = "📈" if self.trade_order["type"].upper() == "LONG" else "📉"
             self.trade_order["lev"] = position_data["leverage"]
@@ -2806,9 +2737,7 @@ Leverage : X{self.trade_order['lev']}\n\
 💰Margin ที่ใช้ : {self.trade_order['margin']}$\n\
 Leverage : X{self.trade_order['lev']}\n\
 💸{pnl_t} : {self.trade_order['pnl']}$"
-            self.coin_pnl_reply_text = (
-                f"เหรียญ {self.trade_order['symbol']}" + text
-            )
+            self.coin_pnl_reply_text = f"เหรียญ {self.trade_order['symbol']}" + text
             self.update_inline_keyboard()
             msgs = await query.edit_message_text(
                 text=self.coin_pnl_reply_text,
@@ -3035,9 +2964,7 @@ Leverage : X{self.trade_order['lev']}\n\
                 reply_markup=self.dynamic_reply_markup["setting"],
             )
         else:
-            await query.edit_message_text(
-                "กำลังโหลดข้อมูลแท่งเทียน โปรดรอซักครู่"
-            )
+            await query.edit_message_text("กำลังโหลดข้อมูลแท่งเทียน โปรดรอซักครู่")
             self.vxma_menu_selected_state = "vxma_settings"
             configs = bot_setting()
             self.vxma_settings["id"] = int(callback["H"])
@@ -3054,9 +2981,7 @@ Leverage : X{self.trade_order['lev']}\n\
             await query.delete_message()
             msgs = await query.message.reply_text(
                 text=self.text_reply_bot_setting,
-                reply_markup=self.dynamic_reply_markup[
-                    self.vxma_menu_selected_state
-                ],
+                reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
             )
         self.uniq_msg_id.append(msgs.message_id)
 
@@ -3109,25 +3034,19 @@ Leverage : X{self.trade_order['lev']}\n\
             await query.delete_message()
             msgs = await query.message.reply_text(
                 text=self.text_reply_bot_setting,
-                reply_markup=self.dynamic_reply_markup[
-                    self.vxma_menu_selected_state
-                ],
+                reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
             )
         elif callback["H"] == "BACK_2":
             self.vxma_menu_selected_state = "vxma_settings_1"
             msgs = await query.edit_message_text(
                 text=self.text_reply_bot_setting,
-                reply_markup=self.dynamic_reply_markup[
-                    self.vxma_menu_selected_state
-                ],
+                reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
             )
         elif callback["H"] == "Setting":
             self.vxma_menu_selected_state = "vxma_settings_2"
             msgs = await query.edit_message_text(
                 text=f"รายการตั้งค่ากลยุทธ์สำหรับ {self.vxma_settings['symbol']}",
-                reply_markup=self.dynamic_reply_markup[
-                    self.vxma_menu_selected_state
-                ],
+                reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
             )
         elif callback["H"] == "SAVE":
             msgs = await query.edit_message_text(
@@ -3140,10 +3059,7 @@ Leverage : X{self.trade_order['lev']}\n\
                 for key, value in self.vxma_settings.items()
                 if key != "id"
             ]
-            text0 = (
-                "รายการ การตั้งค่าดังต่อไปนี้จะถูกเพิ่มไปยังฐานข้อมูล\n"
-                + "".join(text)
-            )
+            text0 = "รายการ การตั้งค่าดังต่อไปนี้จะถูกเพิ่มไปยังฐานข้อมูล\n" + "".join(text)
             msgs = await query.edit_message_text(
                 text=f"{text0}\n\nโปรดยืนยัน หากต้องการบันทึกข้อมูลเหรียญ {self.vxma_settings['symbol']}",
                 reply_markup=self.reply_markup["vxma_settings_confirm_save_2"],
@@ -3177,11 +3093,7 @@ Leverage : X{self.trade_order['lev']}\n\
                 self.trade_order["lev"] = currnet_position["leverage"]
             text = f"คู่เหรียญ  {self.trade_order['symbol']}\nราคาปัจจุบัน : {self.trade_order['price']}$"
             if currnet_position["long"]["position"]:
-                pnl_t = (
-                    "ขาดทุน"
-                    if currnet_position["long"]["pnl"] < 0.0
-                    else "กำไร"
-                )
+                pnl_t = "ขาดทุน" if currnet_position["long"]["pnl"] < 0.0 else "กำไร"
                 self.trade_order["pnl"] = currnet_position["long"]["pnl"]
                 text += f"\n\n ท่านมี Position Long ของ เหรียญนี้อยู่ในมือ\n\
 เป็นจำนวน  {round(currnet_position['long']['amount'], 3)} เหรียญ\n\
@@ -3189,11 +3101,7 @@ Leverage : X{self.trade_order['lev']}\n\
  {pnl_t} {round(currnet_position['long']['pnl'], 3)}$"
 
             if currnet_position["short"]["position"]:
-                pnl_t = (
-                    "ขาดทุน"
-                    if currnet_position["short"]["pnl"] < 0.0
-                    else "กำไร"
-                )
+                pnl_t = "ขาดทุน" if currnet_position["short"]["pnl"] < 0.0 else "กำไร"
                 self.trade_order["pnl"] = currnet_position["short"]["pnl"]
                 text += f"\n\n ท่านมี Position Short ของ เหรียญนี้อยู่ในมือ\n\
 เป็นจำนวน  {round(currnet_position['short']['amount'], 3)} เหรียญ\n\
@@ -3245,25 +3153,17 @@ Leverage : X{self.trade_order['lev']}\n\
             text = f"\nได้ทำการเปลี่ยน {vxma_settings_info[self.vxma_settings_selected_state]}\
 จากเดิม : {self.vxma_settings[self.vxma_settings_selected_state]} ไปเป็น {respon} เรียบร้อย"
             if self.vxma_selected_state_type == "int":
-                self.vxma_settings[self.vxma_settings_selected_state] = int(
-                    respon
-                )
+                self.vxma_settings[self.vxma_settings_selected_state] = int(respon)
             elif self.vxma_selected_state_type == "float":
-                self.vxma_settings[self.vxma_settings_selected_state] = float(
-                    respon
-                )
+                self.vxma_settings[self.vxma_settings_selected_state] = float(respon)
             elif self.vxma_selected_state_type == "str":
                 if self.vxma_settings_selected_state == "symbol":
                     symbol = str(respon).upper()
                     if ":" in symbol:
-                        self.vxma_settings[
-                            self.vxma_settings_selected_state
-                        ] = symbol
+                        self.vxma_settings[self.vxma_settings_selected_state] = symbol
                     else:
                         if symbol.endswith("BUSD") or symbol.endswith("USDT"):
-                            quote = (
-                                "BUSD" if symbol.endswith("BUSD") else "USDT"
-                            )
+                            quote = "BUSD" if symbol.endswith("BUSD") else "USDT"
                             base = symbol[:-4]
                         else:
                             quote = "USDT"
@@ -3272,16 +3172,12 @@ Leverage : X{self.trade_order['lev']}\n\
                             self.vxma_settings_selected_state
                         ] = f"{base}/{quote}:{quote}"
                 else:
-                    self.vxma_settings[self.vxma_settings_selected_state] = str(
-                        respon
-                    )
+                    self.vxma_settings[self.vxma_settings_selected_state] = str(respon)
                 self.text_reply_bot_setting = (
                     f"รายการตั้งค่ากลยุทธ์สำหรับ {self.vxma_settings['symbol']}"
                 )
             if self.vxma_settings_selected_state in TA_TYPE:
-                msg0 = await update.message.reply_text(
-                    "กำลังโหลดข้อมูลแท่งเทียน โปรดรอซักครู่"
-                )
+                msg0 = await update.message.reply_text("กำลังโหลดข้อมูลแท่งเทียน โปรดรอซักครู่")
                 self.ask_msg_id.append(msg0.message_id)
                 await self.vxma_send_candle_pic(update)
 
@@ -3290,9 +3186,7 @@ Leverage : X{self.trade_order['lev']}\n\
         self.update_inline_keyboard()
         msgs = await update.message.reply_text(
             text=self.text_reply_bot_setting + text,
-            reply_markup=self.dynamic_reply_markup[
-                self.vxma_menu_selected_state
-            ],
+            reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
         )
         self.uniq_msg_id.append(msgs.message_id)
         await self.delete_ask_messages(context)
@@ -3307,9 +3201,7 @@ Leverage : X{self.trade_order['lev']}\n\
             await query.answer()
             msgs = await query.edit_message_text(
                 text=self.text_reply_bot_setting,
-                reply_markup=self.dynamic_reply_markup[
-                    self.vxma_menu_selected_state
-                ],
+                reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
             )
             self.uniq_msg_id.append(msgs.message_id)
         else:
@@ -3318,9 +3210,7 @@ Leverage : X{self.trade_order['lev']}\n\
             await self.delete_unig_messages(context)
             msgs = await update.message.reply_text(
                 text=self.text_reply_bot_setting,
-                reply_markup=self.dynamic_reply_markup[
-                    self.vxma_menu_selected_state
-                ],
+                reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
             )
             self.uniq_msg_id.append(msgs.message_id)
             return ConversationHandler.END
@@ -3336,9 +3226,7 @@ Leverage : X{self.trade_order['lev']}\n\
         if callback["H"] == "BACK":
             msgs = await query.edit_message_text(
                 text=self.text_reply_bot_setting,
-                reply_markup=self.dynamic_reply_markup[
-                    self.vxma_menu_selected_state
-                ],
+                reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
             )
         else:
             try:
@@ -3375,9 +3263,7 @@ Leverage : X{self.trade_order['lev']}\n\
         if callback["H"] == "BACK":
             msgs = await query.edit_message_text(
                 text=self.text_reply_bot_setting,
-                reply_markup=self.dynamic_reply_markup[
-                    self.vxma_menu_selected_state
-                ],
+                reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
             )
         else:
             try:
@@ -3387,9 +3273,7 @@ Leverage : X{self.trade_order['lev']}\n\
                     data=[vxma_settings.values()], columns=vxma_settings.keys()
                 )
                 config = config.set_index("id")
-                configs = pd.concat(
-                    [configs, config], axis=0, ignore_index=True
-                )
+                configs = pd.concat([configs, config], axis=0, ignore_index=True)
                 configs.to_csv("bot_config.csv", index=True)
                 text = f"\n\nได้บันทึกข้อมูลเหรียญ {self.vxma_settings['symbol']} สำหรับบอทเรียบร้อยแล้วค่ะ"
                 self.bot_trade.update_watchlist()
@@ -3420,9 +3304,7 @@ Leverage : X{self.trade_order['lev']}\n\
         if callback["H"] == "BACK":
             msgs = await query.edit_message_text(
                 text=self.text_reply_bot_setting,
-                reply_markup=self.dynamic_reply_markup[
-                    self.vxma_menu_selected_state
-                ],
+                reply_markup=self.dynamic_reply_markup[self.vxma_menu_selected_state],
             )
         else:
             try:
@@ -3462,9 +3344,7 @@ Leverage : X{self.trade_order['lev']}\n\
         self.ask_msg_id.append(msg.message_id)
         return STEP1_API
 
-    async def get_api_key(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE
-    ):
+    async def get_api_key(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handler that received API KEY STEP1"""
         respon = update.message.text
         self.msg_id.append(update.message.message_id)
@@ -3476,16 +3356,12 @@ Leverage : X{self.trade_order['lev']}\n\
         self.ask_msg_id.append(msg.message_id)
         return STEP2_API_SEC
 
-    async def get_api_sec(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE
-    ):
+    async def get_api_sec(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handler that received API SECRET STEP2"""
         respon = update.message.text
         self.msg_id.append(update.message.message_id)
         self.sec_info["API_SEC"] = str(respon)
-        msg0 = await update.message.reply_text(
-            "กำลังทดสอบ API โปรดรอซักครู่....."
-        )
+        msg0 = await update.message.reply_text("กำลังทดสอบ API โปรดรอซักครู่.....")
         self.ask_msg_id.append(msg0.message_id)
         try:
             binance_test = Binance(
@@ -3579,9 +3455,7 @@ Leverage : X{self.trade_order['lev']}\n\
 
     async def delete_messages(self, cid, context: ContextTypes.DEFAULT_TYPE):
         try:
-            await context.bot.delete_message(
-                chat_id=self.chat_id, message_id=cid
-            )
+            await context.bot.delete_message(chat_id=self.chat_id, message_id=cid)
             self.msg_id.remove(cid)
         except Exception:
             pass
