@@ -1,14 +1,12 @@
-FROM zasoliton/python-talib As builder
+FROM zasoliton/python-talib
+
+WORKDIR /app
 
 COPY requirements.txt .
-
-# install dependencies to the local user directory (eg. /root/.local)
-RUN pip install --user -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
 ENV TZ="Asia/Bangkok"
 ENV TERM=xterm
-
-CMD ["python3", "app.py"]
-
+ENTRYPOINT ["python3", "app.py"]
