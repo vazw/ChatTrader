@@ -895,7 +895,6 @@ class BotTrade:
                         "callbackRate": callbackrate,
                         "positionSide": Sside,
                         "newClientOrderId": orderid,
-                        "closePosition": True,
                     },
                 )
             else:
@@ -928,9 +927,7 @@ class BotTrade:
                 f"เกิดความผิดพลาดในการเข้า Order : Tailing Stop\n{lastUpdate.status}\n{e}"
             )
 
-    async def USESLSHORT(
-        self, symbol, exchange: ccxt.binance, amount, high, Sside
-    ):
+    async def USESLSHORT(self, symbol, exchange, amount, high, Sside):
         try:
             orderid = get_order_id()
             if self.currentMode.dualSidePosition:
@@ -938,11 +935,11 @@ class BotTrade:
                     symbol,
                     "stop_market",
                     "buy",
+                    amount,
                     params={
                         "stopPrice": float(high),
                         "positionSide": Sside,
                         "newClientOrderId": orderid,
-                        "closePosition": True,
                     },
                 )
                 print(orderSL)
@@ -951,10 +948,12 @@ class BotTrade:
                     symbol,
                     "stop_market",
                     "buy",
+                    amount,
+                    float(high),
                     params={
                         "stopPrice": float(high),
                         "triggerPrice": float(high),
-                        "closePosition": True,
+                        "reduceOnly": True,
                         "positionSide": Sside,
                         "newClientOrderId": orderid,
                     },
@@ -978,11 +977,11 @@ class BotTrade:
                     symbol,
                     "stop_market",
                     "sell",
+                    amount,
                     params={
                         "stopPrice": float(low),
                         "positionSide": side,
                         "newClientOrderId": orderid,
-                        "closePosition": True,
                     },
                 )
             else:
@@ -990,10 +989,12 @@ class BotTrade:
                     symbol,
                     "stop_market",
                     "sell",
+                    amount,
+                    float(low),
                     params={
                         "stopPrice": float(low),
                         "triggerPrice": float(low),
-                        "closePosition": True,
+                        "reduceOnly": True,
                         "positionSide": side,
                         "newClientOrderId": orderid,
                     },
@@ -1061,21 +1062,11 @@ class BotTrade:
                 return [stop_price, triggerPrice]
             return [stop_price]
         except Exception as e:
-            print(e)
-            orderTP = await exchange.create_order(
-                symbol,
-                "TAKE_PROFIT_MARKET",
-                "sell",
-                params={
-                    "stopPrice": stop_price,
-                    "triggerPrice": stop_price,
-                    "positionSide": Lside,
-                    "newClientOrderId": orderid,
-                    "closePosition": True,
-                },
+            print(f"{lastUpdate.status}\n{e}")
+            await self.notify_send(
+                f"เกิดเตุการณืไม่คาดฝัน OrderTP ทำรายการไม่สำเร็จ\n{lastUpdate.status}\n{e}"
             )
-            print(orderTP)
-            return [stop_price]
+            return None
 
     # Position Sizing
     async def buysize(self, df, balance, symbol, exchange, RISK, min_amount):
@@ -1312,22 +1303,11 @@ class BotTrade:
                 return [triggerPrice, triggerPrice2]
             return [triggerPrice]
         except Exception as e:
-            print(e)
-            orderTP = await exchange.create_order(
-                symbol,
-                "TAKE_PROFIT_MARKET",
-                "buy",
-                amttp1,
-                triggerPrice,
-                params={
-                    "stopPrice": triggerPrice,
-                    "triggerPrice": triggerPrice,
-                    "positionSide": Sside,
-                    "newClientOrderId": orderid,
-                },
+            print(f"{lastUpdate.status}\n{e}")
+            await self.notify_send(
+                f"เกิดเตุการณืไม่คาดฝัน Order TP  ทำรายการไม่สำเร็จ{lastUpdate.status}\n{e}"
             )
-            print(orderTP)
-            return [triggerPrice]
+            return None
 
     # OpenShort=Sell
     async def OpenShort(
